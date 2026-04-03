@@ -1,7 +1,6 @@
-/* UPDATE VERSION [3] */
+/* UPDATE VERSION [4] */
 
 #title-author-div {
-    background-color: blue;
     width:100%;
 }
 
@@ -18,8 +17,7 @@
 }
 
 #button-div {
-    background-color: red;
-    margin: auto;
+    margin: 25px auto 25px auto;
     width: 500px;
     height: 50px;
     display: flex;
@@ -41,6 +39,46 @@ button:hover {
     background-color: #0056b3;
     cursor: pointer;
     font-weight: bold;
+}
+
+#text-editor-div {
+    display: flex;
+    width: 90%;
+    margin: auto;
+    border: 3px solid #333333;
+    font-family: 'Fira Code', 'Courier New', 'Consolas', 'Monaco', monospace;
+    padding: 25px;
+    border-radius: 10px;
+    background-color: #F5F5F5;
+}
+
+#line-numbers {
+    background-color: #F5F5F5;
+    color: #333333;
+    text-align: center;
+    user-select: none;
+    overflow: hidden;
+    font-size: 20px;
+    width: 40px;
+    font-family: 'Fira Code', 'Courier New', 'Consolas', 'Monaco', monospace;
+    border: 1px solid #333333;
+}
+
+#text-editor {
+    flex: 1;
+    border: none;
+    outline: none;
+    resize: none;
+    background-color: #F5F5F5;
+    color: #333333;
+    overflow: auto;
+    font-size: 20px;
+    border: 1px solid #333333;
+}
+
+#text-editor::placeholder {
+    color: var(--placeholder-color, #333333);
+    opacity: var(--placeholder-opacity, 1);
 }
 
 /*
