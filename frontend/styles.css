@@ -1,7 +1,7 @@
-/* UPDATE VERSION [5] */
+/* UPDATE VERSION [6] */
 
-html {
-    height: auto;
+html, body {
+    min-height: 100vh;
     margin: 0;
     background: linear-gradient(135deg, #000000, #001a00, #003300);
 }
@@ -52,7 +52,7 @@ button:hover {
 #text-editor-div {
     display: flex;
     width: 1080px;
-    height: 500px;
+    height: 300px;
     overflow: hidden;
     margin: auto;
     border: 3px solid lime;
@@ -105,6 +105,7 @@ button:hover {
 }
 
 #terminal {
+    font-size: 20px;
     width: 100%;
     height: 300px;
     background: black;
@@ -124,6 +125,70 @@ button:hover {
 }
 
 #terminal:hover {
+    cursor: default;
+}
+
+#terminal-input-div {
+    width: 1080px;
+    display: block;
+    margin: 25px auto 25px auto;
+    background-color: black;
+    padding: 25px;
+    border: 3px solid lime;
+    border-radius: 10px;
+}
+
+#terminal-input {
+    font-size: 20px;
+    width: 100%;
+    height: 100%;
+    background: black;
+    color: lime;
+    font-family: "Fira Code", "Courier New", "Consolas", "Monaco", monospace;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid lime;
+    resize: none;
+    outline: none;
+    box-sizing: border-box;
+}
+
+#terminal-input::placeholder {
+    color: var(--terminal-input-placeholder-color, lime);
+    opacity: var(--terminal-input-placeholder-opacity, 1);
+}
+
+#documentation-div {
+    width: 1080px;
+    display: block;
+    margin: 25px auto 25px auto;
+    background-color: black;
+    padding: 25px;
+    border: 3px solid lime;
+    border-radius: 10px;
+}
+
+#documentation {
+    font-size: 20px;
+    width: 100%;
+    height: 300px;
+    background: black;
+    color: lime;
+    font-family: "Fira Code", "Courier New", "Consolas", "Monaco", monospace;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid lime;
+    resize: none;
+    outline: none;
+    box-sizing: border-box;
+}
+
+#documentation::placeholder {
+    color: var(--documentation-placeholder-color, lime);
+    opacity: var(--documentation-placeholder-opacity, 1);
+}
+
+#documentation:hover {
     cursor: default;
 }
 
