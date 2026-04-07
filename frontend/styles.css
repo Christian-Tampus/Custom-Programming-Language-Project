@@ -1,4 +1,23 @@
-/* UPDATE VERSION [6] */
+/* UPDATE VERSION [7] */
+
+:root {
+    --title-font-size: 60px;
+    --author-font-size: 45px;
+    --button-font-size: 30px;
+    --standard-font-size: 20px;
+    --standard-color1: lime;
+    --standard-color2: black;
+    --standard-font-family: 'Fira Code', 'Courier New', 'Consolas', 'Monaco', monospace;
+    --button-color: #F5F5F5;
+    --button-background-color: #007BFF;
+    --button-hover-background-color: #0056b3;
+    --standard-width: 1080px;
+    --standard-height: 300px;
+    --standard-placeholder-color: lime;
+    --standard-placeholder-opacity: 1;
+    --standard-margin: 25px;
+    --standard-padding: 25px;
+}
 
 html, body {
     min-height: 100vh;
@@ -11,21 +30,21 @@ html, body {
 }
 
 #title {
-    text-align: center;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 60px;
-    color: lime;
+    font-size: var(--title-font-size);
 }
 
 #author {
+    font-size: var(--author-font-size);
+}
+
+.title-author-class {
     text-align: center;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 30px;
-    color: lime;
+    font-family: var(--standard-font-family);
+    color: var(--standard-color1);
 }
 
 #button-div {
-    margin: 25px auto 25px auto;
+    margin: var(--standard-margin) auto  var(--standard-margin) auto;
     width: 500px;
     height: 50px;
     display: flex;
@@ -34,44 +53,47 @@ html, body {
 
 .button {
     text-align: center;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 25px;
+    font-family: var(--standard-font-family);
+    font-size: var(--button-font-size);
     border-radius: 10px;
     border: none;
-    color: #F5F5F5;
-    background-color: #007BFF;
+    color: var(--button-color);
+    background-color: var(--button-background-color);
     flex: 1;
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: var(--button-background-color);
     cursor: pointer;
     font-weight: bold;
 }
 
 #text-editor-div {
     display: flex;
-    width: 1080px;
-    height: 300px;
+    width: var(--standard-width);
+    height: var(--standard-height);
     overflow: hidden;
     margin: auto;
-    border: 3px solid lime;
-    font-family: 'Fira Code', 'Courier New', 'Consolas', 'Monaco', monospace;
-    padding: 25px;
+    border: 3px solid var(--standard-color1);
+    font-family: var(--standard-font-family);
+    padding: var(--standard-padding);
     border-radius: 10px;
     background-color: black;
 }
 
 #line-numbers {
-    background-color: black;
-    color: lime;
+    background-color: var(--standard-color2);
+    color: var(--standard-color1);
     text-align: right;
     user-select: none;
     overflow: hidden;
-    font-size: 20px;
+    font-size: var(--standard-font-size);
     width: 60px;
-    font-family: "Fira Code", "Courier New", "Consolas", "Monaco", monospace;
-    border: 1px solid lime;
+    font-family: var(--standard-font-family);
+    border-top: 1px solid var(--standard-color1);
+    border-left: 1px solid var(--standard-color1);
+    border-bottom: 1px solid var(--standard-color1);
+    border-right: none;
 }
 
 #text-editor {
@@ -79,45 +101,53 @@ button:hover {
     border: none;
     outline: none;
     resize: none;
-    background-color: black;
-    color: lime;
+    background-color: var(--standard-color2);
+    color: var(--standard-color1);
     overflow-y: auto;
     overflow-x: auto;
     white-space: pre;
-    max-height: 500px;
-    font-size: 20px;
-    border: 1px solid lime;
+    max-height: var(--text-editor-height);
+    font-size: var(--standard-font-size);
+    border: 1px solid var(--standard-color1);
 }
 
 #text-editor::placeholder {
-    color: var(--text-editor-placeholder-color, lime);
-    opacity: var(--text-editor-placeholder-opacity, 1);
+    color: var(--standard-placeholder-color);
+    opacity: var(--standard-placeholder-opacity);
 }
 
 #terminal-div {
-    width: 1080px;
+    width: var(--standard-width);
     display: block;
-    margin: 25px auto 25px auto;
+    margin: var(--standard-margin) auto var(--standard-margin) auto;
     background-color: black;
-    padding: 25px;
-    border: 3px solid lime;
+    padding: var(--standard-padding);
+    border: 3px solid var(--standard-color1);
     border-radius: 10px;
 }
 
 #terminal {
-    font-size: 20px;
+    font-size: var(--standard-font-size);
     width: 100%;
-    height: 300px;
-    background: black;
-    color: lime;
-    font-family: "Fira Code", "Courier New", "Consolas", "Monaco", monospace;
+    height: var(--standard-height);
+    background: var(--standard-color2);
+    color: var(--standard-color1);
+    font-family: var(--standard-font-family);
     overflow-y: auto;
     overflow-x: hidden;
-    border: 1px solid lime;
+    border: 1px solid var(--standard-color1);
     resize: none;
     outline: none;
     box-sizing: border-box;
 }
+
+/*
+CONTINUE HERE!!!!!
+CONTINUE HERE!!!!!
+CONTINUE HERE!!!!!
+CONTINUE HERE!!!!!
+CONTINUE HERE!!!!!
+*/
 
 #terminal::placeholder {
     color: var(--terminal-placeholder-color, lime);

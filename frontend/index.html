@@ -1,17 +1,18 @@
-<!-- UPDATE VERSION [6] -->
- 
+<!-- UPDATE VERSION [7] -->
+
 <!DOCTYPE html>
 <html lang = "en">
     <head>
         <meta charset = "UTF-8">
         <meta name = "viewport" content = "width=device-width, initial-scale=1.0">
         <title>Custom Programming Language Project</title>
+        <author>Christian Tampus</author>
         <link rel = "stylesheet" href = "./styles.css">
     </head>
     <body>
         <div id = "title-author-div">
-            <h1 id = "title">Custom Programming Language Project</h1>
-            <h2 id = "author">Developed By: Christian Tampus</h2>
+            <h1 id = "title" class = "title-author-class">Custom Programming Language Project</h1>
+            <h2 id = "author" class = "title-author-class">Developed By: Christian Tampus</h2>
         </div>
         <div id = "button-div">
             <button id = "light-theme-button" class = "button">Light Theme</button>
@@ -22,13 +23,13 @@
             <textarea id = "text-editor" type = "text" placeholder = ""></textarea>
         </div>
         <div id = "terminal-div">
-            <textarea id = "terminal" placeholder="[SYSTEM MESSAGE] Standard Output!" readonly></textarea>
+            <textarea id = "terminal" placeholder="" readonly></textarea>
         </div>
         <div id = "terminal-input-div">
-            <input id = "terminal-input" type = "text" name = "terminal-input" placeholder = "[SYSTEM MESSAGE] Standard Input!"/>
+            <input id = "terminal-input" type = "text" name = "terminal-input" placeholder = ""/>
         </div>
         <div id = "documentation-div">
-            <textarea id = "documentation" placeholder = "[CODE DOCUMENTATION HERE]" readonly></textarea>
+            <textarea id = "documentation" placeholder = "" readonly></textarea>
         </div>
         <script src = "./script.js"></script>
     </body>

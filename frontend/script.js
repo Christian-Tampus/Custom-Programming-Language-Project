@@ -1,4 +1,4 @@
-/* UPDATE VERSION [6] */
+/* UPDATE VERSION [7] */
 
 /*
 ==================================================
@@ -13,6 +13,8 @@ Global Constants
 ==================================================
 */
 const textEditorPlaceholder = "Your Code Here [LATER ADD BOILER PLATE TEST CODE]";
+const terminalPlaceholder = "[SYSTEM MESSAGE] Standard Output!";
+const terminalInputPlaceholder = "[SYSTEM MESSAGE] Standard Input!";
 const html = document.documentElement;
 const textEditorDiv = document.getElementById("text-editor-div");
 const textEditor = document.getElementById("text-editor");
@@ -43,12 +45,13 @@ function updateLineNumbers() {
     };
     lineNumbers.innerText = lineNumbersNewInnerText;
 };
-
 function syncScroll() {
     lineNumbers.scrollTop = textEditor.scrollTop;
 };
-
 function lightTheme() {
+    /*
+    FIX THE BORDER RIGHT OF #line-numbers SO THAT IT ITS border-right: none;
+    */
     html.style.backgroundColor = lightThemeColor2;
     textEditorDiv.style.border = "3px solid " + lightThemeColor1;
     textEditorDiv.style.backgroundColor = lightThemeColor2;
@@ -81,7 +84,6 @@ function lightTheme() {
     documentation.style.border = "1px solid " + lightThemeColor1;
     documentation.style.color = lightThemeColor1;
 };
-
 function darkTheme() {
     html.style.backgroundColor = darkThemeColor2;
     textEditorDiv.style.border = "3px solid " + darkThemeColor1;
@@ -115,7 +117,6 @@ function darkTheme() {
     documentation.style.border = "1px solid " + darkThemeColor1;
     terminalInput.style.color = darkThemeColor1;
 };
-
 function getInputValue(event) {
     if (event.key == "Enter") {
         const inputElement = event.target;
@@ -123,6 +124,14 @@ function getInputValue(event) {
         console.log("[CLIENT] inputElement.id: ", inputElement.id, "; Input Value: ", inputValue);
         inputElement.value = "";
     };
+};
+function codeDocumentation() {
+    let maxLines = 20;
+    let documentationText = "";
+    for (let line = 0; line < maxLines; line++) {
+        documentationText += (line + 1 >= maxLines ? "[CODE DOCUMENTATION]" : "[CODE DOCUMENTATION]\n");
+    };
+    return documentationText;
 };
 
 /*
@@ -142,6 +151,10 @@ Initializers
 ==================================================
 */
 textEditor.placeholder = textEditorPlaceholder;
+terminal.placeholder = terminalPlaceholder;
+terminalInput.placeholder = terminalInputPlaceholder;
+documentation.placeholder = codeDocumentation();
+documentation.value = codeDocumentation();
 updateLineNumbers();
 
 /*
