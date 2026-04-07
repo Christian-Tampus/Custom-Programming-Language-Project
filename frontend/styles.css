@@ -1,4 +1,4 @@
-/* UPDATE VERSION [7] */
+/* UPDATE VERSION [8] */
 
 :root {
     --title-font-size: 60px;
@@ -17,6 +17,9 @@
     --standard-placeholder-opacity: 1;
     --standard-margin: 25px;
     --standard-padding: 25px;
+    --standard-border-radius: 10px;
+    --standard-border-size: 1px;
+    --standard-border-style: solid;
 }
 
 html, body {
@@ -55,7 +58,7 @@ html, body {
     text-align: center;
     font-family: var(--standard-font-family);
     font-size: var(--button-font-size);
-    border-radius: 10px;
+    border-radius: var(--standard-border-radius);
     border: none;
     color: var(--button-color);
     background-color: var(--button-background-color);
@@ -74,11 +77,11 @@ button:hover {
     height: var(--standard-height);
     overflow: hidden;
     margin: auto;
-    border: 3px solid var(--standard-color1);
+    border: calc(var(--standard-border-size) * 3) var(--standard-border-style) var(--standard-color1);
     font-family: var(--standard-font-family);
     padding: var(--standard-padding);
-    border-radius: 10px;
-    background-color: black;
+    border-radius: var(--standard-border-radius);
+    background-color: var(--standard-color2);
 }
 
 #line-numbers {
@@ -108,7 +111,7 @@ button:hover {
     white-space: pre;
     max-height: var(--text-editor-height);
     font-size: var(--standard-font-size);
-    border: 1px solid var(--standard-color1);
+    border: var(--standard-border-size) var(--standard-border-style) var(--standard-color1);
 }
 
 #text-editor::placeholder {
@@ -120,38 +123,20 @@ button:hover {
     width: var(--standard-width);
     display: block;
     margin: var(--standard-margin) auto var(--standard-margin) auto;
-    background-color: black;
+    background-color: var(--standard-color2);
     padding: var(--standard-padding);
-    border: 3px solid var(--standard-color1);
-    border-radius: 10px;
+    border: calc(var(--standard-border-size) * 3) var(--standard-border-style) var(--standard-color1);
+    border-radius: var(--standard-border-radius);
 }
 
+/*HAS CLASS .div-container-css*/
 #terminal {
-    font-size: var(--standard-font-size);
-    width: 100%;
     height: var(--standard-height);
-    background: var(--standard-color2);
-    color: var(--standard-color1);
-    font-family: var(--standard-font-family);
-    overflow-y: auto;
-    overflow-x: hidden;
-    border: 1px solid var(--standard-color1);
-    resize: none;
-    outline: none;
-    box-sizing: border-box;
 }
-
-/*
-CONTINUE HERE!!!!!
-CONTINUE HERE!!!!!
-CONTINUE HERE!!!!!
-CONTINUE HERE!!!!!
-CONTINUE HERE!!!!!
-*/
 
 #terminal::placeholder {
-    color: var(--terminal-placeholder-color, lime);
-    opacity: var(--terminal-placeholder-opacity, 1);
+    color: var(--standard-placeholder-color);
+    opacity: var(--standard-placeholder-opacity);
 }
 
 #terminal:hover {
@@ -159,63 +144,55 @@ CONTINUE HERE!!!!!
 }
 
 #terminal-input-div {
-    width: 1080px;
+    width: var(--standard-width);
     display: block;
-    margin: 25px auto 25px auto;
-    background-color: black;
-    padding: 25px;
-    border: 3px solid lime;
-    border-radius: 10px;
+    margin: var(--standard-margin) auto var(--standard-margin) auto;
+    background-color: var(--standard-color2);
+    padding: var(--standard-padding);
+    border: calc(var(--standard-border-size) * 3) var(--standard-border-style) var(--standard-color1);
+    border-radius: var(--standard-border-radius);
 }
 
 #terminal-input {
-    font-size: 20px;
-    width: 100%;
     height: 100%;
-    background: black;
-    color: lime;
-    font-family: "Fira Code", "Courier New", "Consolas", "Monaco", monospace;
-    overflow-y: auto;
-    overflow-x: hidden;
-    border: 1px solid lime;
-    resize: none;
-    outline: none;
-    box-sizing: border-box;
 }
 
 #terminal-input::placeholder {
-    color: var(--terminal-input-placeholder-color, lime);
-    opacity: var(--terminal-input-placeholder-opacity, 1);
+    color: var(--standard-placeholder-color);
+    opacity: var(--standard-placeholder-opacity);
 }
 
 #documentation-div {
-    width: 1080px;
+    width: var(--standard-width);
     display: block;
-    margin: 25px auto 25px auto;
-    background-color: black;
-    padding: 25px;
-    border: 3px solid lime;
-    border-radius: 10px;
+    margin: var(--standard-margin) auto var(--standard-margin) auto;
+    background-color: var(--standard-color2);
+    padding: var(--standard-padding);
+    border: calc(var(--standard-border-size) * 3) var(--standard-border-style) var(--standard-color1);
+    border-radius: var(--standard-border-radius);
 }
 
 #documentation {
-    font-size: 20px;
+    height: var(--standard-height);
+}
+
+.div-container-css {
+    font-size: var(--standard-font-size);
     width: 100%;
-    height: 300px;
-    background: black;
-    color: lime;
-    font-family: "Fira Code", "Courier New", "Consolas", "Monaco", monospace;
+    background-color: var(--standard-color2);
+    color: var(--standard-color1);
+    font-family: var(--standard-font-family);
+    border: var(--standard-border-size) var(--standard-border-style) var(--standard-color1);
     overflow-y: auto;
     overflow-x: hidden;
-    border: 1px solid lime;
     resize: none;
     outline: none;
     box-sizing: border-box;
 }
 
 #documentation::placeholder {
-    color: var(--documentation-placeholder-color, lime);
-    opacity: var(--documentation-placeholder-opacity, 1);
+    color: var(--standard-placeholder-color);
+    opacity: var(--standard-placeholder-opacity);
 }
 
 #documentation:hover {

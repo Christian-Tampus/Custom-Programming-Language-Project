@@ -1,4 +1,4 @@
-/* UPDATE VERSION [7] */
+/* UPDATE VERSION [8] */
 
 /*
 ==================================================
@@ -31,6 +31,8 @@ const lightThemeColor1 = "#333333";
 const lightThemeColor2 = "#F5F5F5";
 const darkThemeColor1 = "lime";
 const darkThemeColor2 = "black";
+const standardPlaceholderColorVariable = "--standard-placeholder-color";
+const standardPlaceholderOpacityVariable = "--standard-placeholder-opacity";
 
 /*
 ==================================================
@@ -49,26 +51,26 @@ function syncScroll() {
     lineNumbers.scrollTop = textEditor.scrollTop;
 };
 function lightTheme() {
-    /*
-    FIX THE BORDER RIGHT OF #line-numbers SO THAT IT ITS border-right: none;
-    */
     html.style.backgroundColor = lightThemeColor2;
     textEditorDiv.style.border = "3px solid " + lightThemeColor1;
     textEditorDiv.style.backgroundColor = lightThemeColor2;
     lineNumbers.style.color = lightThemeColor1;
     lineNumbers.style.backgroundColor = lightThemeColor2;
-    lineNumbers.style.border = "1px solid " + lightThemeColor1;
+    lineNumbers.style.borderTop = "1px solid " + lightThemeColor1;
+    lineNumbers.style.borderLeft = "1px solid " + lightThemeColor1;
+    lineNumbers.style.borderBottom = "1px solid " + lightThemeColor1;
+    lineNumbers.style.borderRight = "none";
     textEditor.style.backgroundColor = lightThemeColor2;
     textEditor.style.color = lightThemeColor1;
     textEditor.style.border = "1px solid " + lightThemeColor1;
-    textEditor.style.setProperty("--text-editor-placeholder-color", lightThemeColor1);
-    textEditor.style.setProperty("--text-editor-placeholder-opacity", 1);
-    terminal.style.setProperty("--terminal-placeholder-color", lightThemeColor1);
-    terminal.style.setProperty("--terminal-placeholder-opacity", 1);
-    terminalInput.style.setProperty("--terminal-input-placeholder-color", lightThemeColor1);
-    terminalInput.style.setProperty("--terminal-input-placeholder-opacity", 1);
-    documentation.style.setProperty("--documentation-placeholder-color", lightThemeColor1);
-    documentation.style.setProperty("--documentation-placeholder-opacity", 1);
+    textEditor.style.setProperty(standardPlaceholderColorVariable, lightThemeColor1);
+    textEditor.style.setProperty(standardPlaceholderOpacityVariable, 1);
+    terminal.style.setProperty(standardPlaceholderColorVariable, lightThemeColor1);
+    terminal.style.setProperty(standardPlaceholderOpacityVariable, 1);
+    terminalInput.style.setProperty(standardPlaceholderColorVariable, lightThemeColor1);
+    terminalInput.style.setProperty(standardPlaceholderOpacityVariable, 1);
+    documentation.style.setProperty(standardPlaceholderColorVariable, lightThemeColor1);
+    documentation.style.setProperty(standardPlaceholderOpacityVariable, 1);
     terminalDiv.style.backgroundColor = lightThemeColor2;
     terminalDiv.style.border = "3px solid " + lightThemeColor1;
     terminal.style.backgroundColor = lightThemeColor2;
@@ -90,18 +92,21 @@ function darkTheme() {
     textEditorDiv.style.backgroundColor = darkThemeColor2;
     lineNumbers.style.color = darkThemeColor1;
     lineNumbers.style.backgroundColor = darkThemeColor2;
-    lineNumbers.style.border = "1px solid " + darkThemeColor1;
+    lineNumbers.style.borderTop = "1px solid " + darkThemeColor1;
+    lineNumbers.style.borderLeft = "1px solid " + darkThemeColor1;
+    lineNumbers.style.borderBottom = "1px solid " + darkThemeColor1;
+    lineNumbers.style.borderRight = "none";
     textEditor.style.backgroundColor = darkThemeColor2;
     textEditor.style.color = darkThemeColor1;
     textEditor.style.border = "1px solid " + darkThemeColor1;
-    textEditor.style.setProperty("--text-editor-placeholder-color", darkThemeColor1);
-    textEditor.style.setProperty("--text-editor-placeholder-opacity", 1);
-    terminal.style.setProperty("--terminal-placeholder-color", darkThemeColor1);
-    terminal.style.setProperty("--terminal-placeholder-opacity", 1);
-    terminalInput.style.setProperty("--terminal-input-placeholder-color", darkThemeColor1);
-    terminalInput.style.setProperty("--terminal-input-placeholder-opacity", 1);
-    documentation.style.setProperty("--documentation-placeholder-color", darkThemeColor1);
-    documentation.style.setProperty("--documentation-placeholder-opacity", 1);
+    textEditor.style.setProperty(standardPlaceholderColorVariable, darkThemeColor1);
+    textEditor.style.setProperty(standardPlaceholderOpacityVariable, 1);
+    terminal.style.setProperty(standardPlaceholderColorVariable, darkThemeColor1);
+    terminal.style.setProperty(standardPlaceholderOpacityVariable, 1);
+    terminalInput.style.setProperty(standardPlaceholderColorVariable, darkThemeColor1);
+    terminalInput.style.setProperty(standardPlaceholderOpacityVariable, 1);
+    documentation.style.setProperty(standardPlaceholderColorVariable, darkThemeColor1);
+    documentation.style.setProperty(standardPlaceholderOpacityVariable, 1);
     terminalDiv.style.backgroundColor = darkThemeColor2;
     terminalDiv.style.border = "3px solid " + darkThemeColor1;
     terminal.style.backgroundColor = darkThemeColor2;
