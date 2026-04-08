@@ -1,4 +1,4 @@
-/* UPDATE VERSION [8] */
+/* UPDATE VERSION [9] */
 
 :root {
     --title-font-size: 60px;
@@ -11,7 +11,7 @@
     --button-color: #F5F5F5;
     --button-background-color: #007BFF;
     --button-hover-background-color: #0056b3;
-    --standard-width: 1080px;
+    --standard-width: 90%;
     --standard-height: 300px;
     --standard-placeholder-color: lime;
     --standard-placeholder-opacity: 1;
@@ -48,7 +48,7 @@ html, body {
 
 #button-div {
     margin: var(--standard-margin) auto  var(--standard-margin) auto;
-    width: 500px;
+    width: var(--standard-width);
     height: 50px;
     display: flex;
     gap: 50px;
@@ -129,7 +129,6 @@ button:hover {
     border-radius: var(--standard-border-radius);
 }
 
-/*HAS CLASS .div-container-css*/
 #terminal {
     height: var(--standard-height);
 }
@@ -202,14 +201,47 @@ button:hover {
 /*
 Responsive Web Design: Tablet Screen Size
 */
-@media (min-width: 769px) and (max-width: 1024px) {}
+@media (min-width: 769px) and (max-width: 1024px) {
+    :root {
+        --title-font-size: 50px;
+        --author-font-size: 37.5px;
+        --button-font-size: 25px;
+        --standard-font-size: 18px;
+        --standard-width: 85%;
+        --standard-height: 250px;
+        --standard-margin: 20px;
+        --standard-padding: 20px;
+    }
+}
 
 /*
 Responsive Web Design: Mobile (Phone) Landscape Screen Size
 */
-@media (min-width: 481px) and (max-width: 768px){}
+@media (min-width: 481px) and (max-width: 768px){
+    :root {
+        --title-font-size: 40px;
+        --author-font-size: 30px;
+        --button-font-size: 20px;
+        --standard-font-size: 15px;
+        --standard-width: 80%;
+        --standard-height: 200px;
+        --standard-margin: 15px;
+        --standard-padding: 15px;
+    }
+}
 
 /*
 Responsive Web Design: Mobile (Phone) Portrait Screen Size
 */
-@media (max-width: 480px) {}
+@media (max-width: 480px) {
+    :root {
+        --title-font-size: 30px;
+        --author-font-size: 22.5;
+        --button-font-size: 15px;
+        --standard-font-size: 12px;
+        --standard-width: 75%;
+        --standard-height: 150px;
+        --standard-margin: 10px;
+        --standard-padding: 10px;
+    }
+}

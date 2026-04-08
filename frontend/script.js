@@ -1,4 +1,4 @@
-/* UPDATE VERSION [8] */
+/* UPDATE VERSION [9] */
 
 /*
 ==================================================
@@ -21,6 +21,7 @@ const textEditor = document.getElementById("text-editor");
 const lineNumbers = document.getElementById("line-numbers");
 const lightThemeButton = document.getElementById("light-theme-button");
 const darkThemeButton = document.getElementById("dark-theme-button");
+const runCodeButton = document.getElementById("run-code-button");
 const terminalDiv = document.getElementById("terminal-div");
 const terminal = document.getElementById("terminal");
 const terminalInputDiv = document.getElementById("terminal-input-div");
@@ -49,6 +50,27 @@ function updateLineNumbers() {
 };
 function syncScroll() {
     lineNumbers.scrollTop = textEditor.scrollTop;
+};
+function addTabToTextEditor(event) {
+    if (event.key == "Tab") {
+        event.preventDefault(); //JS Method To Stop Browser's Default Behavior
+        let tabSpace = "    ";
+        let selectionStart = this.selectionStart; //Text Selection/Highlighted Start
+        let selectionEnd = this.selectionEnd; //Text Selection/Highlighted End
+        /*
+        Example:
+        Hello [world]
+               ↑    ↑
+        012345 6....11
+        selectionStart = 6 (Index 6)
+        selectionEnd = 11 (Index 11)
+        */
+        //Insert The Tab Character
+        this.value = this.value.substring(0, selectionStart) + tabSpace + this.value.substring(selectionEnd);
+        //Move Cursor After Tab
+        this.selectionEnd = start + 1;
+        this.selectionStart = this.selectionEnd;
+    };
 };
 function lightTheme() {
     html.style.backgroundColor = lightThemeColor2;
@@ -120,7 +142,7 @@ function darkTheme() {
     documentationDiv.style.border = "3px solid " + darkThemeColor1;
     documentation.style.backgroundColor = darkThemeColor2;
     documentation.style.border = "1px solid " + darkThemeColor1;
-    terminalInput.style.color = darkThemeColor1;
+    documentation.style.color = darkThemeColor1;
 };
 function getInputValue(event) {
     if (event.key == "Enter") {
@@ -138,6 +160,10 @@ function codeDocumentation() {
     };
     return documentationText;
 };
+function executeCode() {
+    let code = textEditor.value;
+    console.log("[CLIENT] Execute Code! code:\n", code);
+};
 
 /*
 ==================================================
@@ -146,9 +172,11 @@ Event Listeners
 */
 textEditor.addEventListener("input", updateLineNumbers);
 textEditor.addEventListener("scroll", syncScroll);
+textEditor.addEventListener("keydown", addTabToTextEditor);
 lightThemeButton.addEventListener("click", lightTheme);
 darkThemeButton.addEventListener("click", darkTheme);
 terminalInput.addEventListener("keydown", getInputValue);
+runCodeButton.addEventListener("click", executeCode);
 
 /*
 ==================================================
