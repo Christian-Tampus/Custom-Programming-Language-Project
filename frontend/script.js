@@ -1,4 +1,4 @@
-/* UPDATE VERSION [11] */
+/* UPDATE VERSION [12] */
 
 /*
 ==================================================
@@ -12,6 +12,7 @@ console.log("[CLIENT] script.js Program Start!");
 Global Constants
 ==================================================
 */
+const PORT = 8080;
 const textEditorPlaceholder = "Your Code Here [LATER ADD BOILER PLATE TEST CODE]";
 const terminalPlaceholder = "[SYSTEM MESSAGE] Standard Output!";
 const terminalInputPlaceholder = "[SYSTEM MESSAGE] Standard Input!";
@@ -160,9 +161,16 @@ function codeDocumentation() {
     };
     return documentationText;
 };
-function executeCode() {
+async function executeCode() {
     let code = textEditor.value;
     console.log("[CLIENT] Execute Code! code:\n", code);
+    try {
+        const result = await fetch("http://localhost:" + PORT.toString() + "/api/hello");
+        const data = await result.json();
+        console.log("[CLIENT] Response From Server At Port {" + PORT.toString() + "} Data:", data);
+    } catch (error) {
+        console.log("[CLIENT] Request Failed:", error);
+    };
 };
 
 /*
