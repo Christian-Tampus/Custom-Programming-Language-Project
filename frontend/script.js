@@ -1,4 +1,4 @@
-/* UPDATE VERSION [12] */
+/* UPDATE VERSION [13] */
 
 /*
 ==================================================
@@ -165,7 +165,15 @@ async function executeCode() {
     let code = textEditor.value;
     console.log("[CLIENT] Execute Code! code:\n", code);
     try {
-        const result = await fetch("http://localhost:" + PORT.toString() + "/api/hello");
+        const result = await fetch("http://localhost:" + PORT.toString() + "/execute", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                clientCode: code
+            })
+        });
         const data = await result.json();
         console.log("[CLIENT] Response From Server At Port {" + PORT.toString() + "} Data:", data);
     } catch (error) {
