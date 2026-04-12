@@ -1,4 +1,4 @@
-/* UPDATE VERSION [13] */
+/* UPDATE VERSION [14] */
 
 /*
 ==================================================
@@ -145,11 +145,26 @@ function darkTheme() {
     documentation.style.border = "1px solid " + darkThemeColor1;
     documentation.style.color = darkThemeColor1;
 };
-function getInputValue(event) {
+async function getInputValue(event) {
     if (event.key == "Enter") {
         const inputElement = event.target;
         const inputValue = inputElement.value;
-        console.log("[CLIENT] inputElement.id: ", inputElement.id, "; Input Value: ", inputValue);
+        console.log("[CLIENT] getInputValue(event) inputElement.id: ", inputElement.id, "; Input Value: ", inputValue);
+        try {
+            const result = await fetch("http://localhost:" + PORT.toString() + "/terminalInput", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    terminalInput: inputValue
+                })
+            });
+            const data = await result.json();
+            console.log("[CLIENT] getInputValue(event) Response From Server At Port {" + PORT.toString() + "} Data:", data);
+        } catch (error) {
+            console.log("[CLIENT] getInputValue(event) Request Failed: ", error);
+        };
         inputElement.value = "";
     };
 };
@@ -175,9 +190,9 @@ async function executeCode() {
             })
         });
         const data = await result.json();
-        console.log("[CLIENT] Response From Server At Port {" + PORT.toString() + "} Data:", data);
+        console.log("[CLIENT] executeCode() Response From Server At Port {" + PORT.toString() + "} Data:", data);
     } catch (error) {
-        console.log("[CLIENT] Request Failed:", error);
+        console.log("[CLIENT] executeCode() Request Failed:", error);
     };
 };
 
