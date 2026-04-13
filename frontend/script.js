@@ -1,4 +1,4 @@
-/* UPDATE VERSION [14] */
+/* UPDATE VERSION [15] */
 
 /*
 ==================================================
@@ -145,29 +145,6 @@ function darkTheme() {
     documentation.style.border = "1px solid " + darkThemeColor1;
     documentation.style.color = darkThemeColor1;
 };
-async function getInputValue(event) {
-    if (event.key == "Enter") {
-        const inputElement = event.target;
-        const inputValue = inputElement.value;
-        console.log("[CLIENT] getInputValue(event) inputElement.id: ", inputElement.id, "; Input Value: ", inputValue);
-        try {
-            const result = await fetch("http://localhost:" + PORT.toString() + "/terminalInput", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    terminalInput: inputValue
-                })
-            });
-            const data = await result.json();
-            console.log("[CLIENT] getInputValue(event) Response From Server At Port {" + PORT.toString() + "} Data:", data);
-        } catch (error) {
-            console.log("[CLIENT] getInputValue(event) Request Failed: ", error);
-        };
-        inputElement.value = "";
-    };
-};
 function codeDocumentation() {
     let maxLines = 20;
     let documentationText = "";
@@ -177,8 +154,9 @@ function codeDocumentation() {
     return documentationText;
 };
 async function executeCode() {
-    let code = textEditor.value;
-    console.log("[CLIENT] Execute Code! code:\n", code);
+    let clientCode = textEditor.value;
+    let clientInput = terminalInput.value;
+    console.log("[CLIENT] Execute Code! code:\n", clientCode);
     try {
         const result = await fetch("http://localhost:" + PORT.toString() + "/execute", {
             method: "POST",
@@ -186,7 +164,8 @@ async function executeCode() {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                clientCode: code
+                clientCode: clientCode,
+                clientInput: clientInput,
             })
         });
         const data = await result.json();
@@ -206,7 +185,6 @@ textEditor.addEventListener("scroll", syncScroll);
 textEditor.addEventListener("keydown", addTabToTextEditor);
 lightThemeButton.addEventListener("click", lightTheme);
 darkThemeButton.addEventListener("click", darkTheme);
-terminalInput.addEventListener("keydown", getInputValue);
 runCodeButton.addEventListener("click", executeCode);
 
 /*
