@@ -1,4 +1,4 @@
-/* UPDATE VERSION [15] */
+/* UPDATE VERSION [16] */
 
 /*
 ==================================================
@@ -169,6 +169,9 @@ async function executeCode() {
             })
         });
         const data = await result.json();
+        if (data.output != null) {
+            terminal.value = data.output;
+        };
         console.log("[CLIENT] executeCode() Response From Server At Port {" + PORT.toString() + "} Data:", data);
     } catch (error) {
         console.log("[CLIENT] executeCode() Request Failed:", error);

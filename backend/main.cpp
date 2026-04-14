@@ -1,4 +1,4 @@
-/* UPDATE VERSION [15] */
+/* UPDATE VERSION [16] */
 
 /*
 ==================================================
@@ -16,11 +16,15 @@ using json = nlohmann::json;
 
 /*
 Sample Code Input:
-output("[SYSTEM MESSAGE] Program Start!");
-integer x;
-input(x);
-output(x);
-output("[SYSTEM MESSAGE] Program Terminated!");
+
+!This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
+!This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
+!This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
+
+!This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
+!This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
+!This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
+
 */
 
 /*
@@ -49,6 +53,7 @@ int main()
         responseJSON["body"] = requestBody;
 
 
+
         /*
         ==================================================
         CONTINUE HERE!
@@ -63,11 +68,17 @@ int main()
             std::cout << "[SERVER] " << tokensVec[index] << std::endl;
         };
         std::cout << "[SERVER] tokensVec Size: " << tokensVec.size() << std::endl;
-
-        //PASS THE TOKENS INTO THE PARSER TO VALIDATE SYNTAX!!!
-        Parser parser;
-        //IN THE PARSER.H CREATE AN ABSTRACT SYNTAX TREE (AST)!!!
-
+        if (tokensVec.size() == 0)
+        {
+            std::cout << "[SERVER] No Code To Execute!" << std::endl;
+            std::string output = "[SYSTEM MESSAGE] No Code To Execute!";
+            responseJSON["output"] = output;
+        }
+        else
+        {
+            Parser parser(tokensVec);
+            parser.parse();
+        };
         /*
         ==================================================
         CONTINUE HERE!
