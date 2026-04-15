@@ -1,4 +1,4 @@
-/* UPDATE VERSION [16] */
+/* UPDATE VERSION [17] */
 
 :root {
     --title-font-size: 60px;
@@ -109,7 +109,7 @@ button:hover {
     overflow-y: auto;
     overflow-x: auto;
     white-space: pre;
-    max-height: var(--text-editor-height);
+    max-height: var(--standard-height);
     font-size: var(--standard-font-size);
     border: var(--standard-border-size) var(--standard-border-style) var(--standard-color1);
 }

@@ -1,4 +1,4 @@
-/* UPDATE VERSION [16] */
+/* UPDATE VERSION [17] */
 
 /*
 ==================================================
@@ -21,10 +21,17 @@ Sample Code Input:
 !This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
 !This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
 
+output("[SYSTEM MESSAGE] Program Start!");
+output("Hello World!");
+output("ABCDEFGHIJKLMNOPQRSTUVWXYZ, abcdefghijklmnopqrstuvwxyz");
+
 !This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
 !This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
 !This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
 
+output("1234567890 !@#$%^&*()_+=-[]\{}|;':?><,./");
+output("\"Hello darkness my old friend...\"");
+output("[SYSTEM MESSAGE] Program Terminated...");
 */
 
 /*

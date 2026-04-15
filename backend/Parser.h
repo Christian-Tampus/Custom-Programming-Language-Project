@@ -1,4 +1,4 @@
-/* UPDATE VERSION [16] */
+/* UPDATE VERSION [17] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -18,6 +18,7 @@ Command Enums
 */
 enum Command
 {
+    C_NONE,
     C_COMMENT,
     C_OUTPUT,
     C_INPUT
@@ -31,6 +32,8 @@ Abstract Syntax Tree (AST) Node Struct
 struct ASTNode
 {
     Command command;
+    std::vector<ASTNode*> childASTNodesVec;
+    std::string comment;
 };
 
 /*
@@ -41,15 +44,16 @@ Class Declaration
 class Parser
 {
     private:
-        bool validSyntax;
         ASTNode* root;
+        ASTNode* currentASTNode;
         std::vector<std::string> tokensVec;
     public:
         Parser();
         Parser(std::vector<std::string> tokensVec);
+        ~Parser();
         void insertTokensVec(std::vector<std::string> tokensVec);
         void parse();
-        void buildAST();
+        void buildAST(std::string codeLine, Command commandType, ASTNode* currentASTNode);
 };
 
 /*
@@ -65,7 +69,7 @@ Default Constructor
 */
 Parser::Parser()
 {
-    this->validSyntax = false;
+    this->currentASTNode = nullptr;
     this->root = nullptr;
 };
 
@@ -76,9 +80,23 @@ Parser(std::vector<std::string> tokensVec) Constructor
 */
 Parser::Parser(std::vector<std::string> tokensVec)
 {
-    this->validSyntax = false;
     this->root = nullptr;
+    this->currentASTNode = nullptr;
     this->tokensVec = tokensVec;
+};
+
+/*
+==================================================
+Default Constructor
+==================================================
+*/
+Parser::~Parser()
+{
+    delete this->root;
+    this->root = nullptr;
+    delete this->currentASTNode;
+    this->currentASTNode = nullptr;
+    this->tokensVec.clear();
 };
 
 /*
@@ -104,25 +122,34 @@ void Parser::parse()
         std::cout << "[PARSER] No Code To Parse!" << std::endl;
         return;
     };
-    bool isCodeValidSyntax = true;
     for (int index = 0; index < this->tokensVec.size(); index++)
     {
         std::cout << "[PARSER] Line[" << index + 1 << "]: " << this->tokensVec[index] << std::endl;
         std::string currentCodeLine = this->tokensVec[index];
         if (currentCodeLine.length() > 0)
         {
+            Command commandType = C_NONE;
             if (currentCodeLine[0] == '!')
             {
                 std::cout << "[PARSER] Command: COMMENT" << std::endl;
-                /*
-                ==================================================
-                CREATE buildASTNode() FUNCTION TO BUILD NEW AST NODE!
-                ==================================================
-                */
+                commandType = C_COMMENT;
+                this->buildAST(currentCodeLine, commandType, this->currentASTNode);
+            }
+            else if (false) //IMPLEMENT output();
+            {
+                //IMPLEMENT output();
+            }
+            else
+            {
+                std::cout << "[PARSER] Invalid Syntax At Line[" << index + 1 << "]!" << std::endl;
+                break;
             };
+        }
+        else
+        {
+            std::cout << "[PARSER] Line[" << index + 1 << "] Is A Blank Line!" << std::endl;
         };
     };
-    this->validSyntax = isCodeValidSyntax;
     return;
 };
 
@@ -131,20 +158,26 @@ void Parser::parse()
 Builds The Abstract Syntax Tree (AST)
 ==================================================
 */
-void Parser::buildAST()
+void Parser::buildAST(std::string codeLine, Command commandType, ASTNode* currentASTNode)
 {
-    if (this->validSyntax == false)
+    std::cout << "[PARSER] Code Has Valid Syntax, Building AST Node..." << std::endl;
+    ASTNode* newASTNode = new ASTNode;
+    newASTNode->command = commandType;
+    if (commandType == C_COMMENT)
     {
-        std::cout << "[PARSER] Code Has Invalid Syntax, Unable To Build AST!" << std::endl;
-        return;
+        newASTNode->comment = codeLine;
     };
-    std::cout << "[PARSER] Code Has Valid Syntax, Building AST..." << std::endl;
-    /*
-    ==================================================
-    ADD AST BUILD LOGIC HERE!!!
-    ==================================================
-    */
-    std::cout << "[PARSER] AST Successfully Built!" << std::endl;
+    if (currentASTNode == nullptr && this->root == nullptr)
+    {
+        this->root = newASTNode;
+        this->currentASTNode = newASTNode;
+    }
+    else if (currentASTNode != nullptr)
+    {
+        this->currentASTNode->childASTNodesVec.push_back(newASTNode);
+        this->currentASTNode = newASTNode;
+    };
+    std::cout << "[PARSER] Built AST Node Successfully!" << std::endl;
     return;
 };
 

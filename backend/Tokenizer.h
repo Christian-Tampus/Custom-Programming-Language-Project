@@ -1,4 +1,4 @@
-/* UPDATE VERSION [16] */
+/* UPDATE VERSION [17] */
 
 #ifndef H_TOKENIZER
 #define H_TOKENIZER
@@ -26,6 +26,7 @@ class Tokenizer
     public:
         Tokenizer();
         Tokenizer(std::string code);
+        ~Tokenizer();
         void tokenize();
         void insertCode(std::string code);
         std::vector<std::string> getTokens();
@@ -56,6 +57,17 @@ Tokenizer::Tokenizer(std::string code)
 {
     this->code = code;
     std::cout << "[TOKENIZER] code:\n" << code << std::endl;
+};
+
+/*
+==================================================
+Destructor
+==================================================
+*/
+Tokenizer::~Tokenizer()
+{
+    this->code = "";
+    this->tokensVec.clear();
 };
 
 /*
