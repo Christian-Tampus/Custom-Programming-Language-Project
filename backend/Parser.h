@@ -1,4 +1,4 @@
-/* UPDATE VERSION [17] */
+/* UPDATE VERSION [18] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -34,6 +34,7 @@ struct ASTNode
     Command command;
     std::vector<ASTNode*> childASTNodesVec;
     std::string comment;
+    std::vector<std::string> outputsVec;
 };
 
 /*
@@ -126,28 +127,57 @@ void Parser::parse()
     {
         std::cout << "[PARSER] Line[" << index + 1 << "]: " << this->tokensVec[index] << std::endl;
         std::string currentCodeLine = this->tokensVec[index];
+        bool hasInvalidSyntax = false;
         if (currentCodeLine.length() > 0)
         {
             Command commandType = C_NONE;
-            if (currentCodeLine[0] == '!')
+            for (int index2 = 0; index2 < currentCodeLine.length(); index2++)
             {
-                std::cout << "[PARSER] Command: COMMENT" << std::endl;
-                commandType = C_COMMENT;
-                this->buildAST(currentCodeLine, commandType, this->currentASTNode);
-            }
-            else if (false) //IMPLEMENT output();
-            {
-                //IMPLEMENT output();
-            }
-            else
-            {
-                std::cout << "[PARSER] Invalid Syntax At Line[" << index + 1 << "]!" << std::endl;
-                break;
+                if (currentCodeLine[index2] != ' ')
+                {
+                    if (currentCodeLine[index2] == '!')
+                    {
+                        std::cout << "[PARSER] Command: COMMENT" << std::endl;
+                        commandType = C_COMMENT;
+                        this->buildAST(currentCodeLine, commandType, this->currentASTNode);
+                        break;
+                    }
+                    else
+                    {
+                        if (index2 + 7 < currentCodeLine.length())
+                        {
+                            std::string outputString = currentCodeLine.substr(index2, 7);
+                            if (outputString == "output(")
+                            {
+                                std::cout << "[PARSER] Command: OUTPUT" << std::endl;
+                                commandType = C_OUTPUT;
+                                this->buildAST(currentCodeLine, commandType, this->currentASTNode);
+                            }
+                            else
+                            {
+                                hasInvalidSyntax = true;
+                            };
+                        }
+                        else
+                        {
+                            hasInvalidSyntax = true;
+                        };
+                        if (hasInvalidSyntax)
+                        {
+                            std::cout << "[PARSER] Invalid Syntax At Line[" << index + 1 << "]!" << std::endl;
+                        };
+                        break;
+                    };
+                };
             };
         }
         else
         {
             std::cout << "[PARSER] Line[" << index + 1 << "] Is A Blank Line!" << std::endl;
+        };
+        if (hasInvalidSyntax)
+        {
+            break;
         };
     };
     return;
@@ -160,12 +190,45 @@ Builds The Abstract Syntax Tree (AST)
 */
 void Parser::buildAST(std::string codeLine, Command commandType, ASTNode* currentASTNode)
 {
-    std::cout << "[PARSER] Code Has Valid Syntax, Building AST Node..." << std::endl;
+    std::cout << "[PARSER] Attempting To Building AST Node..." << std::endl;
     ASTNode* newASTNode = new ASTNode;
     newASTNode->command = commandType;
     if (commandType == C_COMMENT)
     {
         newASTNode->comment = codeLine;
+    }
+    else if (commandType == C_OUTPUT)
+    {
+        bool takeParameters = false;
+        for (int index = 0; index < codeLine.length(); index++)
+        {
+            std::cout << "codeLine[index]: " << codeLine[index] << std::endl;
+            if (codeLine[index] != ' ')
+            {
+                if (takeParameters == false && index + 7 < codeLine.length())
+                {
+                    std::string outputString = codeLine.substr(index, 7);
+                    if (outputString == "output(")
+                    {
+                        takeParameters = true;
+                        index += 6;
+                    };
+                }
+                else if (takeParameters == true && codeLine[index] == '"')
+                {
+                    int index2 = index + 1;
+                    std::string parameterString = "";
+                    while (codeLine[index2] != '"' || codeLine[index2 - 1] == '\\')
+                    {
+                        parameterString += codeLine[index2];
+                        index2++;
+                    };
+                    newASTNode->outputsVec.push_back(parameterString);
+                    std::cout << "parameterString: " << parameterString << std::endl;
+                    index += parameterString.length() + 1;
+                };
+            };
+        };
     };
     if (currentASTNode == nullptr && this->root == nullptr)
     {
