@@ -1,4 +1,4 @@
-/* UPDATE VERSION [18] */
+/* UPDATE VERSION [19] */
 
 /*
 ==================================================
@@ -18,20 +18,26 @@ using json = nlohmann::json;
 Sample Code Input:
 
 !This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
- !This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
-  !This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
+
+!This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
+!This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
+
+!This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
+!This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
+!This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
 
 output("[SYSTEM MESSAGE] Program Start!");
- output( "String1" );
-  output(   "String 2"," String 3", "String 4 " ," String 5 " , "   String 6   "   ,   "   String7   "   );
 
-   !This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
-    !This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
-     !This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
+output("String 1");
+output(" String 2");
 
-   output( "\"THIS SHOULD SUPPORT ESCAPE CHARACTER FOR QUOTES & ANY CHARACTER TO RIGHT OF ESCAPE CHARACTER\"");
-    output("ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 1234567890!@#$%^&*()-=+_[]\|}{;'":/.,<>?"}" );
-     output(   "[SYSTEM MESSAGE] Program Terminated..."   );
+output("String 3 ");
+output(" String 4 ");
+output("   String 5   ");
+
+output("   abcdefghijklmnopqrstuvwxyz   ABCDEFGHIJKLMNOPQRSTUVWXYZ   1234567890   !@#$%^&*()-=_+\|]}[{;'/.,:"?><"}]   ");
+
+output("[SYSTEM MESSAGE] Program Terminated...");
 
 */
 
