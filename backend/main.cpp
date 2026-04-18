@@ -1,4 +1,4 @@
-/* UPDATE VERSION [19] */
+/* UPDATE VERSION [20] */
 
 /*
 ==================================================
@@ -92,6 +92,31 @@ int main()
         {
             Parser parser(tokensVec);
             parser.parse();
+            if (parser.isParsedAndASTBuiltSuccessfully())
+            {
+                std::cout << "[SERVER] Now Interpreting The Code..." << std::endl;
+                Interpreter interpreter;
+                if (interpreter.interpret(parser.getASTNodeRoot()))
+                {
+                    std::cout << "[SERVER] Interpreter Successfully Interpreted The Code!" << std::endl;
+                    std::vector<std::string> terminalOutputVec = interpreter.getTerminalOutputVec();
+                    for (int index = 0; index < terminalOutputVec.size(); index++)
+                    {
+                        std::cout << "[SERVER] terminalOutputVec[" << index << "]:" << terminalOutputVec[index] << std::endl; 
+                    };
+
+
+
+                    /*
+                    ==================================================
+                    RETURN TERMINAL OUTPUT VEC TO script.js & DISPLAY IT TO STANDARD OUTPUT TERMINAL IN index.html!
+                    ==================================================
+                    */
+
+
+
+                };
+            };
         };
         /*
         ==================================================
