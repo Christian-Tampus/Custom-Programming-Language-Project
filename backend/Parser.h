@@ -1,4 +1,4 @@
-/* UPDATE VERSION [20] */
+/* UPDATE VERSION [21] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -24,7 +24,17 @@ enum Command
     C_NONE,
     C_COMMENT,
     C_OUTPUT,
-    C_INPUT
+    C_INPUT,
+    C_INTEGER,
+    C_DECIMAL,
+    C_CHARACTER,
+    C_BOOLEAN,
+    C_STRING,
+    C_CONSTANT_INTEGER,
+    C_CONSTANT_DECIMAL,
+    C_CONSTANT_CHARACTER,
+    C_CONSTANT_BOOLEAN,
+    C_CONSTANT_STRING,
 };
 
 /*
@@ -39,6 +49,12 @@ struct ASTNode
     std::string comment;
     std::string output;
     int branchIndex;
+    int integer;
+    double decimal;
+    char character;
+    bool boolean;
+    std::string string;
+    bool isConstant;
 };
 
 /*
@@ -53,12 +69,14 @@ class Parser
         ASTNode* currentASTNode;
         std::vector<std::string> tokensVec;
         bool parsedSuccessfully;
+        std::string errorString;
     public:
         Parser();
         Parser(std::vector<std::string> tokensVec);
         ~Parser();
         void insertTokensVec(std::vector<std::string> tokensVec);
         std::string trimString(std::string inputString);
+        std::string getErrorString();
         void parse();
         bool buildAST(std::string codeLine, Command commandType, ASTNode* currentASTNode);
         bool isParsedAndASTBuiltSuccessfully();
@@ -81,6 +99,7 @@ Parser::Parser()
     this->currentASTNode = nullptr;
     this->root = nullptr;
     this->parsedSuccessfully = false;
+    this->errorString = "";
 };
 
 /*
@@ -94,6 +113,7 @@ Parser::Parser(std::vector<std::string> tokensVec)
     this->currentASTNode = nullptr;
     this->tokensVec = tokensVec;
     this->parsedSuccessfully = false;
+    this->errorString = "";
 };
 
 /*
@@ -115,6 +135,7 @@ Parser::~Parser()
     this->currentASTNode = nullptr;
     this->tokensVec.clear();
     this->parsedSuccessfully = false;
+    this->errorString = "";
 };
 
 /*
@@ -147,6 +168,16 @@ std::string Parser::trimString(std::string inputString)
 
 /*
 ==================================================
+Returns errorString
+==================================================
+*/
+std::string Parser::getErrorString()
+{
+    return this->errorString;
+};
+
+/*
+==================================================
 Inserts tokensVec Into Class
 ==================================================
 */
@@ -163,6 +194,7 @@ void Parser::parse()
         std::cout << "[PARSER] Line[" << index + 1 << "]: " << this->tokensVec[index] << std::endl;
         std::string currentCodeLine = this->trimString(this->tokensVec[index]);
         bool hasInvalidSyntax = true;
+        int syntaxErrorLine = 0;
         if (currentCodeLine.length() > 0)
         {
             Command commandType = C_NONE;
@@ -174,24 +206,98 @@ void Parser::parse()
                 if (buildASTSuccessfully)
                 {
                     hasInvalidSyntax = false;
+                }
+                else
+                {
+                    syntaxErrorLine = index + 1;
                 };
             }
             else
             {
+                bool commandFound = false;
                 std::string commandString = "";
                 for (int index2 = 0; index2 < currentCodeLine.length(); index2++)
                 {
                     commandString += currentCodeLine[index2];
                     if (commandString == "output")
                     {
+                        commandFound = true;
                         std::cout << "[PARSER] Command: OUTPUT" << std::endl;
                         commandType = C_OUTPUT;
                         bool buildASTSuccessfully = this->buildAST(currentCodeLine, commandType, this->currentASTNode);
                         if (buildASTSuccessfully)
                         {
                             hasInvalidSyntax = false;
+                        }
+                        else
+                        {
+                            syntaxErrorLine = index + 1;
                         };
+                    }
+                    else if (commandString == "INTEGER")
+                    {
+                        commandFound = true;
+                        std::cout << "[PARSER] Command: INTEGER" << std::endl;
+                        commandType = C_INTEGER;
+                    }
+                    else if (commandString == "DECIMAL")
+                    {
+                        commandFound = true;
+                        std::cout << "[PARSER] Command: DECIMAL" << std::endl;
+                        commandType = C_DECIMAL;
+                    }
+                    else if (commandString == "CHARACTER")
+                    {
+                        commandFound = true;
+                        std::cout << "[PARSER] Command: CHARACTER" << std::endl;
+                        commandType = C_CHARACTER;
+                    }
+                    else if (commandString == "BOOLEAN")
+                    {
+                        commandFound = true;
+                        std::cout << "[PARSER] Command: BOOLEAN" << std::endl;
+                        commandType = C_BOOLEAN;
+                    }
+                    else if (commandString == "STRING")
+                    {
+                        commandFound = true;
+                        std::cout << "[PARSER] Command: STRING" << std::endl;
+                        commandType = C_STRING;
+                    }
+                    else if (commandString == "CONSTANT INTEGER")
+                    {
+                        commandFound = true;
+                        std::cout << "[PARSER] Command: CONSTANT INTEGER" << std::endl;
+                        commandType = C_CONSTANT_INTEGER;
+                    }
+                    else if (commandString == "CONSTANT DECIMAL")
+                    {
+                        commandFound = true;
+                        std::cout << "[PARSER] Command: CONSTANT DECIMAL" << std::endl;
+                        commandType = C_CONSTANT_DECIMAL;
+                    }
+                    else if (commandString == "CONSTANT CHARACTER")
+                    {
+                        commandFound = true;
+                        std::cout << "[PARSER] Command: CONSTANT CHARACTER" << std::endl;
+                        commandType = C_CONSTANT_CHARACTER;
+                    }
+                    else if (commandString == "CONSTANT BOOLEAN")
+                    {
+                        commandFound = true;
+                        std::cout << "[PARSER] Command: CONSTANT BOOLEAN" << std::endl;
+                        commandType = C_CONSTANT_BOOLEAN;
+                    }
+                    else if (commandString == "CONSTANT STRING")
+                    {
+                        commandFound = true;
+                        std::cout << "[PARSER] Command: CONSTANT STRING" << std::endl;
+                        commandType = C_CONSTANT_STRING;
                     };
+                };
+                if (!commandFound)
+                {
+                    syntaxErrorLine = index + 1;
                 };
             };
         }
@@ -202,6 +308,7 @@ void Parser::parse()
         };
         if (hasInvalidSyntax)
         {
+            this->errorString = "[SYSTEM ERROR] Syntax Error At Line[" + std::to_string(syntaxErrorLine) + "]! Code:" + this->tokensVec[index];
             parsedSuccessfully = false;
             break;
         };

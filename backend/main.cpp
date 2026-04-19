@@ -1,4 +1,4 @@
-/* UPDATE VERSION [20] */
+/* UPDATE VERSION [21] */
 
 /*
 ==================================================
@@ -35,7 +35,38 @@ output("String 3 ");
 output(" String 4 ");
 output("   String 5   ");
 
+!REMEMBER TO MAKE TERMINAL CSS HAVE SCROLLBARS!
 output("   abcdefghijklmnopqrstuvwxyz   ABCDEFGHIJKLMNOPQRSTUVWXYZ   1234567890   !@#$%^&*()-=_+\|]}[{;'/.,:"?><"}]   ");
+
+INTEGER _integer1;
+INTEGER integer2;
+
+CONSTANT INTEGER _integer3;
+CONSTANT INTEGER _integer4;
+
+DECIMAL _decimal1;
+DECIMAL decimal2;
+
+CONSTANT DECIMAL _decimal3;
+CONSTANT DECIMAL decimal4;
+
+CHARACTER _character1;
+CHARACTER character2;
+
+CONSTANT CHARACTER _character3;
+CONSTANT CHARACTER character4;
+
+BOOLEAN _boolean1;
+BOOLEAN boolean2;
+
+CONSTANT BOOLEAN _boolean3;
+CONSTANT BOOLEAN boolean4;
+
+STRING _string1;
+STRING string2;
+
+CONSTANT BOOLEAN _boolean5;
+CONSTANT BOOLEAN boolean6;
 
 output("[SYSTEM MESSAGE] Program Terminated...");
 
@@ -65,14 +96,7 @@ int main()
         json responseJSON;
         responseJSON["status"] = "recieved";
         responseJSON["body"] = requestBody;
-
-
-
-        /*
-        ==================================================
-        CONTINUE HERE!
-        ==================================================
-        */
+        std::string output = "";
         Tokenizer tokenizer(requestBody["clientCode"]);
         tokenizer.tokenize();
         std::vector<std::string> tokensVec = tokenizer.getTokens();
@@ -85,8 +109,7 @@ int main()
         if (tokensVec.size() == 0)
         {
             std::cout << "[SERVER] No Code To Execute!" << std::endl;
-            std::string output = "[SYSTEM MESSAGE] No Code To Execute!";
-            responseJSON["output"] = output;
+            output = "[SYSTEM ERROR] No Code To Execute!";
         }
         else
         {
@@ -103,29 +126,22 @@ int main()
                     for (int index = 0; index < terminalOutputVec.size(); index++)
                     {
                         std::cout << "[SERVER] terminalOutputVec[" << index << "]:" << terminalOutputVec[index] << std::endl; 
+                        output += terminalOutputVec[index] + "\n";
                     };
-
-
-
-                    /*
-                    ==================================================
-                    RETURN TERMINAL OUTPUT VEC TO script.js & DISPLAY IT TO STANDARD OUTPUT TERMINAL IN index.html!
-                    ==================================================
-                    */
-
-
-
+                }
+                else
+                {
+                    std::cout << "[SERVER ERROR] HANDLE INTERPRETER ERROR OUTPUT HERE!" << std::endl;
                 };
+            }
+            else
+            {
+                std::string errorString = parser.getErrorString();
+                std::cout << errorString << std::endl;
+                output = errorString;
             };
         };
-        /*
-        ==================================================
-        CONTINUE HERE!
-        ==================================================
-        */
-
-
-
+        responseJSON["output"] = output;
         response.set_content(responseJSON.dump(), "application/json");
         std::cout << "[SERVER] /execute POST Completed Successfully!" << std::endl;
     });

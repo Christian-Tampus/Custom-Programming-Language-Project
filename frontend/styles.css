@@ -1,4 +1,4 @@
-/* UPDATE VERSION [20] */
+/* UPDATE VERSION [21] */
 
 :root {
     --title-font-size: 60px;
@@ -127,6 +127,8 @@ button:hover {
     padding: var(--standard-padding);
     border: calc(var(--standard-border-size) * 3) var(--standard-border-style) var(--standard-color1);
     border-radius: var(--standard-border-radius);
+    overflow-y: auto;
+    overflow-x: auto;
 }
 
 #terminal {
