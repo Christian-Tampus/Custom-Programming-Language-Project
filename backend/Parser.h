@@ -1,4 +1,4 @@
-/* UPDATE VERSION [22] */
+/* UPDATE VERSION [23] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -79,7 +79,9 @@ class Parser
         std::string getErrorString();
         void parse();
         bool buildAST(std::string codeLine, Command commandType, ASTNode* currentASTNode);
+        void buildASTHelper(std::string currentCodeLine, Command commandType, ASTNode* currentASTNode, bool& hasInvalidSyntax, int& syntaxErrorLine, int index);
         bool isParsedAndASTBuiltSuccessfully();
+        bool isValidVariableName(std::string variableName);
         ASTNode* getASTNodeRoot();
 };
 
@@ -202,15 +204,7 @@ void Parser::parse()
             {
                 std::cout << "[PARSER] Command: COMMENT" << std::endl;
                 commandType = C_COMMENT;
-                bool buildASTSuccessfully = this->buildAST(currentCodeLine, commandType, this->currentASTNode);
-                if (buildASTSuccessfully)
-                {
-                    hasInvalidSyntax = false;
-                }
-                else
-                {
-                    syntaxErrorLine = index + 1;
-                };
+                this->buildASTHelper(currentCodeLine, commandType, this->currentASTNode, hasInvalidSyntax, syntaxErrorLine, index);
             }
             else
             {
@@ -224,15 +218,7 @@ void Parser::parse()
                         commandFound = true;
                         std::cout << "[PARSER] Command: OUTPUT" << std::endl;
                         commandType = C_OUTPUT;
-                        bool buildASTSuccessfully = this->buildAST(currentCodeLine, commandType, this->currentASTNode);
-                        if (buildASTSuccessfully)
-                        {
-                            hasInvalidSyntax = false;
-                        }
-                        else
-                        {
-                            syntaxErrorLine = index + 1;
-                        };
+                        
                     }
                     else if (commandString == "INTEGER")
                     {
@@ -294,6 +280,7 @@ void Parser::parse()
                         std::cout << "[PARSER] Command: CONSTANT STRING" << std::endl;
                         commandType = C_CONSTANT_STRING;
                     };
+                    this->buildASTHelper(currentCodeLine, commandType, this->currentASTNode, hasInvalidSyntax, syntaxErrorLine, index);
                 };
                 if (!commandFound)
                 {
@@ -359,6 +346,50 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
         };
         newASTNode->output = outputString;
         std::cout << "[PARSER] Output:" << newASTNode->output << std::endl;
+    }
+    else if (commandType == C_INTEGER)
+    {
+        //INTEGER _integer1;
+        //INTEGER integer2;
+        //INTEGER _integer3 = 100;
+        std::istringstream ss(codeLine);
+        std::vector<std::string> integerTokensVec;
+        std::string integerToken;
+        while (ss >> integerToken)
+        {
+            integerTokensVec.push_back(integerToken);
+        };
+        if (integerTokensVec.size() == 2)
+        {
+            if (integerTokensVec[0] == "INTEGER" && this->isValidVariableName(integerTokensVec[1]))
+            {
+
+            };
+        }
+        else if (integerTokensVec.size() == 4)
+        {
+
+        }
+        else
+        {
+            return false;
+        };
+    }
+    else if (commandType == C_DECIMAL)
+    {
+
+    }
+    else if (commandType == C_CHARACTER)
+    {
+
+    }
+    else if (commandType == C_BOOLEAN)
+    {
+
+    }
+    else if (commandType == C_STRING)
+    {
+
     };
     if (currentASTNode == nullptr && this->root == nullptr)
     {
@@ -378,12 +409,55 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
 
 /*
 ==================================================
+buildASTHelper function
+==================================================
+*/
+void Parser::buildASTHelper(std::string currentCodeLine, Command commandType, ASTNode* currentASTNode, bool& hasInvalidSyntax, int& syntaxErrorLine, int index)
+{
+    if (commandType != C_NONE)
+    {
+        bool buildASTSuccessfully = this->buildAST(currentCodeLine, commandType, this->currentASTNode);
+        if (buildASTSuccessfully)
+        {
+            hasInvalidSyntax = false;
+        }
+        else
+        {
+            syntaxErrorLine = index + 1;
+        };
+    };
+    return;
+};
+
+/*
+==================================================
 Returns If Parser Parsed The Code & Built The Abstract Syntax Tree (AST) Successfully
 ==================================================
 */
 bool Parser::isParsedAndASTBuiltSuccessfully()
 {
     return this->parsedSuccessfully;
+};
+
+/*
+==================================================
+Returns if the variableName input is in valid form
+==================================================
+*/
+bool Parser::isValidVariableName(std::string variableName)
+{
+    if (variableName.length() <= 1 || variableName[variableName.length() - 1] != ';' || variableName[0] != '_' && !std::isalpha(variableName[0]))
+    {
+        return false;
+    };
+    for (int index = 1; index < variableName.length() - 1; index++)
+    {
+        if (variableName[index] != '_' && !std::isalnum(variableName[index]))
+        {
+            return false;
+        };
+    };
+    return true;
 };
 
 /*
