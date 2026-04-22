@@ -1,4 +1,4 @@
-/* UPDATE VERSION [23] */
+/* UPDATE VERSION [24] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -14,6 +14,21 @@ using namespace std;
 
 /*
 ==================================================
+Variable Struct
+==================================================
+*/
+struct VariableStruct
+{
+    int integer;
+    double decimal;
+    char character;
+    bool boolean;
+    std::string string;
+    bool isConstant;
+};
+
+/*
+==================================================
 Class Declaration
 ==================================================
 */
@@ -22,6 +37,7 @@ class Interpreter
     private:
         bool interpretationSuccess;
         std::vector<std::string> terminalOutputVec;
+        std::vector<VariableStruct> variableStructVec;
     public:
         Interpreter();
         ~Interpreter();
@@ -54,6 +70,7 @@ Interpreter::~Interpreter()
 {
     this->interpretationSuccess = false;
     this->terminalOutputVec.clear();
+    this->variableStructVec.clear();
 };
 
 /*

@@ -1,4 +1,4 @@
-/* UPDATE VERSION [23] */
+/* UPDATE VERSION [24] */
 
 #ifndef H_TOKENIZER
 #define H_TOKENIZER

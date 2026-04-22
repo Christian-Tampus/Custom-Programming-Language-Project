@@ -1,4 +1,4 @@
-/* UPDATE VERSION [23] */
+/* UPDATE VERSION [24] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -55,6 +55,8 @@ struct ASTNode
     bool boolean;
     std::string string;
     bool isConstant;
+    std::string variableMemoryAddress;
+    std::string variableType;
 };
 
 /*
@@ -65,6 +67,7 @@ Class Declaration
 class Parser
 {
     private:
+        int variableMemoryAddressCounter;
         ASTNode* root;
         ASTNode* currentASTNode;
         std::vector<std::string> tokensVec;
@@ -83,6 +86,8 @@ class Parser
         bool isParsedAndASTBuiltSuccessfully();
         bool isValidVariableName(std::string variableName);
         ASTNode* getASTNodeRoot();
+        void assignVariableMemoryAddress(ASTNode* astNode, std::string variableType);
+        bool isValidVariableAssignment(std::string variableAssignment, std::string variableType);
 };
 
 /*
@@ -98,6 +103,7 @@ Default Constructor
 */
 Parser::Parser()
 {
+    this->variableMemoryAddressCounter = 0;
     this->currentASTNode = nullptr;
     this->root = nullptr;
     this->parsedSuccessfully = false;
@@ -111,6 +117,7 @@ Parser(std::vector<std::string> tokensVec) Constructor
 */
 Parser::Parser(std::vector<std::string> tokensVec)
 {
+    this->variableMemoryAddressCounter = 0;
     this->root = nullptr;
     this->currentASTNode = nullptr;
     this->tokensVec = tokensVec;
@@ -125,6 +132,7 @@ Destructor
 */
 Parser::~Parser()
 {
+    this->variableMemoryAddressCounter = -1;
     if (this->root != nullptr)
     {
         delete this->root;
@@ -363,12 +371,25 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
         {
             if (integerTokensVec[0] == "INTEGER" && this->isValidVariableName(integerTokensVec[1]))
             {
-
+                this->assignVariableMemoryAddress(newASTNode, "INTEGER");
+            }
+            else
+            {
+                return false;
             };
         }
         else if (integerTokensVec.size() == 4)
         {
-
+            if (integerTokensVec[0] == "INTEGER" && this->isValidVariableName(integerTokensVec[1]) && integerTokensVec[2] == "=" && this->isValidVariableAssignment(integerTokensVec[3], "INTEGER"))
+            {
+                this->assignVariableMemoryAddress(newASTNode, "INTEGER");
+                std::string extractVariable = extractVariable.substr(0, extractVariable.length() - 1);
+                newASTNode->integer = std::stoi(extractVariable);
+            }
+            else
+            {
+                return false;
+            };
         }
         else
         {
@@ -377,7 +398,7 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
     }
     else if (commandType == C_DECIMAL)
     {
-
+        
     }
     else if (commandType == C_CHARACTER)
     {
@@ -470,4 +491,48 @@ ASTNode* Parser::getASTNodeRoot()
     return this->root;
 };
 
+/*
+==================================================
+Assigns a variable memory address to an ASTNode
+==================================================
+*/
+void Parser::assignVariableMemoryAddress(ASTNode* astNode, std::string variableType)
+{
+    astNode->variableType = variableType;
+    astNode->variableMemoryAddress = this->variableMemoryAddressCounter;
+    this->variableMemoryAddressCounter++;
+    return;
+};
+
+/*
+==================================================
+Validates if a variable assignment is valid
+==================================================
+*/
+bool Parser::isValidVariableAssignment(std::string variableAssignment, std::string variableType)
+{
+    if (variableAssignment.length() <= 1)
+    {
+        return false;
+    };
+    if (variableAssignment[variableAssignment.length() - 1] != ';')
+    {
+        return false;
+    };
+    if (variableType == "INTEGER")
+    {
+        for (int index = 0; index < variableAssignment.length() - 1; index++)
+        {
+            if (!std::isdigit(variableAssignment[index]))
+            {
+                return false;
+            };
+        };
+    }
+    else
+    {
+        return false;
+    };
+    return true;
+};
 #endif
