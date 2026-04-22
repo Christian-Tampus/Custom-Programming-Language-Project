@@ -1,4 +1,4 @@
-/* UPDATE VERSION [24] */
+/* UPDATE VERSION [25] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -88,6 +88,7 @@ class Parser
         ASTNode* getASTNodeRoot();
         void assignVariableMemoryAddress(ASTNode* astNode, std::string variableType);
         bool isValidVariableAssignment(std::string variableAssignment, std::string variableType);
+        std::vector<std::string> splitCodeLine(std::string codeLine);
 };
 
 /*
@@ -360,13 +361,7 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
         //INTEGER _integer1;
         //INTEGER integer2;
         //INTEGER _integer3 = 100;
-        std::istringstream ss(codeLine);
-        std::vector<std::string> integerTokensVec;
-        std::string integerToken;
-        while (ss >> integerToken)
-        {
-            integerTokensVec.push_back(integerToken);
-        };
+        std::vector<std::string> integerTokensVec = this->splitCodeLine(codeLine);
         if (integerTokensVec.size() == 2)
         {
             if (integerTokensVec[0] == "INTEGER" && this->isValidVariableName(integerTokensVec[1]))
@@ -383,7 +378,7 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
             if (integerTokensVec[0] == "INTEGER" && this->isValidVariableName(integerTokensVec[1]) && integerTokensVec[2] == "=" && this->isValidVariableAssignment(integerTokensVec[3], "INTEGER"))
             {
                 this->assignVariableMemoryAddress(newASTNode, "INTEGER");
-                std::string extractVariable = extractVariable.substr(0, extractVariable.length() - 1);
+                std::string extractVariable = integerTokensVec[3].substr(0, integerTokensVec[3].length() - 1);
                 newASTNode->integer = std::stoi(extractVariable);
             }
             else
@@ -398,11 +393,72 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
     }
     else if (commandType == C_DECIMAL)
     {
-        
+        //DECIMAL _decimal1;
+        //DECIMAL decimal2;
+        //DECIMAL _integer3 = 100.0;
+        std::vector<std::string> decimalTokensVec = this->splitCodeLine(codeLine);
+        if (decimalTokensVec.size() == 2)
+        {
+            if (decimalTokensVec[0] == "DECIMAL" && this->isValidVariableName(decimalTokensVec[1]))
+            {
+                this->assignVariableMemoryAddress(newASTNode, "DECIMAL");
+            }
+            else
+            {
+                return false;
+            };
+        }
+        else if (decimalTokensVec.size() == 4)
+        {
+            if (decimalTokensVec[0] == "DECIMAL" && this->isValidVariableName(decimalTokensVec[1]) && decimalTokensVec[2] == "=" && this->isValidVariableAssignment(decimalTokensVec[3], "DECIMAL"))
+            {
+                this->assignVariableMemoryAddress(newASTNode, "DECIMAL");
+                std::string extractVariable = decimalTokensVec[3].substr(0, decimalTokensVec[3].length() - 1);
+                newASTNode->decimal = std::stod(extractVariable);
+            }
+            else
+            {
+                return false;
+            };
+        }
+        else
+        {
+            return false;
+        };
     }
     else if (commandType == C_CHARACTER)
     {
-
+        //CHARACTER _character1;
+        //CHARACTER character2;
+        //CHARACTER _character3 = 'A';
+        std::vector<std::string> characterTokensVec = this->splitCodeLine(codeLine);
+        if (characterTokensVec.size() == 2)
+        {
+            if (characterTokensVec[0] == "CHARACTER" && this->isValidVariableName(characterTokensVec[1]))
+            {
+                this->assignVariableMemoryAddress(newASTNode, "CHARACTER");
+            }
+            else
+            {
+                return false;
+            };
+        }
+        else if (characterTokensVec.size() == 4)
+        {
+            if (characterTokensVec[0] == "CHARACTER" && this->isValidVariableName(characterTokensVec[1]) && characterTokensVec[2] == "=" && this->isValidVariableAssignment(characterTokensVec[3], "CHARACTER"))
+            {
+                this->assignVariableMemoryAddress(newASTNode, "CHARACTER");
+                newASTNode->character = characterTokensVec[3][1];
+            }
+            else
+            {
+                return false;
+            };
+        }
+        else
+        {
+            return false;
+        };
     }
     else if (commandType == C_BOOLEAN)
     {
@@ -529,10 +585,61 @@ bool Parser::isValidVariableAssignment(std::string variableAssignment, std::stri
             };
         };
     }
+    else if (variableType == "DECIMAL")
+    {
+        int decimalCount = 0;
+        for (int index = 0; index < variableAssignment.length() - 1; index++)
+        {
+            if (variableAssignment[index] == '.')
+            {
+                decimalCount++;
+                if (variableAssignment[index] == '.' && variableAssignment[variableAssignment.length() - 1] == ';')
+                {
+                    return false;
+                };
+            }
+            else if (!std::isdigit(variableAssignment[index]))
+            {
+                return false;
+            };
+        };
+        if (decimalCount != 1)
+        {
+            return false;
+        };
+    }
+    else if (variableType == "CHARACTER")
+    {
+        if (variableAssignment[0] == '\'' && variableAssignment[variableAssignment.length() - 2] == '\'' && variableAssignment.length() == 4)
+        {
+            return true;   
+        }
+        else
+        {
+            return false;
+        };
+    }
     else
     {
         return false;
     };
     return true;
+};
+
+/*
+==================================================
+Split codeLine by blank spaces
+==================================================
+*/
+std::vector<std::string> Parser::splitCodeLine(std::string codeLine)
+{
+    std::istringstream ss(codeLine);
+    std::vector<std::string> tokensVec;
+    std::string token;
+    while (ss >> token)
+    {
+        tokensVec.push_back(token);
+    };
+    return tokensVec;
 };
 #endif
