@@ -1,4 +1,4 @@
-/* UPDATE VERSION [25] */
+/* UPDATE VERSION [26] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -462,11 +462,74 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
     }
     else if (commandType == C_BOOLEAN)
     {
-
+        //BOOLEAN _boolean1;
+        //BOOLEAN boolean2;
+        //BOOLEAN _boolean3 = TRUE;
+        //BOOLEAN boolean4 = FALSE;
+        std::vector<std::string> booleanTokensVec = this->splitCodeLine(codeLine);
+        if (booleanTokensVec.size() == 2)
+        {
+            if (booleanTokensVec[0] == "BOOLEAN" && this->isValidVariableName(booleanTokensVec[1]))
+            {
+                this->assignVariableMemoryAddress(newASTNode, "BOOLEAN");
+            }
+            else
+            {
+                return false;
+            };
+        }
+        else if (booleanTokensVec.size() == 4)
+        {
+            if (booleanTokensVec[0] == "BOOLEAN" && this->isValidVariableName(booleanTokensVec[1]) && booleanTokensVec[2] == "=" && this->isValidVariableAssignment(booleanTokensVec[3],  "BOOLEAN"))
+            {
+                this->assignVariableMemoryAddress(newASTNode, "BOOLEAN");
+                newASTNode->boolean = (booleanTokensVec[3] == "TRUE;" ? true : false);
+            }
+            else
+            {
+                return false;
+            };
+        }
+        else
+        {
+            return false;
+        };
     }
     else if (commandType == C_STRING)
     {
-
+        //STRING _string1;
+        //STRING string2;
+        //STRING _string3 = "SAMPLE STRING";
+        //STRING string4 = "SAMPLE STRING";
+        std::vector<std::string> stringTokensVec = this->splitCodeLine(codeLine);
+        if (stringTokensVec.size() == 2)
+        {
+            if (stringTokensVec[0] == "STRING" && this->isValidVariableName(stringTokensVec[1]))
+            {
+                this->assignVariableMemoryAddress(newASTNode, "STRING");
+            }
+            else
+            {
+                return false;
+            };
+        }
+        else if (stringTokensVec.size() == 4)
+        {
+            if (stringTokensVec[0] == "STRING" && this->isValidVariableName(stringTokensVec[1]) && stringTokensVec[2] == "=" && this->isValidVariableAssignment(stringTokensVec[3], "STRING"))
+            {
+                this->assignVariableMemoryAddress(newASTNode, "STRING");
+                std::string extractVariable = stringTokensVec[3].substr(1, stringTokensVec[3].length() - 3);
+                newASTNode->string = extractVariable;
+            }
+            else
+            {
+                return false;
+            };
+        }
+        else
+        {
+            return false;
+        };
     };
     if (currentASTNode == nullptr && this->root == nullptr)
     {
@@ -615,6 +678,24 @@ bool Parser::isValidVariableAssignment(std::string variableAssignment, std::stri
             return true;   
         }
         else
+        {
+            return false;
+        };
+    }
+    else if (variableType == "BOOLEAN")
+    {
+        if (variableAssignment == "TRUE;" || variableAssignment == "FALSE;")
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        };
+    }
+    else if (variableType == "CHARACTER")
+    {
+        if (variableAssignment[0] != '"' || variableAssignment[variableAssignment.length() - 2] != '"')
         {
             return false;
         };

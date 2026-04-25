@@ -1,4 +1,4 @@
-/* UPDATE VERSION [25] */
+/* UPDATE VERSION [26] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
