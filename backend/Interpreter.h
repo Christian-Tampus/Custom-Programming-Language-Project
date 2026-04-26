@@ -1,4 +1,4 @@
-/* UPDATE VERSION [27] */
+/* UPDATE VERSION [28] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -9,6 +9,7 @@ Dependencies
 ==================================================
 */
 #include <iostream>
+#include <map>
 #include "Parser.h"
 using namespace std;
 
@@ -38,7 +39,7 @@ class Interpreter
     private:
         bool interpretationSuccess;
         std::vector<std::string> terminalOutputVec;
-        std::vector<VariableStruct> variableStructVec;
+        std::map<int, VariableStruct*> variableStructMap;
         VariableStruct* createNewVariableStruct(int integer, double decimal, char character, bool boolean, std::string string, bool isConstant, int variableMemoryAddress);
     public:
         Interpreter();
@@ -72,7 +73,7 @@ Interpreter::~Interpreter()
 {
     this->interpretationSuccess = false;
     this->terminalOutputVec.clear();
-    this->variableStructVec.clear();
+    this->variableStructMap.clear();
 };
 
 /*
@@ -110,7 +111,8 @@ bool Interpreter::interpret(ASTNode* root)
             }
             else if (currentASTNode->command == C_INTEGER || currentASTNode->command == C_DECIMAL || currentASTNode->command == C_CHARACTER || currentASTNode->command == C_BOOLEAN || currentASTNode->command == C_STRING)
             {
-                VariableStruct* newVariableStruct = this->createNewVariableStruct(newVariableStruct->integer, newVariableStruct->decimal, newVariableStruct->character, newVariableStruct->boolean, newVariableStruct->string, newVariableStruct->isConstant, newVariableStruct->variableMemoryAddress);
+                VariableStruct* newVariableStruct = this->createNewVariableStruct(currentASTNode->integer, currentASTNode->decimal, currentASTNode->character, currentASTNode->boolean, currentASTNode->string, currentASTNode->isConstant, currentASTNode->variableMemoryAddress);
+                this->variableStructMap[newVariableStruct->variableMemoryAddress] = newVariableStruct;
             }
             else
             {
@@ -138,7 +140,7 @@ bool Interpreter::interpret(ASTNode* root)
 Returns terminalOutputVec
 ==================================================
 */
-VariableStruct* createNewVariableStruct(int integer, double decimal, char character, bool boolean, std::string string, bool isConstant, int variableMemoryAddress)
+VariableStruct* Interpreter::createNewVariableStruct(int integer, double decimal, char character, bool boolean, std::string string, bool isConstant, int variableMemoryAddress)
 {
     VariableStruct* newVariableStruct = new VariableStruct;
     newVariableStruct->integer = integer;
@@ -148,6 +150,15 @@ VariableStruct* createNewVariableStruct(int integer, double decimal, char charac
     newVariableStruct->string = string;
     newVariableStruct->isConstant = isConstant;
     newVariableStruct->variableMemoryAddress = variableMemoryAddress;
+    std::cout << "[INTERPRETER] ==================================================" << std::endl;
+    std::cout << "[INTERPRETER] newVariableStruct->integer: " << newVariableStruct->integer << std::endl;
+    std::cout << "[INTERPRETER] newVariableStruct->decimal: " << newVariableStruct->decimal << std::endl;
+    std::cout << "[INTERPRETER] newVariableStruct->character: " << newVariableStruct->character << std::endl;
+    std::cout << "[INTERPRETER] newVariableStruct->boolean: " << newVariableStruct->boolean << std::endl;
+    std::cout << "[INTERPRETER] newVariableStruct->string: " << newVariableStruct->string << std::endl;
+    std::cout << "[INTERPRETER] newVariableStruct->isConstant: " << newVariableStruct->isConstant << std::endl;
+    std::cout << "[INTERPRETER] newVariableStruct->variableMemoryAddress: " << newVariableStruct->variableMemoryAddress << std::endl;
+    std::cout << "[INTERPRETER] ==================================================" << std::endl;
     return newVariableStruct;
 };
 
