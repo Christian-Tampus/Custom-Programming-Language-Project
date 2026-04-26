@@ -1,4 +1,4 @@
-/* UPDATE VERSION [26] */
+/* UPDATE VERSION [27] */
 
 /*
 ==================================================
@@ -16,6 +16,21 @@ using json = nlohmann::json;
 
 /*
 Sample Code Input:
+
+INTEGER _integer1;
+INTEGER integer2;
+
+DECIMAL _decimal1;
+DECIMAL decimal2;
+
+CHARACTER _character1;
+CHARACTER character2;
+
+BOOLEAN _boolean1;
+BOOLEAN boolean2;
+
+STRING _string1;
+STRING string2;
 
 !This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
 

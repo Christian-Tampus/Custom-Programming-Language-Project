@@ -1,4 +1,4 @@
-/* UPDATE VERSION [26] */
+/* UPDATE VERSION [27] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -25,6 +25,7 @@ struct VariableStruct
     bool boolean;
     std::string string;
     bool isConstant;
+    int variableMemoryAddress;
 };
 
 /*
@@ -38,6 +39,7 @@ class Interpreter
         bool interpretationSuccess;
         std::vector<std::string> terminalOutputVec;
         std::vector<VariableStruct> variableStructVec;
+        VariableStruct* createNewVariableStruct(int integer, double decimal, char character, bool boolean, std::string string, bool isConstant, int variableMemoryAddress);
     public:
         Interpreter();
         ~Interpreter();
@@ -77,9 +79,6 @@ Interpreter::~Interpreter()
 ==================================================
 Interprets The Abstract Syntax Tree (AST)
 ==================================================
-
-
-
 struct ASTNode
 {
     Command command;
@@ -87,10 +86,15 @@ struct ASTNode
     std::string comment;
     std::string output;
     int branchIndex;
+    int integer;
+    double decimal;
+    char character;
+    bool boolean;
+    std::string string;
+    bool isConstant;
+    int variableMemoryAddress;
+    std::string variableType;
 };
-
-
-
 */
 bool Interpreter::interpret(ASTNode* root)
 {
@@ -103,6 +107,10 @@ bool Interpreter::interpret(ASTNode* root)
             if (currentASTNode->command == C_OUTPUT)
             {
                 this->terminalOutputVec.push_back(currentASTNode->output);
+            }
+            else if (currentASTNode->command == C_INTEGER || currentASTNode->command == C_DECIMAL || currentASTNode->command == C_CHARACTER || currentASTNode->command == C_BOOLEAN || currentASTNode->command == C_STRING)
+            {
+                VariableStruct* newVariableStruct = this->createNewVariableStruct(newVariableStruct->integer, newVariableStruct->decimal, newVariableStruct->character, newVariableStruct->boolean, newVariableStruct->string, newVariableStruct->isConstant, newVariableStruct->variableMemoryAddress);
             }
             else
             {
@@ -123,6 +131,24 @@ bool Interpreter::interpret(ASTNode* root)
     };
     this->interpretationSuccess = newInterpretationSuccess;
     return this->interpretationSuccess;
+};
+
+/*
+==================================================
+Returns terminalOutputVec
+==================================================
+*/
+VariableStruct* createNewVariableStruct(int integer, double decimal, char character, bool boolean, std::string string, bool isConstant, int variableMemoryAddress)
+{
+    VariableStruct* newVariableStruct = new VariableStruct;
+    newVariableStruct->integer = integer;
+    newVariableStruct->decimal = decimal;
+    newVariableStruct->character = character;
+    newVariableStruct->boolean = boolean;
+    newVariableStruct->string = string;
+    newVariableStruct->isConstant = isConstant;
+    newVariableStruct->variableMemoryAddress = variableMemoryAddress;
+    return newVariableStruct;
 };
 
 /*

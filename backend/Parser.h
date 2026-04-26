@@ -1,4 +1,4 @@
-/* UPDATE VERSION [26] */
+/* UPDATE VERSION [27] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -55,7 +55,7 @@ struct ASTNode
     bool boolean;
     std::string string;
     bool isConstant;
-    std::string variableMemoryAddress;
+    int variableMemoryAddress;
     std::string variableType;
 };
 
@@ -73,14 +73,8 @@ class Parser
         std::vector<std::string> tokensVec;
         bool parsedSuccessfully;
         std::string errorString;
-    public:
-        Parser();
-        Parser(std::vector<std::string> tokensVec);
-        ~Parser();
-        void insertTokensVec(std::vector<std::string> tokensVec);
         std::string trimString(std::string inputString);
         std::string getErrorString();
-        void parse();
         bool buildAST(std::string codeLine, Command commandType, ASTNode* currentASTNode);
         void buildASTHelper(std::string currentCodeLine, Command commandType, ASTNode* currentASTNode, bool& hasInvalidSyntax, int& syntaxErrorLine, int index);
         bool isParsedAndASTBuiltSuccessfully();
@@ -89,6 +83,13 @@ class Parser
         void assignVariableMemoryAddress(ASTNode* astNode, std::string variableType);
         bool isValidVariableAssignment(std::string variableAssignment, std::string variableType);
         std::vector<std::string> splitCodeLine(std::string codeLine);
+    public:
+        Parser();
+        Parser(std::vector<std::string> tokensVec);
+        ~Parser();
+        void insertTokensVec(std::vector<std::string> tokensVec);
+        void parse();
+
 };
 
 /*
@@ -227,7 +228,6 @@ void Parser::parse()
                         commandFound = true;
                         std::cout << "[PARSER] Command: OUTPUT" << std::endl;
                         commandType = C_OUTPUT;
-                        
                     }
                     else if (commandString == "INTEGER")
                     {
@@ -289,7 +289,11 @@ void Parser::parse()
                         std::cout << "[PARSER] Command: CONSTANT STRING" << std::endl;
                         commandType = C_CONSTANT_STRING;
                     };
-                    this->buildASTHelper(currentCodeLine, commandType, this->currentASTNode, hasInvalidSyntax, syntaxErrorLine, index);
+                    if (commandFound)
+                    {
+                        this->buildASTHelper(currentCodeLine, commandType, this->currentASTNode, hasInvalidSyntax, syntaxErrorLine, index);
+                        break;
+                    };
                 };
                 if (!commandFound)
                 {
@@ -642,7 +646,15 @@ bool Parser::isValidVariableAssignment(std::string variableAssignment, std::stri
     {
         for (int index = 0; index < variableAssignment.length() - 1; index++)
         {
-            if (!std::isdigit(variableAssignment[index]))
+            if (variableAssignment[index] == '-' && index != 0)
+            {
+                return false;
+            }
+            else if (variableAssignment[index] == '-' && index == 0)
+            {
+                continue;
+            }
+            else if (!std::isdigit(variableAssignment[index]))
             {
                 return false;
             };
@@ -653,10 +665,22 @@ bool Parser::isValidVariableAssignment(std::string variableAssignment, std::stri
         int decimalCount = 0;
         for (int index = 0; index < variableAssignment.length() - 1; index++)
         {
-            if (variableAssignment[index] == '.')
+            if (variableAssignment[index] == '-' && index != 0)
+            {
+                return false;
+            }
+            else if (variableAssignment[index] == '-' && index == 0)
+            {
+                continue;
+            }
+            else if (variableAssignment[index] == '.')
             {
                 decimalCount++;
-                if (variableAssignment[index] == '.' && variableAssignment[variableAssignment.length() - 1] == ';')
+                if (index + 1 < variableAssignment.length() - 1 && !std::isdigit(variableAssignment[index + 1]))
+                {
+                    return false;
+                }
+                else if (index + 1 >= variableAssignment.length() - 1)
                 {
                     return false;
                 };
@@ -693,7 +717,7 @@ bool Parser::isValidVariableAssignment(std::string variableAssignment, std::stri
             return false;
         };
     }
-    else if (variableType == "CHARACTER")
+    else if (variableType == "STRING")
     {
         if (variableAssignment[0] != '"' || variableAssignment[variableAssignment.length() - 2] != '"')
         {
