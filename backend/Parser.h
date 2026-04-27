@@ -1,4 +1,4 @@
-/* UPDATE VERSION [28] */
+/* UPDATE VERSION [29] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -337,8 +337,6 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
     }
     else if (commandType == C_OUTPUT)
     {
-        //output(""); <- 11 Length()
-        //output(X); <- 10 Length()
         if (codeLine.length() < 10)
         {
             return false;
@@ -361,9 +359,6 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
     }
     else if (commandType == C_INTEGER)
     {
-        //INTEGER _integer1;
-        //INTEGER integer2;
-        //INTEGER _integer3 = 100;
         std::vector<std::string> integerTokensVec = this->splitCodeLine(codeLine);
         for (int index = 0; index < integerTokensVec.size(); index++)
         {
@@ -400,9 +395,6 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
     }
     else if (commandType == C_DECIMAL)
     {
-        //DECIMAL _decimal1;
-        //DECIMAL decimal2;
-        //DECIMAL _integer3 = 100.0;
         std::vector<std::string> decimalTokensVec = this->splitCodeLine(codeLine);
         if (decimalTokensVec.size() == 2)
         {
@@ -435,9 +427,6 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
     }
     else if (commandType == C_CHARACTER)
     {
-        //CHARACTER _character1;
-        //CHARACTER character2;
-        //CHARACTER _character3 = 'A';
         std::vector<std::string> characterTokensVec = this->splitCodeLine(codeLine);
         if (characterTokensVec.size() == 2)
         {
@@ -462,6 +451,18 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                 return false;
             };
         }
+        else if (characterTokensVec.size() == 5)
+        {
+            if (characterTokensVec[0] == "CHARACTER" && this->isValidVariableName(characterTokensVec[1], true) && characterTokensVec[2] == "=" && characterTokensVec[3] == "'" && characterTokensVec[4] == "';")
+            {
+                this->assignVariableMemoryAddress(newASTNode, "CHARACTER");
+                newASTNode->character = ' ';
+            }
+            else
+            {
+                return false;
+            };
+        }
         else
         {
             return false;
@@ -469,10 +470,6 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
     }
     else if (commandType == C_BOOLEAN)
     {
-        //BOOLEAN _boolean1;
-        //BOOLEAN boolean2;
-        //BOOLEAN _boolean3 = TRUE;
-        //BOOLEAN boolean4 = FALSE;
         std::vector<std::string> booleanTokensVec = this->splitCodeLine(codeLine);
         if (booleanTokensVec.size() == 2)
         {
@@ -504,10 +501,6 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
     }
     else if (commandType == C_STRING)
     {
-        //STRING _string1;
-        //STRING string2;
-        //STRING _string3 = "SAMPLE STRING";
-        //STRING string4 = "SAMPLE STRING";
         std::vector<std::string> stringTokensVec = this->splitCodeLine(codeLine);
         if (stringTokensVec.size() == 2)
         {
@@ -520,13 +513,24 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                 return false;
             };
         }
-        else if (stringTokensVec.size() == 4)
+        else if (stringTokensVec.size() >= 4)
         {
-            if (stringTokensVec[0] == "STRING" && this->isValidVariableName(stringTokensVec[1], true) && stringTokensVec[2] == "=" && this->isValidVariableAssignment(stringTokensVec[3], "STRING"))
+            if (stringTokensVec[0] == "STRING" && this->isValidVariableName(stringTokensVec[1], true) && stringTokensVec[2] == "=")
             {
-                this->assignVariableMemoryAddress(newASTNode, "STRING");
-                std::string extractVariable = stringTokensVec[3].substr(1, stringTokensVec[3].length() - 3);
-                newASTNode->string = extractVariable;
+                std::string fullString = stringTokensVec[3];
+                for (int index = 4; index < stringTokensVec.size(); index++)
+                {
+                    fullString += " " + stringTokensVec[index];
+                };
+                if (fullString[0] == '"' && fullString[fullString.length() - 2] == '"' && fullString[fullString.length() - 1] == ';')
+                {
+                    this->assignVariableMemoryAddress(newASTNode, "STRING");
+                    newASTNode->string = fullString.substr(1, fullString.size() - 3);
+                }
+                else
+                {
+                    return false;
+                };
             }
             else
             {

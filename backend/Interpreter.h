@@ -1,4 +1,4 @@
-/* UPDATE VERSION [28] */
+/* UPDATE VERSION [29] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -151,13 +151,13 @@ VariableStruct* Interpreter::createNewVariableStruct(int integer, double decimal
     newVariableStruct->isConstant = isConstant;
     newVariableStruct->variableMemoryAddress = variableMemoryAddress;
     std::cout << "[INTERPRETER] ==================================================" << std::endl;
-    std::cout << "[INTERPRETER] newVariableStruct->integer: " << newVariableStruct->integer << std::endl;
-    std::cout << "[INTERPRETER] newVariableStruct->decimal: " << newVariableStruct->decimal << std::endl;
-    std::cout << "[INTERPRETER] newVariableStruct->character: " << newVariableStruct->character << std::endl;
-    std::cout << "[INTERPRETER] newVariableStruct->boolean: " << newVariableStruct->boolean << std::endl;
-    std::cout << "[INTERPRETER] newVariableStruct->string: " << newVariableStruct->string << std::endl;
-    std::cout << "[INTERPRETER] newVariableStruct->isConstant: " << newVariableStruct->isConstant << std::endl;
-    std::cout << "[INTERPRETER] newVariableStruct->variableMemoryAddress: " << newVariableStruct->variableMemoryAddress << std::endl;
+    std::cout << "[INTERPRETER] newVariableStruct->integer:" << newVariableStruct->integer << std::endl;
+    std::cout << "[INTERPRETER] newVariableStruct->decimal:" << newVariableStruct->decimal << std::endl;
+    std::cout << "[INTERPRETER] newVariableStruct->character:" << newVariableStruct->character << std::endl;
+    std::cout << "[INTERPRETER] newVariableStruct->boolean:" << newVariableStruct->boolean << std::endl;
+    std::cout << "[INTERPRETER] newVariableStruct->string:" << newVariableStruct->string << std::endl;
+    std::cout << "[INTERPRETER] newVariableStruct->isConstant:" << newVariableStruct->isConstant << std::endl;
+    std::cout << "[INTERPRETER] newVariableStruct->variableMemoryAddress:" << newVariableStruct->variableMemoryAddress << std::endl;
     std::cout << "[INTERPRETER] ==================================================" << std::endl;
     return newVariableStruct;
 };

@@ -1,4 +1,4 @@
-/* UPDATE VERSION [28] */
+/* UPDATE VERSION [29] */
 
 /*
 ==================================================
@@ -20,17 +20,32 @@ Sample Code Input:
 INTEGER _integer1;
 INTEGER integer2;
 
+INTEGER _integer3 = 123;
+INTEGER integer4 = -456;
+
 DECIMAL _decimal1;
 DECIMAL decimal2;
+
+DECIMAL _decimal3 = 789.123;
+DECIMAL decimal4 = -101112.4567890;
 
 CHARACTER _character1;
 CHARACTER character2;
 
+CHARACTER _character3 = 'A';
+CHARACTER character4 = ' ';
+
 BOOLEAN _boolean1;
 BOOLEAN boolean2;
 
+BOOLEAN _boolean3 = TRUE;
+BOOLEAN boolean4 = FALSE;
+
 STRING _string1;
 STRING string2;
+
+STRING _string3 = "SAMPLE STRING 1";
+STRING string4 = " SAMPLE STRING 2 ";
 
 !This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
 
