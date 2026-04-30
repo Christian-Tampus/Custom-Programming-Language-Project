@@ -1,4 +1,4 @@
-/* UPDATE VERSION [30] */
+/* UPDATE VERSION [31] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -44,22 +44,22 @@ Abstract Syntax Tree (AST) Node Struct
 */
 struct ASTNode
 {
-    Command command;
+    Command command = C_NONE;
     std::vector<ASTNode*> childASTNodesVec;
-    std::string comment;
-    std::string output;
-    std::string outputVariable;
-    bool outputUsesVariable;
-    int branchIndex;
-    int integer;
-    double decimal;
-    char character;
-    bool boolean;
-    std::string string;
-    bool isConstant;
-    int variableMemoryAddress;
-    std::string variableType;
-    std::string variableName;
+    std::string comment = "";
+    std::string output = "";
+    std::string outputVariable = "";
+    bool outputUsesVariable = false;
+    int branchIndex = 0;
+    int integer = 0;
+    double decimal = 0.0;
+    char character = ' ';
+    bool boolean = false;
+    std::string string = "";
+    bool isConstant = false;
+    int variableMemoryAddress = -1;
+    std::string variableType = "";
+    std::string variableName = "";
 };
 
 /*
@@ -370,10 +370,6 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
     else if (commandType == C_INTEGER)
     {
         std::vector<std::string> integerTokensVec = this->splitCodeLine(codeLine);
-        for (int index = 0; index < integerTokensVec.size(); index++)
-        {
-            std::cout << "integerTokensVec: " << integerTokensVec[index] << std::endl;
-        };
         if (integerTokensVec.size() == 2)
         {
             if (integerTokensVec[0] == "INTEGER" && this->isValidVariableName(integerTokensVec[1], false))
@@ -460,7 +456,9 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
             {
                 this->assignVariableMemoryAddress(newASTNode, "CHARACTER");
                 newASTNode->variableName = characterTokensVec[1];
+                std::cout << "characterTokensVec[3][1]: " << characterTokensVec[3][1] << std::endl;
                 newASTNode->character = characterTokensVec[3][1];
+                std::cout << "newASTNode->character:" << newASTNode->character << std::endl;
             }
             else
             {
@@ -562,7 +560,30 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
         {
             return false;
         };
-    };
+    }
+    else if (commandType == C_CONSTANT_INTEGER)
+    {
+        std::vector<std::string> constantIntegerTokensVec = this->splitCodeLine(codeLine);
+        if (constantIntegerTokensVec.size() == 5)
+        {
+            if (constantIntegerTokensVec[0] == "CONSTANT" && constantIntegerTokensVec[1] == "INTEGER" && this->isValidVariableName(constantIntegerTokensVec[2], true) && constantIntegerTokensVec[3] == "=" && this->isValidVariableAssignment(constantIntegerTokensVec[4], "CONSTANT INTEGER"))
+            {
+                this->assignVariableMemoryAddress(newASTNode, "CONSTANT INTEGER");
+                newASTNode->variableName = constantIntegerTokensVec[2];
+                std::string extractVariable = constantIntegerTokensVec[4].substr(0, constantIntegerTokensVec[4].length() - 1);
+                newASTNode->integer = std::stoi(extractVariable);
+                newASTNode->isConstant = true;
+            }
+            else
+            {
+                return false;
+            };
+        }
+        else
+        {
+            return false;
+        };
+    }
     if (currentASTNode == nullptr && this->root == nullptr)
     {
         this->root = newASTNode;
@@ -681,7 +702,7 @@ bool Parser::isValidVariableAssignment(std::string variableAssignment, std::stri
     {
         return false;
     };
-    if (variableType == "INTEGER")
+    if (variableType == "INTEGER" || variableType == "CONSTANT INTEGER")
     {
         for (int index = 0; index < variableAssignment.length() - 1; index++)
         {
@@ -699,7 +720,7 @@ bool Parser::isValidVariableAssignment(std::string variableAssignment, std::stri
             };
         };
     }
-    else if (variableType == "DECIMAL")
+    else if (variableType == "DECIMAL" || variableType == "CONSTANT DECIMAL")
     {
         int decimalCount = 0;
         for (int index = 0; index < variableAssignment.length() - 1; index++)
@@ -734,7 +755,7 @@ bool Parser::isValidVariableAssignment(std::string variableAssignment, std::stri
             return false;
         };
     }
-    else if (variableType == "CHARACTER")
+    else if (variableType == "CHARACTER" || variableType == "CONSTANT CHARACTER")
     {
         if (variableAssignment[0] == '\'' && variableAssignment[variableAssignment.length() - 2] == '\'' && variableAssignment.length() == 4)
         {
@@ -745,7 +766,7 @@ bool Parser::isValidVariableAssignment(std::string variableAssignment, std::stri
             return false;
         };
     }
-    else if (variableType == "BOOLEAN")
+    else if (variableType == "BOOLEAN" || variableType == "CONSTANT BOOLEAN")
     {
         if (variableAssignment == "TRUE;" || variableAssignment == "FALSE;")
         {
@@ -756,7 +777,7 @@ bool Parser::isValidVariableAssignment(std::string variableAssignment, std::stri
             return false;
         };
     }
-    else if (variableType == "STRING")
+    else if (variableType == "STRING" || variableType == "CONSTANT STRING")
     {
         if (variableAssignment[0] != '"' || variableAssignment[variableAssignment.length() - 2] != '"')
         {

@@ -1,4 +1,4 @@
-/* UPDATE VERSION [30] */
+/* UPDATE VERSION [31] */
 
 /*
 ==================================================
@@ -23,11 +23,29 @@ INTEGER integer2;
 INTEGER _integer3 = 123;
 INTEGER integer4 = -456;
 
+output("_integer3:");
+output(_integer3);
+output("integer4:");
+output(integer4);
+
+CONSTANT INTEGER _integer5 = 5000;
+CONSTANT INTEGER integer6 = 6000;
+
+output("_integer5:");
+output(_integer5);
+output("integer6:");
+output(integer6);
+
 DECIMAL _decimal1;
 DECIMAL decimal2;
 
 DECIMAL _decimal3 = 789.123;
 DECIMAL decimal4 = -101112.4567890;
+
+output("_decimal3:");
+output(_decimal3);
+output("decimal4:");
+output(decimal4);
 
 CHARACTER _character1;
 CHARACTER character2;
@@ -35,17 +53,32 @@ CHARACTER character2;
 CHARACTER _character3 = 'A';
 CHARACTER character4 = ' ';
 
+output("_character3:");
+output(_character3);
+output("character4:");
+output(character4);
+
 BOOLEAN _boolean1;
 BOOLEAN boolean2;
 
 BOOLEAN _boolean3 = TRUE;
 BOOLEAN boolean4 = FALSE;
 
+output("_boolean3:");
+output(_boolean3);
+output("boolean4:");
+output(boolean4);
+
 STRING _string1;
 STRING string2;
 
 STRING _string3 = "SAMPLE STRING 1";
 STRING string4 = " SAMPLE STRING 2 ";
+
+output("_string3:");
+output(_string3);
+output("string4:");
+output(string4);
 
 !This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
 

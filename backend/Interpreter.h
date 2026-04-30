@@ -1,4 +1,4 @@
-/* UPDATE VERSION [30] */
+/* UPDATE VERSION [31] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -116,69 +116,34 @@ bool Interpreter::interpret(ASTNode* root)
                     if (this->variablesMap.find(currentASTNode->outputVariable) != this->variablesMap.end())
                     {
                         VariableStruct* currentVariableStruct = this->variableStructMap[this->variablesMap[currentASTNode->outputVariable]];
-                        if (currentVariableStruct->variableType == "INTEGER")
+                        if (currentVariableStruct->variableType == "INTEGER" || currentVariableStruct->variableType == "CONSTANT INTEGER")
                         {
                             this->terminalOutputVec.push_back(std::to_string(currentVariableStruct->integer));
                         }
-                        else if (currentVariableStruct->variableType == "DECIMAL")
+                        else if (currentVariableStruct->variableType == "DECIMAL" || currentVariableStruct->variableType == "CONSTANT DECIMAL")
                         {
                             this->terminalOutputVec.push_back(std::to_string(currentVariableStruct->decimal));
                         }
-                        else if (currentVariableStruct->variableType == "CHARACTER")
+                        else if (currentVariableStruct->variableType == "CHARACTER" || currentVariableStruct->variableType == "CONSTANT CHARACTER")
                         {
-                            this->terminalOutputVec.push_back((currentVariableStruct->character + ""));
+                            std::string characterToString = "";
+                            characterToString += currentVariableStruct->character;
+                            this->terminalOutputVec.push_back(characterToString);
                         }
-                        else if (currentVariableStruct->variableType == "BOOLEAN")
+                        else if (currentVariableStruct->variableType == "BOOLEAN" || currentVariableStruct->variableType == "CONSTANT BOOLEAN")
                         {
                             this->terminalOutputVec.push_back((currentVariableStruct->boolean == true ? "TRUE" : "FALSE"));
                         }
-                        else if (currentVariableStruct->variableType == "STRING")
+                        else if (currentVariableStruct->variableType == "STRING" || currentVariableStruct->variableType == "CONSTANT STRING")
                         {
                             this->terminalOutputVec.push_back(currentVariableStruct->string);
+                        }
+                        else
+                        {
+                            newInterpretationSuccess = false;
+                            currentASTNode = nullptr;
+                            break;
                         };
-
-                        /*
-                        TEST THIS CODE!
-
-                        INTEGER _integer1;
-                        INTEGER integer2;
-
-                        INTEGER _integer3 = 123;
-                        INTEGER integer4 = -456;
-
-                        DECIMAL _decimal1;
-                        DECIMAL decimal2;
-
-                        DECIMAL _decimal3 = 789.123;
-                        DECIMAL decimal4 = -101112.4567890;
-
-                        CHARACTER _character1;
-                        CHARACTER character2;
-
-                        CHARACTER _character3 = 'A';
-                        CHARACTER character4 = ' ';
-
-                        BOOLEAN _boolean1;
-                        BOOLEAN boolean2;
-
-                        BOOLEAN _boolean3 = TRUE;
-                        BOOLEAN boolean4 = FALSE;
-
-                        STRING _string1;
-                        STRING string2;
-
-                        STRING _string3 = "SAMPLE STRING 1";
-                        STRING string4 = " SAMPLE STRING 2 ";
-
-                        output(string4);
-
-                        */
-
-
-
-
-
-
                     }
                     else
                     {
@@ -192,13 +157,13 @@ bool Interpreter::interpret(ASTNode* root)
                     this->terminalOutputVec.push_back(currentASTNode->output);
                 };
             }
-            else if (currentASTNode->command == C_INTEGER || currentASTNode->command == C_DECIMAL || currentASTNode->command == C_CHARACTER || currentASTNode->command == C_BOOLEAN || currentASTNode->command == C_STRING)
+            else if (currentASTNode->command == C_INTEGER || currentASTNode->command == C_DECIMAL || currentASTNode->command == C_CHARACTER || currentASTNode->command == C_BOOLEAN || currentASTNode->command == C_STRING || currentASTNode->command == C_CONSTANT_INTEGER || currentASTNode->command == C_CONSTANT_DECIMAL || currentASTNode->command == C_CONSTANT_CHARACTER || currentASTNode->command == C_CONSTANT_BOOLEAN || currentASTNode->command == C_CONSTANT_STRING)
             {
-                if (this->variableStructMap.find(currentASTNode->variableMemoryAddress) != this->variableStructMap.end())
+                if (this->variableStructMap.find(currentASTNode->variableMemoryAddress) == this->variableStructMap.end())
                 {
                     VariableStruct* newVariableStruct = this->createNewVariableStruct(currentASTNode->integer, currentASTNode->decimal, currentASTNode->character, currentASTNode->boolean, currentASTNode->string, currentASTNode->isConstant, currentASTNode->variableMemoryAddress, currentASTNode->variableType, currentASTNode->variableName);
                     this->variableStructMap[newVariableStruct->variableMemoryAddress] = newVariableStruct;
-                    if (this->variablesMap.find(newVariableStruct->variableName) != this->variablesMap.end())
+                    if (this->variablesMap.find(newVariableStruct->variableName) == this->variablesMap.end())
                     {
                         this->variablesMap[newVariableStruct->variableName] = newVariableStruct->variableMemoryAddress;
                     }
