@@ -1,4 +1,4 @@
-/* UPDATE VERSION [31] */
+/* UPDATE VERSION [32] */
 
 /*
 ==================================================
@@ -15,124 +15,74 @@ using namespace std;
 using json = nlohmann::json;
 
 /*
-Sample Code Input:
+!This Is A Comment, The Language Only Supports Single-Line Comments
 
-INTEGER _integer1;
-INTEGER integer2;
-
-INTEGER _integer3 = 123;
-INTEGER integer4 = -456;
-
-output("_integer3:");
-output(_integer3);
-output("integer4:");
-output(integer4);
-
-CONSTANT INTEGER _integer5 = 5000;
-CONSTANT INTEGER integer6 = 6000;
-
-output("_integer5:");
-output(_integer5);
-output("integer6:");
-output(integer6);
-
-DECIMAL _decimal1;
-DECIMAL decimal2;
-
-DECIMAL _decimal3 = 789.123;
-DECIMAL decimal4 = -101112.4567890;
-
-output("_decimal3:");
-output(_decimal3);
-output("decimal4:");
-output(decimal4);
-
-CHARACTER _character1;
-CHARACTER character2;
-
-CHARACTER _character3 = 'A';
-CHARACTER character4 = ' ';
-
-output("_character3:");
-output(_character3);
-output("character4:");
-output(character4);
-
-BOOLEAN _boolean1;
-BOOLEAN boolean2;
-
-BOOLEAN _boolean3 = TRUE;
-BOOLEAN boolean4 = FALSE;
-
-output("_boolean3:");
-output(_boolean3);
-output("boolean4:");
-output(boolean4);
-
-STRING _string1;
-STRING string2;
-
-STRING _string3 = "SAMPLE STRING 1";
-STRING string4 = " SAMPLE STRING 2 ";
-
-output("_string3:");
-output(_string3);
-output("string4:");
-output(string4);
-
-!This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
-
-!This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
-!This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
-
-!This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
-!This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
-!This Is A Single-Line Comment (This Language Only Has Single-Line Comments)
-
+!Below Is An Example Of output() Using String Literals
 output("[SYSTEM MESSAGE] Program Start!");
+output("");
 
-output("String 1");
-output(" String 2");
+!Below Are The 5 Primitive Data Types (int, double, char, bool, string)
+INTEGER integer1 = 100;
+DECIMAL decimal1 = 12345.67890;
+CHARACTER character1 = '@';
+BOOLEAN boolean1 = TRUE;
+STRING string1 = "Sample String 1";
 
-output("String 3 ");
-output(" String 4 ");
-output("   String 5   ");
+!Below Is An Example Of output() Using Variables
+output("[SYSTEM MESSAGE] Variables:");
+output("[SYSTEM MESSAGE] integer1:");
+output(integer1);
+output("[SYSTEM MESSAGE] decimal1:");
+output(decimal1);
+output("[SYSTEM MESSAGE] character1:");
+output(character1);
+output("[SYSTEM MESSAGE] boolean1:");
+output(boolean1);
+output("[SYSTEM MESSAGE] string1:");
+output(string1);
+output("");
 
-!REMEMBER TO MAKE TERMINAL CSS HAVE SCROLLBARS!
-output("   abcdefghijklmnopqrstuvwxyz   ABCDEFGHIJKLMNOPQRSTUVWXYZ   1234567890   !@#$%^&*()-=_+\|]}[{;'/.,:"?><"}]   ");
+!Below Are The 5 Constant Primitive Data Types (int, double, char, bool, string)
+CONSTANT INTEGER CONSTANT_INTEGER_1 = 999;
+CONSTANT DECIMAL CONSTANT_DECIMAL_1 = 67890.12345;
+CONSTANT CHARACTER CONSTANT_CHARACTER_1 = '#';
+CONSTANT BOOLEAN CONSTANT_BOOLEAN_1 = FALSE;
+CONSTANT STRING CONSTANT_STRING_1 = "Sample Constant String 1";
 
-INTEGER _integer1;
+!Below Is An Example Of output() Using Constants
+output("[SYSTEM MESSAGE] Constants:");
+output("[SYSTEM MESSAGE] CONSTANT_INTEGER_1:");
+output(CONSTANT_INTEGER_1);
+output("[SYSTEM MESSAGE] CONSTANT_DECIMAL_1:");
+output(CONSTANT_DECIMAL_1);
+output("[SYSTEM MESSAGE] CONSTANT_CHARACTER_1:");
+output(CONSTANT_CHARACTER_1);
+output("[SYSTEM MESSAGE] CONSTANT_BOOLEAN_1:");
+output(CONSTANT_BOOLEAN_1);
+output("[SYSTEM MESSAGE] CONSTANT_STRING_1:");
+output(CONSTANT_STRING_1);
+output("");
+
+!Below Is An Example Of The input() Function
 INTEGER integer2;
-
-CONSTANT INTEGER _integer3 = 3; //CONSTANTS MUST BE DECLARED & ASSIGNED!
-CONSTANT INTEGER _integer4 = 4; //CONSTANTS MUST BE DECLARED & ASSIGNED!
-
-DECIMAL _decimal1;
 DECIMAL decimal2;
-
-CONSTANT DECIMAL _decimal3 = 3.3; //CONSTANTS MUST BE DECLARED & ASSIGNED!
-CONSTANT DECIMAL decimal4 = 4.4; //CONSTANTS MUST BE DECLARED & ASSIGNED!
-
-CHARACTER _character1;
 CHARACTER character2;
-
-CONSTANT CHARACTER _character3 = 'C'; //CONSTANTS MUST BE DECLARED & ASSIGNED!
-CONSTANT CHARACTER character4 = 'D'; //CONSTANTS MUST BE DECLARED & ASSIGNED!
-
-BOOLEAN _boolean1;
 BOOLEAN boolean2;
-
-CONSTANT BOOLEAN _boolean3 = TRUE; //CONSTANTS MUST BE DECLARED & ASSIGNED!
-CONSTANT BOOLEAN boolean4 = FALSE; //CONSTANTS MUST BE DECLARED & ASSIGNED!
-
-STRING _string1;
 STRING string2;
 
-CONSTANT STRING _string3 = "STRING 4"; //CONSTANTS MUST BE DECLARED & ASSIGNED!
-CONSTANT STRING string4 = "STRING 4"; //CONSTANTS MUST BE DECLARED & ASSIGNED!
+output("[SYSTEM MESSAGE] Please Input A Valid Integer For integer2:");
+input(integer2);
+output("[SYSTEM MESSAGE] Please Input A Valid Decimal For decimal2:");
+input(decimal2);
+output("[SYSTEM MESSAGE] Please Input A Valid Character For character2:");
+input(character2);
+output("[SYSTEM MESSAGE] Please Input A Valid Boolean For boolean2:");
+input(boolean2);
+output("[SYSTEM MESSAGE] Please Input A Valid String For string2:");
+input(string2);
 
+!Below Is An Example Of output() Using String Literals
 output("[SYSTEM MESSAGE] Program Terminated...");
-
 */
 
 /*

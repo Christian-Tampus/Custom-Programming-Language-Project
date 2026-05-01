@@ -1,4 +1,4 @@
-/* UPDATE VERSION [31] */
+/* UPDATE VERSION [32] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -10,6 +10,7 @@ Dependencies
 */
 #include <iostream>
 #include <map>
+#include <iomanip>
 #include "Parser.h"
 using namespace std;
 
@@ -39,6 +40,7 @@ Class Declaration
 class Interpreter
 {
     private:
+        const int STANDARD_PRECISION = 10;
         bool interpretationSuccess;
         std::vector<std::string> terminalOutputVec;
         std::map<int, VariableStruct*> variableStructMap;
@@ -221,7 +223,7 @@ VariableStruct* Interpreter::createNewVariableStruct(int integer, double decimal
     newVariableStruct->variableName = variableName;
     std::cout << "[INTERPRETER] ==================================================" << std::endl;
     std::cout << "[INTERPRETER] newVariableStruct->integer:" << newVariableStruct->integer << std::endl;
-    std::cout << "[INTERPRETER] newVariableStruct->decimal:" << newVariableStruct->decimal << std::endl;
+    std::cout << "[INTERPRETER] newVariableStruct->decimal:" << std::setprecision(this->STANDARD_PRECISION) << newVariableStruct->decimal << std::endl;
     std::cout << "[INTERPRETER] newVariableStruct->character:" << newVariableStruct->character << std::endl;
     std::cout << "[INTERPRETER] newVariableStruct->boolean:" << newVariableStruct->boolean << std::endl;
     std::cout << "[INTERPRETER] newVariableStruct->string:" << newVariableStruct->string << std::endl;

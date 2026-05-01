@@ -1,4 +1,4 @@
-/* UPDATE VERSION [31] */
+/* UPDATE VERSION [32] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -231,6 +231,12 @@ void Parser::parse()
                         std::cout << "[PARSER] Command: OUTPUT" << std::endl;
                         commandType = C_OUTPUT;
                     }
+                    else if (commandString == "input")
+                    {
+                        commandFound = true;
+                        std::cout << "[PARSER] Command: INPUT" << std::endl;
+                        commandType = C_INPUT;
+                    }
                     else if (commandString == "INTEGER")
                     {
                         commandFound = true;
@@ -367,6 +373,14 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
         newASTNode->output = outputString;
         std::cout << "[PARSER] Output:" << newASTNode->output << std::endl;
     }
+    else if (commandType == C_INPUT)
+    {
+        /*
+        CONTINUE HERE!
+        GET NEXT ITEM INSIDE INPUT BUFFER!
+        CONTINUE HERE!
+        */
+    }
     else if (commandType == C_INTEGER)
     {
         std::vector<std::string> integerTokensVec = this->splitCodeLine(codeLine);
@@ -456,9 +470,7 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
             {
                 this->assignVariableMemoryAddress(newASTNode, "CHARACTER");
                 newASTNode->variableName = characterTokensVec[1];
-                std::cout << "characterTokensVec[3][1]: " << characterTokensVec[3][1] << std::endl;
                 newASTNode->character = characterTokensVec[3][1];
-                std::cout << "newASTNode->character:" << newASTNode->character << std::endl;
             }
             else
             {
@@ -584,6 +596,124 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
             return false;
         };
     }
+    else if (commandType == C_CONSTANT_DECIMAL)
+    {
+        std::vector<std::string> constantDecimalTokensVec = this->splitCodeLine(codeLine);
+        if (constantDecimalTokensVec.size() == 5)
+        {
+            if (constantDecimalTokensVec[0] == "CONSTANT" && constantDecimalTokensVec[1] == "DECIMAL" && this->isValidVariableName(constantDecimalTokensVec[2], true) && constantDecimalTokensVec[3] == "=" && this->isValidVariableAssignment(constantDecimalTokensVec[4], "CONSTANT DECIMAL"))
+            {
+                this->assignVariableMemoryAddress(newASTNode, "CONSTANT DECIMAL");
+                newASTNode->variableName = constantDecimalTokensVec[2];
+                std::string extractVariable = constantDecimalTokensVec[4].substr(0, constantDecimalTokensVec[4].length() - 1);
+                newASTNode->decimal = std::stod(extractVariable);
+                newASTNode->isConstant = true;
+            }
+            else
+            {
+                return false;
+            };
+        }
+        else
+        {
+            return false;
+        };
+    }
+    else if (commandType == C_CONSTANT_CHARACTER)
+    {
+        std::vector<std::string> constantCharacterTokensVec = this->splitCodeLine(codeLine);
+        if (constantCharacterTokensVec.size() == 5)
+        {
+            if (constantCharacterTokensVec[0] == "CONSTANT" && constantCharacterTokensVec[1] == "CHARACTER" && this->isValidVariableName(constantCharacterTokensVec[2], true) && constantCharacterTokensVec[3] == "=" && this->isValidVariableAssignment(constantCharacterTokensVec[4], "CONSTANT CHARACTER"))
+            {
+                this->assignVariableMemoryAddress(newASTNode, "CONSTANT CHARACTER");
+                newASTNode->variableName = constantCharacterTokensVec[2];
+                newASTNode->character = constantCharacterTokensVec[4][1];
+                newASTNode->isConstant = true;
+            }
+            else
+            {
+                return false;
+            };
+        }
+        else if (constantCharacterTokensVec.size() == 6)
+        {
+            if (constantCharacterTokensVec[0] == "CONSTANT" && constantCharacterTokensVec[1] == "CHARACTER" && this->isValidVariableName(constantCharacterTokensVec[2], true) && constantCharacterTokensVec[3] == "=" && constantCharacterTokensVec[4] == "'" && constantCharacterTokensVec[5] == "';")
+            {
+                this->assignVariableMemoryAddress(newASTNode, "CONSTANT CHARACTER");
+                newASTNode->variableName = constantCharacterTokensVec[2];
+                newASTNode->character = ' ';
+                newASTNode->isConstant = true;
+            }
+            else
+            {
+                return false;
+            };
+        }
+        else
+        {
+            return false;
+        };
+    }
+    else if (commandType == C_CONSTANT_BOOLEAN)
+    {
+        std::vector<std::string> constantBooleanTokensVec = this->splitCodeLine(codeLine);
+        if (constantBooleanTokensVec.size() == 5)
+        {
+            if (constantBooleanTokensVec[0] == "CONSTANT" && constantBooleanTokensVec[1] == "BOOLEAN" && this->isValidVariableName(constantBooleanTokensVec[2], true) && constantBooleanTokensVec[3] == "=" && this->isValidVariableAssignment(constantBooleanTokensVec[4], "CONSTANT BOOLEAN"))
+            {
+                this->assignVariableMemoryAddress(newASTNode, "CONSTANT BOOLEAN");
+                newASTNode->variableName = constantBooleanTokensVec[2];
+                newASTNode->boolean = (constantBooleanTokensVec[4] == "TRUE;" ? true: false);
+                newASTNode->isConstant = true;
+            }
+            else
+            {
+                return false;
+            };
+        }
+        else
+        {
+            return false;
+        };
+    }
+    else if (commandType == C_CONSTANT_STRING)
+    {
+        std::vector<std::string> constantStringTokensVector = this->splitCodeLine(codeLine);
+        if (constantStringTokensVector.size() >= 5)
+        {
+            if (constantStringTokensVector[0] == "CONSTANT" && constantStringTokensVector[1] == "STRING" && this->isValidVariableName(constantStringTokensVector[2], true) && constantStringTokensVector[3] == "=")
+            {
+                std::string fullString = constantStringTokensVector[4];
+                for (int index = 5; index < constantStringTokensVector.size(); index++)
+                {
+                    fullString += " " + constantStringTokensVector[index];
+                };
+                if (fullString[0] == '"' && fullString[fullString.length() - 2] == '"' && fullString[fullString.length() - 1] == ';')
+                {
+                    this->assignVariableMemoryAddress(newASTNode, "CONSTANT STRING");
+                    newASTNode->variableName = constantStringTokensVector[2];
+                    newASTNode->string = fullString.substr(1, fullString.size() - 3);
+                }
+                else
+                {
+                    return false;
+                };
+            }
+            else
+            {
+                return false;
+            };
+        }
+        else
+        {
+            return false;
+        };
+    }
+    else
+    {
+        return false;
+    };
     if (currentASTNode == nullptr && this->root == nullptr)
     {
         this->root = newASTNode;
