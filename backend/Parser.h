@@ -1,4 +1,4 @@
-/* UPDATE VERSION [32] */
+/* UPDATE VERSION [33] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -49,6 +49,7 @@ struct ASTNode
     std::string comment = "";
     std::string output = "";
     std::string outputVariable = "";
+    std::string inputVariableName = "";
     bool outputUsesVariable = false;
     int branchIndex = 0;
     int integer = 0;
@@ -375,11 +376,14 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
     }
     else if (commandType == C_INPUT)
     {
-        /*
-        CONTINUE HERE!
-        GET NEXT ITEM INSIDE INPUT BUFFER!
-        CONTINUE HERE!
-        */
+        if (codeLine.substr(0,6) == "input(" && codeLine.substr(codeLine.size() - 2) == ");")
+        {
+            newASTNode->inputVariableName = codeLine.substr(6, codeLine.size() - 2 - 6);
+        }
+        else
+        {
+            return false;
+        };
     }
     else if (commandType == C_INTEGER)
     {
@@ -389,7 +393,7 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
             if (integerTokensVec[0] == "INTEGER" && this->isValidVariableName(integerTokensVec[1], false))
             {
                 this->assignVariableMemoryAddress(newASTNode, "INTEGER");
-                newASTNode->variableName = integerTokensVec[1];
+                newASTNode->variableName = integerTokensVec[1].substr(0, integerTokensVec[1].length() - 1);
             }
             else
             {
@@ -423,7 +427,7 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
             if (decimalTokensVec[0] == "DECIMAL" && this->isValidVariableName(decimalTokensVec[1], false))
             {
                 this->assignVariableMemoryAddress(newASTNode, "DECIMAL");
-                newASTNode->variableName = decimalTokensVec[1];
+                newASTNode->variableName = decimalTokensVec[1].substr(0, decimalTokensVec[1].length() - 1);
             }
             else
             {
@@ -457,7 +461,7 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
             if (characterTokensVec[0] == "CHARACTER" && this->isValidVariableName(characterTokensVec[1], false))
             {
                 this->assignVariableMemoryAddress(newASTNode, "CHARACTER");
-                newASTNode->variableName = characterTokensVec[1];
+                newASTNode->variableName = characterTokensVec[1].substr(0, characterTokensVec[1].length() - 1);
             }
             else
             {
@@ -503,7 +507,7 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
             if (booleanTokensVec[0] == "BOOLEAN" && this->isValidVariableName(booleanTokensVec[1], false))
             {
                 this->assignVariableMemoryAddress(newASTNode, "BOOLEAN");
-                newASTNode->variableName = booleanTokensVec[1];
+                newASTNode->variableName = booleanTokensVec[1].substr(0, booleanTokensVec[1].length() - 1);
             }
             else
             {
@@ -536,7 +540,7 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
             if (stringTokensVec[0] == "STRING" && this->isValidVariableName(stringTokensVec[1], false))
             {
                 this->assignVariableMemoryAddress(newASTNode, "STRING");
-                newASTNode->variableName = stringTokensVec[1];
+                newASTNode->variableName = stringTokensVec[1].substr(0, stringTokensVec[1].length() - 1);
             }
             else
             {

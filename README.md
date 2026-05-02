@@ -1,4 +1,4 @@
-# UPDATE VERSION [32]
+# UPDATE VERSION [33]
 # Custom Programming Language Project Title
 ## Custom Programming Language Project Description
 ### To Do List
@@ -10,3 +10,15 @@
 ### 6. [_] Deploy The Project On Heroku
 ### 7. [_] Complete Source Code Documentation
 ### 8. [_] Complete README.md Documentation
+
+# Features To Implement
+### 1. [COMPLETED] Comments
+### 2. [COMPLETED] Variables
+### 3. [COMPLETED] Constants
+### 4. [COMPLETED] Standard I/O
+### 5. [_] Basic Arithmetic (Addition, Subtraction, Multiplication, Division, Assignment Operator)
+### 6. [_] Control Flow (If, Else If, Else)
+### 7. [_] Arrays
+### 8. [_] Loops (For, While, Do-While)
+### 9. [_] Functions
+### 10. [_] Load Sample Code & Sample Inputs Button

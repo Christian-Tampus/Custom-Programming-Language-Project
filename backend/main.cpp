@@ -1,4 +1,4 @@
-/* UPDATE VERSION [32] */
+/* UPDATE VERSION [33] */
 
 /*
 ==================================================
@@ -15,6 +15,8 @@ using namespace std;
 using json = nlohmann::json;
 
 /*
+Sample Code:
+
 !This Is A Comment, The Language Only Supports Single-Line Comments
 
 !Below Is An Example Of output() Using String Literals
@@ -83,6 +85,10 @@ input(string2);
 
 !Below Is An Example Of output() Using String Literals
 output("[SYSTEM MESSAGE] Program Terminated...");
+
+Sample Input:
+
+1234567890 , 12345.67890 , % , TRUE , Sample Input String
 */
 
 /*
@@ -132,19 +138,19 @@ int main()
             {
                 std::cout << "[SERVER] Now Interpreting The Code..." << std::endl;
                 Interpreter interpreter;
-                if (interpreter.interpret(parser.getASTNodeRoot()))
+                if (interpreter.interpret(parser.getASTNodeRoot(), requestBody["clientInput"]))
                 {
                     std::cout << "[SERVER] Interpreter Successfully Interpreted The Code!" << std::endl;
-                    std::vector<std::string> terminalOutputVec = interpreter.getTerminalOutputVec();
-                    for (int index = 0; index < terminalOutputVec.size(); index++)
-                    {
-                        std::cout << "[SERVER] terminalOutputVec[" << index << "]:" << terminalOutputVec[index] << std::endl; 
-                        output += terminalOutputVec[index] + "\n";
-                    };
                 }
                 else
                 {
-                    std::cout << "[SERVER ERROR] HANDLE INTERPRETER ERROR OUTPUT HERE!" << std::endl;
+                    std::cout << "[SERVER] Interpreter Unsuccessfully Interpreted The Code!" << std::endl;
+                };
+                std::vector<std::string> terminalOutputVec = interpreter.getTerminalOutputVec();
+                for (int index = 0; index < terminalOutputVec.size(); index++)
+                {
+                    std::cout << "[SERVER] terminalOutputVec[" << index << "]:" << terminalOutputVec[index] << std::endl; 
+                    output += terminalOutputVec[index] + "\n";
                 };
             }
             else
