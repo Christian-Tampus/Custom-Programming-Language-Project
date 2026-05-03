@@ -1,4 +1,4 @@
-/* UPDATE VERSION [33] */
+/* UPDATE VERSION [34] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -21,15 +21,17 @@ Variable Struct
 */
 struct VariableStruct
 {
-    int integer;
-    double decimal;
-    char character;
-    bool boolean;
-    std::string string;
-    bool isConstant;
-    int variableMemoryAddress;
-    std::string variableType;
-    std::string variableName;
+    int integer = 0;
+    double decimal = 0.0;
+    char character = ' ';
+    bool boolean = false;
+    std::string string = "";
+    bool isConstant = false;
+    int variableMemoryAddress = -1;
+    std::string variableType = "";
+    std::string variableName = "";
+    std::string assignmentVariableName = "";
+    bool successfullyCreatedVariableStruct = true;
 };
 
 /*
@@ -47,7 +49,7 @@ class Interpreter
         std::map<int, VariableStruct*> variableStructMap;
         std::map<std::string, int> variablesMap;
         std::vector<std::string> inputBufferVec;
-        VariableStruct* createNewVariableStruct(int integer, double decimal, char character, bool boolean, std::string string, bool isConstant, int variableMemoryAddress, std::string variableType, std::string variableName);
+        VariableStruct* createNewVariableStruct(int integer, double decimal, char character, bool boolean, std::string string, bool isConstant, int variableMemoryAddress, std::string variableType, std::string variableName, std::string assignmentVariableName);
     public:
         Interpreter();
         ~Interpreter();
@@ -263,7 +265,13 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
             {
                 if (this->variableStructMap.find(currentASTNode->variableMemoryAddress) == this->variableStructMap.end())
                 {
-                    VariableStruct* newVariableStruct = this->createNewVariableStruct(currentASTNode->integer, currentASTNode->decimal, currentASTNode->character, currentASTNode->boolean, currentASTNode->string, currentASTNode->isConstant, currentASTNode->variableMemoryAddress, currentASTNode->variableType, currentASTNode->variableName);
+                    VariableStruct* newVariableStruct = this->createNewVariableStruct(currentASTNode->integer, currentASTNode->decimal, currentASTNode->character, currentASTNode->boolean, currentASTNode->string, currentASTNode->isConstant, currentASTNode->variableMemoryAddress, currentASTNode->variableType, currentASTNode->variableName, currentASTNode->assignmentVariableName);
+                    if (newVariableStruct->successfullyCreatedVariableStruct == false)
+                    {
+                        newInterpretationSuccess = false;
+                        currentASTNode = nullptr;
+                        break;
+                    };
                     this->variableStructMap[newVariableStruct->variableMemoryAddress] = newVariableStruct;
                     if (this->variablesMap.find(newVariableStruct->variableName) == this->variablesMap.end())
                     {
@@ -309,7 +317,7 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
 Returns terminalOutputVec
 ==================================================
 */
-VariableStruct* Interpreter::createNewVariableStruct(int integer, double decimal, char character, bool boolean, std::string string, bool isConstant, int variableMemoryAddress, std::string variableType, std::string variableName)
+VariableStruct* Interpreter::createNewVariableStruct(int integer, double decimal, char character, bool boolean, std::string string, bool isConstant, int variableMemoryAddress, std::string variableType, std::string variableName, std::string assignmentVariableName)
 {
     VariableStruct* newVariableStruct = new VariableStruct;
     newVariableStruct->integer = integer;
@@ -321,6 +329,42 @@ VariableStruct* Interpreter::createNewVariableStruct(int integer, double decimal
     newVariableStruct->variableMemoryAddress = variableMemoryAddress;
     newVariableStruct->variableType = variableType;
     newVariableStruct->variableName = variableName;
+    newVariableStruct->assignmentVariableName = assignmentVariableName;
+    if (newVariableStruct->assignmentVariableName.length() > 0 && this->variablesMap.find(newVariableStruct->assignmentVariableName) != this->variablesMap.end())
+    {
+        VariableStruct* otherVariableStruct = this->variableStructMap[this->variablesMap[newVariableStruct->assignmentVariableName]];
+        if (otherVariableStruct->variableType == newVariableStruct->variableType)
+        {
+            if (newVariableStruct->variableType == "INTEGER")
+            {
+                newVariableStruct->integer = otherVariableStruct->integer;
+            }
+            else if (newVariableStruct->variableType == "DECIMAL")
+            {
+                newVariableStruct->decimal = otherVariableStruct->decimal;
+            }
+            else if (newVariableStruct->variableType == "CHARACTER")
+            {
+                newVariableStruct->character = otherVariableStruct->character;
+            }
+            else if (newVariableStruct->variableType == "BOOLEAN")
+            {
+                newVariableStruct->boolean = otherVariableStruct->boolean;
+            }
+            else if (newVariableStruct->variableType == "STRING")
+            {
+                newVariableStruct->string = otherVariableStruct->string;
+            }
+            else
+            {
+                newVariableStruct->successfullyCreatedVariableStruct = false;
+            };
+        }
+        else
+        {
+            newVariableStruct->successfullyCreatedVariableStruct = false;
+        };
+    };
     std::cout << "[INTERPRETER] ==================================================" << std::endl;
     std::cout << "[INTERPRETER] newVariableStruct->integer:" << newVariableStruct->integer << std::endl;
     std::cout << "[INTERPRETER] newVariableStruct->decimal:" << std::setprecision(this->STANDARD_PRECISION) << newVariableStruct->decimal << std::endl;
@@ -331,6 +375,7 @@ VariableStruct* Interpreter::createNewVariableStruct(int integer, double decimal
     std::cout << "[INTERPRETER] newVariableStruct->variableMemoryAddress:" << newVariableStruct->variableMemoryAddress << std::endl;
     std::cout << "[INTERPRETER] newVariableStruct->variableType:" << newVariableStruct->variableType << std::endl;
     std::cout << "[INTERPRETER] newVariableStruct->variableName:" << newVariableStruct->variableName << std::endl;
+    std::cout << "[INTERPRETER] newVariableStruct->assignmentVariableName:" << newVariableStruct->assignmentVariableName << std::endl;
     std::cout << "[INTERPRETER] ==================================================" << std::endl;
     return newVariableStruct;
 };

@@ -1,4 +1,4 @@
-/* UPDATE VERSION [33] */
+/* UPDATE VERSION [34] */
 
 /*
 ==================================================
@@ -82,6 +82,58 @@ output("[SYSTEM MESSAGE] Please Input A Valid Boolean For boolean2:");
 input(boolean2);
 output("[SYSTEM MESSAGE] Please Input A Valid String For string2:");
 input(string2);
+
+!Below Is An Example Of Assignment Operator
+INTEGER _integer3 = 999;
+DECIMAL _decimal3 = 888.777;
+CHARACTER _character3 = '*';
+BOOLEAN _boolean3 = FALSE;
+STRING _string3 = "Sample String 3";
+INTEGER integer4 = _integer3;
+output("[SYSTEM MESSAGE] integer4:");
+output(integer4);
+DECIMAL decimal4 = _decimal3;
+output("[SYSTEM MESSAGE] decimal4:");
+output(decimal4);
+CHARACTER character4 = _character3;
+output("[SYSTEM MESSAGE] character4:");
+output(character4);
+BOOLEAN boolean4 = _boolean3;
+output("[SYSTEM MESSAGE] boolean4:");
+output(boolean4);
+STRING string4 = _string3;
+output("[SYSTEM MESSAGE] string4:");
+output(string4);
+integer4 = 666;
+output("[SYSTEM MESSAGE] integer4:");
+output(integer4);
+decimal4 = 555.444;
+output("[SYSTEM MESSAGE] decimal4:");
+output(decimal4);
+character4 = '$';
+output("[SYSTEM MESSAGE] character4:");
+output(character4);
+boolean4 = TRUE;
+output("[SYSTEM MESSAGE] boolean4:");
+output(boolean4);
+string4 = "Sample String 4";
+output("[SYSTEM MESSAGE] string4:");
+output(string4);
+integer4 = _integer3;
+output("[SYSTEM MESSAGE] integer4:");
+output(integer4);
+decimal4 = _decimal3;
+output("[SYSTEM MESSAGE] decimal4:");
+output(decimal4);
+character4 = _character4;
+output("[SYSTEM MESSAGE] character4:");
+output(character4);
+boolean4 = _boolean4;
+output("[SYSTEM MESSAGE] boolean4:");
+output(boolean4);
+string4 = _string4;
+output("[SYSTEM MESSAGE] string4:");
+output(string4);
 
 !Below Is An Example Of output() Using String Literals
 output("[SYSTEM MESSAGE] Program Terminated...");
