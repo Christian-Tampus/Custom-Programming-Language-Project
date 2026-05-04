@@ -1,4 +1,4 @@
-/* UPDATE VERSION [34] */
+/* UPDATE VERSION [35] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -35,6 +35,7 @@ enum Command
     C_CONSTANT_CHARACTER,
     C_CONSTANT_BOOLEAN,
     C_CONSTANT_STRING,
+    C_ASSIGNMENT_OPERATOR,
 };
 
 /*
@@ -62,6 +63,7 @@ struct ASTNode
     std::string variableType = "";
     std::string variableName = "";
     std::string assignmentVariableName = "";
+    std::string assignmentOperatorValue = "";
 };
 
 /*
@@ -298,6 +300,37 @@ void Parser::parse()
                         commandFound = true;
                         std::cout << "[PARSER] Command: CONSTANT STRING" << std::endl;
                         commandType = C_CONSTANT_STRING;
+                    }
+                    else if (currentCodeLine[index2] == ' ' && this->isValidVariableName(commandString.substr(0, commandString.length() - 1), true) && index2 + 1 < currentCodeLine.length() && currentCodeLine[index2 + 1] == '=' && index2 + 2 < currentCodeLine.length() && currentCodeLine[index2 + 2] == ' ')
+                    {
+                        std::string assignmentValue = currentCodeLine.substr(index2 + 3);
+                        if (assignmentValue[assignmentValue.length() - 1] == ';')
+                        {
+                            if (assignmentValue[0] == '\'' && assignmentValue[assignmentValue.length() - 2] == '\'' || assignmentValue[0] == '\"' && assignmentValue[assignmentValue.length() - 2] == '\"')
+                            {
+                                commandFound = true;
+                                std::cout << "[PARSER] Command: ASSIGNMENT OPERATOR" << std::endl;
+                                commandType = C_ASSIGNMENT_OPERATOR;
+                            }
+                            else
+                            {
+                                bool isAssignmentOperator = true;
+                                for (int index3 = 1; index3 < assignmentValue.length() - 2; index3++)
+                                {
+                                    if (assignmentValue[index3] == ' ')
+                                    {
+                                        isAssignmentOperator = false;
+                                        break;
+                                    };
+                                };
+                                if (isAssignmentOperator)
+                                {
+                                    commandFound = true;
+                                    std::cout << "[PARSER] Command: ASSIGNMENT OPERATOR" << std::endl;
+                                    commandType = C_ASSIGNMENT_OPERATOR;
+                                };
+                            };
+                        };
                     };
                     if (commandFound)
                     {
@@ -620,7 +653,6 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                     this->assignVariableMemoryAddress(newASTNode, "STRING");
                     newASTNode->variableName = stringTokensVec[1];
                     newASTNode->assignmentVariableName = fullString.substr(0, fullString.size() - 1);
-                    std::cout << "newASTNode->assignmentVariableName: " << newASTNode->assignmentVariableName << std::endl;
                 }
                 else
                 {
@@ -768,6 +800,24 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
             {
                 return false;
             };
+        }
+        else
+        {
+            return false;
+        };
+    }
+    else if (commandType == C_ASSIGNMENT_OPERATOR)
+    {
+        std::vector<std::string> assignmentOperatorTokensVector = this->splitCodeLine(codeLine);
+        if (assignmentOperatorTokensVector.size() >= 3 && this->isValidVariableName(assignmentOperatorTokensVector[0], true) && assignmentOperatorTokensVector[1] == "=")
+        {
+            newASTNode->variableName = assignmentOperatorTokensVector[0];
+            std::string assignmentOperatorString = assignmentOperatorTokensVector[2];
+            for (int index = 3; index< assignmentOperatorTokensVector.size(); index++)
+            {
+                assignmentOperatorString += " " + assignmentOperatorTokensVector[index];
+            };
+            newASTNode->assignmentOperatorValue = assignmentOperatorString.substr(0, assignmentOperatorString.length() - 1);
         }
         else
         {

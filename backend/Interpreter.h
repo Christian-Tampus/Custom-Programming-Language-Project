@@ -1,4 +1,4 @@
-/* UPDATE VERSION [34] */
+/* UPDATE VERSION [35] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -282,6 +282,137 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                         newInterpretationSuccess = false;
                         currentASTNode = nullptr;
                         break;
+                    };
+                }
+                else
+                {
+                    newInterpretationSuccess = false;
+                    currentASTNode = nullptr;
+                    break;
+                };
+            }
+            else if (currentASTNode->command == C_ASSIGNMENT_OPERATOR)
+            {
+                if (this->variablesMap.find(currentASTNode->variableName) != this->variablesMap.end())
+                {
+                    VariableStruct* variableStructToUpdate = this->variableStructMap[this->variablesMap[currentASTNode->variableName]];
+                    if (this->variablesMap.find(currentASTNode->assignmentOperatorValue) != this->variablesMap.end())
+                    {
+                        VariableStruct* variableStructToUpdateWith = this->variableStructMap[this->variablesMap[currentASTNode->assignmentOperatorValue]];
+                        if (variableStructToUpdate->variableType == variableStructToUpdateWith->variableType)
+                        {
+                            if (variableStructToUpdate->variableType == "INTEGER")
+                            {
+                                variableStructToUpdate->integer = variableStructToUpdateWith->integer;
+                            }
+                            else if (variableStructToUpdate->variableType == "DECIMAL")
+                            {
+                                variableStructToUpdate->decimal = variableStructToUpdateWith->decimal;
+                            }
+                            else if (variableStructToUpdate->variableType == "CHARACTER")
+                            {
+                                variableStructToUpdate->character = variableStructToUpdateWith->character;
+                            }
+                            else if (variableStructToUpdate->variableType == "BOOLEAN")
+                            {
+                                variableStructToUpdate->boolean = variableStructToUpdateWith->boolean;
+                            }
+                            else if (variableStructToUpdate->variableType == "STRING")
+                            {
+                                variableStructToUpdate->string = variableStructToUpdateWith->string;
+                            }
+                            else
+                            {
+                                newInterpretationSuccess = false;
+                                currentASTNode = nullptr;
+                                break;
+                            };
+                        }
+                        else
+                        {
+                            newInterpretationSuccess = false;
+                            currentASTNode = nullptr;
+                            break;
+                        };
+                    }
+                    else
+                    {
+                        if (variableStructToUpdate->variableType == "INTEGER")
+                        {
+                            try
+                            {
+                                variableStructToUpdate->integer = std::stoi(currentASTNode->assignmentOperatorValue);
+                            }
+                            catch (...)
+                            {
+                                std::cout << "[INTERPRETER] Cannot Assign A Non Integer As A Integer For Variable: " << currentASTNode->variableName << "!" << std::endl;
+                                newInterpretationSuccess = false;
+                                currentASTNode = nullptr;
+                                break;
+                            };
+                        }
+                        else if (variableStructToUpdate->variableType == "DECIMAL")
+                        {
+                            try
+                            {
+                                variableStructToUpdate->decimal = std::stod(currentASTNode->assignmentOperatorValue);
+                            }
+                            catch (...)
+                            {
+                                std::cout << "[INTERPRETER] Cannot Assign A Non Decimal As A Decimal For Variable: " << currentASTNode->variableName << "!" << std::endl;
+                                newInterpretationSuccess = false;
+                                currentASTNode = nullptr;
+                                break;
+                            };
+                        }
+                        else if (variableStructToUpdate->variableType == "CHARACTER")
+                        {
+                            if (currentASTNode->assignmentOperatorValue.size() == 3 && currentASTNode->assignmentOperatorValue[0] == '\'' && currentASTNode->assignmentOperatorValue[2] == '\'')
+                            {
+                                variableStructToUpdate->character = currentASTNode->assignmentOperatorValue[1];
+                            }
+                            else
+                            {
+                                std::cout << "[INTERPRETER] Cannot Assign A Non Character As A Character For Variable: " << currentASTNode->variableName << "!" << std::endl;
+                                newInterpretationSuccess = false;
+                                currentASTNode = nullptr;
+                                break;
+                            };
+                        }
+                        else if (variableStructToUpdate->variableType == "BOOLEAN")
+                        {
+                            if (currentASTNode->assignmentOperatorValue == "TRUE" || currentASTNode->assignmentOperatorValue == "FALSE")
+                            {
+                                variableStructToUpdate->boolean = (currentASTNode->assignmentOperatorValue == "TRUE" ? true : false);
+                            }
+                            else
+                            {
+                                std::cout << "[INTERPRETER] Cannot Assign A Non Boolean As A Boolean For Variable: " << currentASTNode->variableName << "!" << std::endl;
+                                newInterpretationSuccess = false;
+                                currentASTNode = nullptr;
+                                break;
+                            };
+                        }
+                        else if (variableStructToUpdate->variableType == "STRING")
+                        {
+                            if (currentASTNode->assignmentOperatorValue[0] == '\"' && currentASTNode->assignmentOperatorValue[currentASTNode->assignmentOperatorValue.length() - 1] == '\"')
+                            {
+                                variableStructToUpdate->string = currentASTNode->assignmentOperatorValue.substr(1, currentASTNode->assignmentOperatorValue.length() - 2);
+                            }
+                            else
+                            {
+                                std::cout << "[INTERPRETER] Cannot Assign A Non String As A String For Variable: " << currentASTNode->variableName << "!" << std::endl;
+                                newInterpretationSuccess = false;
+                                currentASTNode = nullptr;
+                                break;
+                            };
+                        }
+                        else
+                        {
+                            newInterpretationSuccess = false;
+                            currentASTNode = nullptr;
+                            break;
+                        };
                     };
                 }
                 else
