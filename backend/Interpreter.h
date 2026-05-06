@@ -1,4 +1,4 @@
-/* UPDATE VERSION [35] */
+/* UPDATE VERSION [36] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -296,10 +296,19 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                 if (this->variablesMap.find(currentASTNode->variableName) != this->variablesMap.end())
                 {
                     VariableStruct* variableStructToUpdate = this->variableStructMap[this->variablesMap[currentASTNode->variableName]];
+                    std::string targetString = "CONSTANT";
+                    int position = currentASTNode->variableName.find(targetString);
+                    if (position != std::string::npos && position == 0)
+                    {
+                        std::cout << "[INTERPRETER] Error, Cannot Assign A Value To A [" << variableStructToUpdate->variableType << "]!" << std::endl; 
+                        newInterpretationSuccess = false;
+                        currentASTNode = nullptr;
+                        break;
+                    };
                     if (this->variablesMap.find(currentASTNode->assignmentOperatorValue) != this->variablesMap.end())
                     {
                         VariableStruct* variableStructToUpdateWith = this->variableStructMap[this->variablesMap[currentASTNode->assignmentOperatorValue]];
-                        if (variableStructToUpdate->variableType == variableStructToUpdateWith->variableType)
+                        if (variableStructToUpdate->variableType == variableStructToUpdateWith->variableType || "CONSTANT " + variableStructToUpdate->variableType == variableStructToUpdateWith->variableType)
                         {
                             if (variableStructToUpdate->variableType == "INTEGER")
                             {
