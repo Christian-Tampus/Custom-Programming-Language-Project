@@ -1,4 +1,4 @@
-/* UPDATE VERSION [36] */
+/* UPDATE VERSION [37] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -36,6 +36,20 @@ struct VariableStruct
 
 /*
 ==================================================
+IntegerOperand Struct
+==================================================
+*/
+struct Operand
+{
+    int integer = 0;
+    double decimal = 0.0;
+    std::string string = "";
+    int row = 0;
+    int col = 0;
+};
+
+/*
+==================================================
 Class Declaration
 ==================================================
 */
@@ -49,6 +63,7 @@ class Interpreter
         std::map<int, VariableStruct*> variableStructMap;
         std::map<std::string, int> variablesMap;
         std::vector<std::string> inputBufferVec;
+        bool performArithmetic(Operand* leftOperand, std::string variableType, std::vector<std::vector<std::string>> arithmeticOperationsVector, int& integerArithmetic, double& decimalArithmetic, std::string& stringArithmetic);
         VariableStruct* createNewVariableStruct(int integer, double decimal, char character, bool boolean, std::string string, bool isConstant, int variableMemoryAddress, std::string variableType, std::string variableName, std::string assignmentVariableName);
     public:
         Interpreter();
@@ -431,6 +446,59 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                     break;
                 };
             }
+            else if (currentASTNode->command == C_ARITHMETIC)
+            {
+                //123 + varInt1 - ((varInt2 / (601 + (481)) * 456 + 1111) * varInt3) + varInt4 - 789;
+                //[PARSER] [STACK] [4]:481 |
+                //[PARSER] [STACK] [3]:601 | + |
+                //[PARSER] [STACK] [2]:varInt2 | / | * | 456 | + | 1111 |
+                //[PARSER] [STACK] [1]:* | varInt3 |
+                //[PARSER] [STACK] [0]:123 | + | varInt1 | - | + | varInt4 | - | 789 |
+                if (this->variablesMap.find(currentASTNode->variableName) != this->variablesMap.end())
+                {
+                    VariableStruct* variableStructToUpdate = this->variableStructMap[this->variablesMap[currentASTNode->variableName]];
+                    if (variableStructToUpdate->variableType == "INTEGER" || variableStructToUpdate->variableType == "DECIMAL" || variableStructToUpdate->variableType == "STRING")
+                    {
+                        Operand* firstOperand = new Operand;
+                        int integerArithmetic = 0;
+                        double decimalArithmetic = 0;
+                        std::string stringArithmetic = "";
+                        if(this->performArithmetic(firstOperand, currentASTNode->variableType, currentASTNode->arithmeticOperationsVector, integerArithmetic, decimalArithmetic, stringArithmetic))
+                        {
+                            if (variableStructToUpdate->variableType == "INTEGER")
+                            {
+                                variableStructToUpdate->integer = integerArithmetic;
+                            }
+                            else if (variableStructToUpdate->variableType == "DECIMAL")
+                            {
+                                variableStructToUpdate->decimal = decimalArithmetic;
+                            }
+                            else if (variableStructToUpdate->variableType == "STRING")
+                            {
+                                variableStructToUpdate->string = stringArithmetic;
+                            };
+                        }
+                        else
+                        {
+                           newInterpretationSuccess = false;
+                            currentASTNode = nullptr;
+                            break; 
+                        };
+                    }
+                    else
+                    {
+                        newInterpretationSuccess = false;
+                        currentASTNode = nullptr;
+                        break;
+                    };
+                }
+                else
+                {
+                    newInterpretationSuccess = false;
+                    currentASTNode = nullptr;
+                    break;
+                };
+            }
             else
             {
                 newInterpretationSuccess = false;
@@ -450,6 +518,244 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
     };
     this->interpretationSuccess = newInterpretationSuccess;
     return this->interpretationSuccess;
+};
+
+/*
+==================================================
+Returns terminalOutputVec
+==================================================
+*/
+bool Interpreter::performArithmetic(Operand* leftOperand, std::string variableType, std::vector<std::vector<std::string>> arithmeticOperationsVector, int& integerArithmetic, double& decimalArithmetic, std::string& stringArithmetic)
+{
+    //123 + varInt1 - ((varInt2 / (601 + (481)) * 456 + 1111) * varInt3) + varInt4 - 789;
+    //[PARSER] [STACK] [4]:481 |
+    //[PARSER] [STACK] [3]:601 | + |
+    //[PARSER] [STACK] [2]:varInt2 | / | * | 456 | + | 1111 |
+    //[PARSER] [STACK] [1]:* | varInt3 |
+    //[PARSER] [STACK] [0]:123 | + | varInt1 | - | + | varInt4 | - | 789 |
+    if (leftOperand != nullptr)
+    {
+        if (variableType == "INTEGER")
+        {
+            bool leftOperandIsAVariable = false;
+            std::string leftOperandString = arithmeticOperationsVector[leftOperand->row][leftOperand->col];
+            int leftOperandInteger = 0;
+            VariableStruct* leftOperandVariableStruct;
+            if (this->variablesMap.find(leftOperandString) != this->variablesMap.end())
+            {
+                leftOperandVariableStruct = this->variableStructMap[this->variablesMap[leftOperandString]];
+                if (leftOperandVariableStruct->variableType == "INTEGER")
+                {
+                    leftOperandIsAVariable = true;
+                }
+                else
+                {
+                    return false;
+                };
+            }
+            else if (leftOperandString == "+" || leftOperandString == "-" || leftOperandString == "*" || leftOperandString == "/")
+            {
+                /*
+                WE MUST HANDLE WHEN LEFT SIDE IS ALREADY A COMPLETED OPERATION
+                */
+            }
+            else
+            {
+                try
+                {
+                    leftOperandInteger = std::stoi(leftOperandString);
+                }
+                catch (...)
+                {
+                    std::cout << "[INTERPRETER] Error! Cannot Perform Arithmetic On A Non-Integer For An Integer!" << std::endl;
+                    return false;
+                };
+            };
+            //123 + varInt1 - ((varInt2 / (601 + (481)) * 456 + 1111) * varInt3) + varInt4 - 789;
+            //[PARSER] [STACK] [4]:481 |
+            //[PARSER] [STACK] [3]:601 | + |
+            //[PARSER] [STACK] [2]:varInt2 | / | * | 456 | + | 1111 |
+            //[PARSER] [STACK] [1]:* | varInt3 |
+            //[PARSER] [STACK] [0]:123 | + | varInt1 | - | + | varInt4 | - | 789 |
+            if (leftOperand->col + 1 < arithmeticOperationsVector[leftOperand->row].size())
+            {
+                std::string operatorString = arithmeticOperationsVector[leftOperand->row][leftOperand->col + 1];
+                if (operatorString == "+" || operatorString == "-" || operatorString == "*" || operatorString == "/")
+                {
+                    if (leftOperand->col + 2 < arithmeticOperationsVector[leftOperand->row].size())
+                    {
+                        std::string rightOperandString = arithmeticOperationsVector[leftOperand->row][leftOperand->col + 2];
+                        if (this->variablesMap.find(rightOperandString) != this->variablesMap.end())
+                        {
+                            VariableStruct* rightOperandVariableStruct = this->variableStructMap[this->variablesMap[rightOperandString]];
+                            if (rightOperandVariableStruct->variableType == "INTEGER")
+                            {
+                                if (leftOperandIsAVariable)
+                                {
+                                    if (operatorString == "+")
+                                    {
+                                        leftOperand->integer = leftOperandVariableStruct->integer + rightOperandVariableStruct->integer;
+                                        integerArithmetic = leftOperand->integer;
+                                    }
+                                    else if (operatorString == "-")
+                                    {
+                                        leftOperand->integer = leftOperandVariableStruct->integer - rightOperandVariableStruct->integer;
+                                        integerArithmetic = leftOperand->integer;
+                                    }
+                                    else if (operatorString == "*")
+                                    {
+                                        leftOperand->integer = leftOperandVariableStruct->integer * rightOperandVariableStruct->integer;
+                                        integerArithmetic = leftOperand->integer;
+                                    }
+                                    else if (operatorString == "/" && rightOperandVariableStruct->integer != 0)
+                                    {
+                                        leftOperand->integer = leftOperandVariableStruct->integer / rightOperandVariableStruct->integer;
+                                        integerArithmetic = leftOperand->integer;
+                                    }
+                                    else
+                                    {
+                                        return false;
+                                    };
+                                    leftOperand->col += 3;
+                                    return this->performArithmetic(leftOperand, variableType, arithmeticOperationsVector, integerArithmetic, decimalArithmetic, stringArithmetic);
+                                }
+                                else
+                                {
+                                    if (operatorString == "+")
+                                    {
+                                        leftOperand->integer = leftOperandInteger + rightOperandVariableStruct->integer;
+                                        integerArithmetic = leftOperand->integer;
+                                    }
+                                    else if (operatorString == "-")
+                                    {
+                                        leftOperand->integer = leftOperandInteger - rightOperandVariableStruct->integer;
+                                        integerArithmetic = leftOperand->integer;
+                                    }
+                                    else if (operatorString == "*")
+                                    {
+                                        leftOperand->integer = leftOperandInteger * rightOperandVariableStruct->integer;
+                                        integerArithmetic = leftOperand->integer;
+                                    }
+                                    else if (operatorString == "/" && rightOperandVariableStruct->integer != 0)
+                                    {
+                                        leftOperand->integer = leftOperandInteger / rightOperandVariableStruct->integer;
+                                        integerArithmetic = leftOperand->integer;
+                                    }
+                                    else
+                                    {
+                                        return false;
+                                    };
+                                    leftOperand->col += 3;
+                                    return this->performArithmetic(leftOperand, variableType, arithmeticOperationsVector, integerArithmetic, decimalArithmetic, stringArithmetic);
+                                };
+                            }
+                            else
+                            {
+                                return false;
+                            };
+                        }
+                        else
+                        {
+                            int rightOperandInteger = 0;
+                            try
+                            {
+                                leftOperandInteger = std::stoi(rightOperandString);
+                            }
+                            catch (...)
+                            {
+                                std::cout << "[INTERPRETER] Error! Cannot Perform Arithmetic On A Non-Integer For An Integer!" << std::endl;
+                                return false;
+                            };
+                            if (leftOperandIsAVariable)
+                            {
+                                if (operatorString == "+")
+                                {
+                                    leftOperand->integer = leftOperandVariableStruct->integer + rightOperandInteger;
+                                    integerArithmetic = leftOperand->integer;
+                                }
+                                else if (operatorString == "-")
+                                {
+                                    leftOperand->integer = leftOperandVariableStruct->integer - rightOperandInteger;
+                                    integerArithmetic = leftOperand->integer;
+                                }
+                                else if (operatorString == "*")
+                                {
+                                    leftOperand->integer = leftOperandVariableStruct->integer * rightOperandInteger;
+                                    integerArithmetic = leftOperand->integer;
+                                }
+                                else if (operatorString == "/" && rightOperandInteger != 0)
+                                {
+                                    leftOperand->integer = leftOperandVariableStruct->integer / rightOperandInteger;
+                                    integerArithmetic = leftOperand->integer;
+                                }
+                                else
+                                {
+                                    return false;
+                                };
+                            }
+                            else
+                            {
+                                if (operatorString == "+")
+                                {
+                                    leftOperand->integer = leftOperandInteger + rightOperandInteger;
+                                    integerArithmetic = leftOperand->integer;
+                                }
+                                else if (operatorString == "-")
+                                {
+                                    leftOperand->integer = leftOperandInteger - rightOperandInteger;
+                                    integerArithmetic = leftOperand->integer;
+                                }
+                                else if (operatorString == "*")
+                                {
+                                    leftOperand->integer = leftOperandInteger * rightOperandInteger;
+                                    integerArithmetic = leftOperand->integer;
+                                }
+                                else if (operatorString == "/" && rightOperandInteger != 0)
+                                {
+                                    leftOperand->integer = leftOperandInteger / rightOperandInteger;
+                                    integerArithmetic = leftOperand->integer;
+                                }
+                                else
+                                {
+                                    return false;
+                                };
+                            };
+                        };
+                    };
+                }
+                else
+                {
+                    return false;
+                };
+            }
+            else
+            {
+                try
+                {
+                    leftOperandInteger = std::stoi(leftOperandString);
+                }
+                catch (...)
+                {
+                    std::cout << "[INTERPRETER] Error! Cannot Perform Arithmetic On A Non-Integer For An Integer!" << std::endl;
+                    return false;
+                };
+
+            };
+        }
+        else if (variableType == "DECIMAL")
+        {
+
+        }
+        else if (variableType == "STRING")
+        {
+
+        }
+        else
+        {
+            return false;
+        };
+    };
+    return true;
 };
 
 /*
