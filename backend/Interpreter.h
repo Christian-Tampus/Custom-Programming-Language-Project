@@ -1,4 +1,4 @@
-/* UPDATE VERSION [37] */
+/* UPDATE VERSION [38] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -36,16 +36,15 @@ struct VariableStruct
 
 /*
 ==================================================
-IntegerOperand Struct
+Arithmetic Struct
 ==================================================
 */
-struct Operand
+struct ArithmeticStruct
 {
-    int integer = 0;
-    double decimal = 0.0;
-    std::string string = "";
-    int row = 0;
-    int col = 0;
+    int integerArithmeticResult = 0;
+    double decimalArithmeticResult = 0.0;
+    std::string stringArithmeticResult = "";
+    int index = 1;
 };
 
 /*
@@ -63,7 +62,7 @@ class Interpreter
         std::map<int, VariableStruct*> variableStructMap;
         std::map<std::string, int> variablesMap;
         std::vector<std::string> inputBufferVec;
-        bool performArithmetic(Operand* leftOperand, std::string variableType, std::vector<std::vector<std::string>> arithmeticOperationsVector, int& integerArithmetic, double& decimalArithmetic, std::string& stringArithmetic);
+        bool performArithmetic(ArithmeticStruct*& arithmeticStruct, std::vector<std::string> arithmeticVec, std::string variableType);
         VariableStruct* createNewVariableStruct(int integer, double decimal, char character, bool boolean, std::string string, bool isConstant, int variableMemoryAddress, std::string variableType, std::string variableName, std::string assignmentVariableName);
     public:
         Interpreter();
@@ -205,6 +204,7 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                             catch (...)
                             {
                                 std::cout << "[INTERPRETER] String To Integer Conversion Error!" << std::endl;
+                                this->terminalOutputVec.push_back("[SYSTEM ERROR] String To Integer Conversion Error!");
                                 newInterpretationSuccess = false;
                                 currentASTNode = nullptr;
                                 break;
@@ -220,6 +220,7 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                             catch (...)
                             {
                                 std::cout << "[INTERPRETER] String To Double Conversion Error!" << std::endl;
+                                this->terminalOutputVec.push_back("[SYSTEM ERROR] String To Double Conversion Error!");
                                 newInterpretationSuccess = false;
                                 currentASTNode = nullptr;
                                 break;
@@ -230,6 +231,7 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                             if (input.size() > 1)
                             {
                                 std::cout << "[INTERPRETER] String To Character Conversion Error!" << std::endl;
+                                this->terminalOutputVec.push_back("[SYSTEM ERROR] String To Character Conversion Error!");
                                 newInterpretationSuccess = false;
                                 currentASTNode = nullptr;
                                 break; 
@@ -242,6 +244,7 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                             if (input != "TRUE" && input != "FALSE")
                             {
                                 std::cout << "[INTERPRETER] String To Boolean Conversion Error!" << std::endl;
+                                this->terminalOutputVec.push_back("[SYSTEM ERROR] String To Boolean Conversion Error!");
                                 newInterpretationSuccess = false;
                                 currentASTNode = nullptr;
                                 break; 
@@ -264,6 +267,7 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                     else
                     {
                         std::cout << "[INTERPRETER] Cannot Assign New Value To A Constant!" << std::endl;
+                        this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign New Value To A Constant!");
                         newInterpretationSuccess = false;
                         currentASTNode = nullptr;
                         break;
@@ -316,6 +320,7 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                     if (position != std::string::npos && position == 0)
                     {
                         std::cout << "[INTERPRETER] Error, Cannot Assign A Value To A [" << variableStructToUpdate->variableType << "]!" << std::endl; 
+                        this->terminalOutputVec.push_back("[SYSTEM ERROR] Error, Cannot Assign A Value To A [" + variableStructToUpdate->variableType + "]!");
                         newInterpretationSuccess = false;
                         currentASTNode = nullptr;
                         break;
@@ -370,6 +375,7 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                             catch (...)
                             {
                                 std::cout << "[INTERPRETER] Cannot Assign A Non Integer As A Integer For Variable: " << currentASTNode->variableName << "!" << std::endl;
+                                this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non Integer As A Integer For Variable: " + currentASTNode->variableName + "]!");
                                 newInterpretationSuccess = false;
                                 currentASTNode = nullptr;
                                 break;
@@ -384,6 +390,7 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                             catch (...)
                             {
                                 std::cout << "[INTERPRETER] Cannot Assign A Non Decimal As A Decimal For Variable: " << currentASTNode->variableName << "!" << std::endl;
+                                this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non Decimal As A Decimal For Variable: " + currentASTNode->variableName + "]!");
                                 newInterpretationSuccess = false;
                                 currentASTNode = nullptr;
                                 break;
@@ -398,6 +405,7 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                             else
                             {
                                 std::cout << "[INTERPRETER] Cannot Assign A Non Character As A Character For Variable: " << currentASTNode->variableName << "!" << std::endl;
+                                this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non Character As A Character For Variable: " + currentASTNode->variableName + "]!");
                                 newInterpretationSuccess = false;
                                 currentASTNode = nullptr;
                                 break;
@@ -412,6 +420,7 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                             else
                             {
                                 std::cout << "[INTERPRETER] Cannot Assign A Non Boolean As A Boolean For Variable: " << currentASTNode->variableName << "!" << std::endl;
+                                this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non Boolean As A Boolean For Variable: " + currentASTNode->variableName + "]!");
                                 newInterpretationSuccess = false;
                                 currentASTNode = nullptr;
                                 break;
@@ -426,6 +435,7 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                             else
                             {
                                 std::cout << "[INTERPRETER] Cannot Assign A Non String As A String For Variable: " << currentASTNode->variableName << "!" << std::endl;
+                                this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non String As A String For Variable: " + currentASTNode->variableName + "]!");
                                 newInterpretationSuccess = false;
                                 currentASTNode = nullptr;
                                 break;
@@ -448,41 +458,148 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
             }
             else if (currentASTNode->command == C_ARITHMETIC)
             {
-                //123 + varInt1 - ((varInt2 / (601 + (481)) * 456 + 1111) * varInt3) + varInt4 - 789;
-                //[PARSER] [STACK] [4]:481 |
-                //[PARSER] [STACK] [3]:601 | + |
-                //[PARSER] [STACK] [2]:varInt2 | / | * | 456 | + | 1111 |
-                //[PARSER] [STACK] [1]:* | varInt3 |
-                //[PARSER] [STACK] [0]:123 | + | varInt1 | - | + | varInt4 | - | 789 |
+                if (currentASTNode->arithmeticVec.size() < 3)
+                {
+                    newInterpretationSuccess = false;
+                    currentASTNode = nullptr;
+                    break;
+                };
                 if (this->variablesMap.find(currentASTNode->variableName) != this->variablesMap.end())
                 {
-                    VariableStruct* variableStructToUpdate = this->variableStructMap[this->variablesMap[currentASTNode->variableName]];
-                    if (variableStructToUpdate->variableType == "INTEGER" || variableStructToUpdate->variableType == "DECIMAL" || variableStructToUpdate->variableType == "STRING")
+                    VariableStruct* variableStructToUpdateWith = this->variableStructMap[this->variablesMap[currentASTNode->variableName]];
+                    if (variableStructToUpdateWith->variableType == "INTEGER" || variableStructToUpdateWith->variableType == "DECIMAL" || variableStructToUpdateWith->variableType == "STRING")
                     {
-                        Operand* firstOperand = new Operand;
-                        int integerArithmetic = 0;
-                        double decimalArithmetic = 0;
-                        std::string stringArithmetic = "";
-                        if(this->performArithmetic(firstOperand, currentASTNode->variableType, currentASTNode->arithmeticOperationsVector, integerArithmetic, decimalArithmetic, stringArithmetic))
+                        ArithmeticStruct* arithmeticStruct = new ArithmeticStruct;
+                        std::string firstOperand = currentASTNode->arithmeticVec[0];
+                        if (variableStructToUpdateWith->variableType == "INTEGER")
                         {
-                            if (variableStructToUpdate->variableType == "INTEGER")
+                            if (this->variablesMap.find(firstOperand) != this->variablesMap.end())
                             {
-                                variableStructToUpdate->integer = integerArithmetic;
+                                VariableStruct* firstOperandStruct = this->variableStructMap[this->variablesMap[currentASTNode->arithmeticVec[0]]];
+                                if (firstOperandStruct->variableType == "INTEGER")
+                                {
+                                    arithmeticStruct->integerArithmeticResult = firstOperandStruct->integer;
+                                }
+                                else
+                                {
+                                    std::cout << "[INTERPRETER] Error! Attempting To Perform Arithmetic On Non Integer To A Integer!" << std::endl;
+                                    this->terminalOutputVec.push_back("[SYSTEM ERROR] Error! Attempting To Perform Arithmetic On Non Integer To A Integer!");
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
                             }
-                            else if (variableStructToUpdate->variableType == "DECIMAL")
+                            else
                             {
-                                variableStructToUpdate->decimal = decimalArithmetic;
+                                int firstOperandInteger = 0;
+                                try
+                                {
+                                    firstOperandInteger = std::stoi(firstOperand);
+                                    arithmeticStruct->integerArithmeticResult = firstOperandInteger;
+                                }
+                                catch(...)
+                                {
+                                    std::cout << "[INTERPRETER] Error! Attempting To Perform Arithmetic On Non Integer To A Integer!" << std::endl;
+                                    this->terminalOutputVec.push_back("[SYSTEM ERROR] Error! Attempting To Perform Arithmetic On Non Integer To A Integer!");
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            };
+                        }
+                        else if (variableStructToUpdateWith->variableType == "DECIMAL")
+                        {
+                            if (this->variablesMap.find(firstOperand) != this->variablesMap.end())
+                            {
+                                VariableStruct* firstOperandStruct = this->variableStructMap[this->variablesMap[currentASTNode->arithmeticVec[0]]];
+                                if (firstOperandStruct->variableType == "DECIMAL")
+                                {
+                                    arithmeticStruct->decimalArithmeticResult = firstOperandStruct->decimal;
+                                }
+                                else
+                                {
+                                    std::cout << "[INTERPRETER] Error! Attempting To Perform Arithmetic On Non Decimal To A Decimal!" << std::endl;
+                                    this->terminalOutputVec.push_back("[SYSTEM ERROR] Error! Attempting To Perform Arithmetic On Non Decimal To A Decimal!");
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
                             }
-                            else if (variableStructToUpdate->variableType == "STRING")
+                            else
                             {
-                                variableStructToUpdate->string = stringArithmetic;
+                                int firstOperandDecimal = 0;
+                                try
+                                {
+                                    firstOperandDecimal = std::stoi(firstOperand);
+                                    arithmeticStruct->decimalArithmeticResult = firstOperandDecimal;
+                                }
+                                catch(...)
+                                {
+                                    std::cout << "[INTERPRETER] Error! Attempting To Perform Arithmetic On Non Decimal To A Decimal!" << std::endl;
+                                    this->terminalOutputVec.push_back("[SYSTEM ERROR] Error! Attempting To Perform Arithmetic On Non Decimal To A Decimal!");
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            };
+                        }
+                        else if (variableStructToUpdateWith->variableType == "STRING")
+                        {
+                            if (this->variablesMap.find(firstOperand) != this->variablesMap.end())
+                            {
+                                VariableStruct* firstOperandStruct = this->variableStructMap[this->variablesMap[currentASTNode->arithmeticVec[0]]];
+                                if (firstOperandStruct->variableType == "STRING")
+                                {
+                                    arithmeticStruct->stringArithmeticResult = firstOperandStruct->string;
+                                }
+                                else
+                                {
+                                    std::cout << "[INTERPRETER] Error! Attempting To Perform Arithmetic On Non String To A String!" << std::endl;
+                                    this->terminalOutputVec.push_back("[SYSTEM ERROR] Error! Attempting To Perform Arithmetic On Non String To A String!");
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            }
+                            else if (currentASTNode->arithmeticVec[0][0] == '"' && currentASTNode->arithmeticVec[0][currentASTNode->arithmeticVec[0].length() - 1] == '"')
+                            {
+                                arithmeticStruct->stringArithmeticResult = currentASTNode->arithmeticVec[0].substr(1, currentASTNode->arithmeticVec[0].size() - 2);
+                            }
+                            else
+                            {
+                                std::cout << "[INTERPRETER] Error! Attempting To Perform Arithmetic On Non String To A String!" << std::endl;
+                                this->terminalOutputVec.push_back("[SYSTEM ERROR] Error! Attempting To Perform Arithmetic On Non String To A String!");
+                                newInterpretationSuccess = false;
+                                currentASTNode = nullptr;
+                                break;
                             };
                         }
                         else
                         {
-                           newInterpretationSuccess = false;
+                            newInterpretationSuccess = false;
                             currentASTNode = nullptr;
-                            break; 
+                            break;
+                        };
+                        if (this->performArithmetic(arithmeticStruct, currentASTNode->arithmeticVec, variableStructToUpdateWith->variableType))
+                        {
+                            if (variableStructToUpdateWith->variableType == "INTEGER")
+                            {
+                                variableStructToUpdateWith->integer = arithmeticStruct->integerArithmeticResult;
+                            }
+                            else if (variableStructToUpdateWith->variableType == "DECIMAL")
+                            {
+                                variableStructToUpdateWith->decimal = arithmeticStruct->decimalArithmeticResult;
+                            }
+                            else if (variableStructToUpdateWith->variableType == "STRING")
+                            {
+                                variableStructToUpdateWith->string = arithmeticStruct->stringArithmeticResult;
+                            };
+                        }
+                        else
+                        {
+                            newInterpretationSuccess = false;
+                            currentASTNode = nullptr;
+                            break;
                         };
                     }
                     else
@@ -522,236 +639,233 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
 
 /*
 ==================================================
-Returns terminalOutputVec
+Recursively Performs Arithmetic Operations On Integers, Decimals Or Strings Only
 ==================================================
 */
-bool Interpreter::performArithmetic(Operand* leftOperand, std::string variableType, std::vector<std::vector<std::string>> arithmeticOperationsVector, int& integerArithmetic, double& decimalArithmetic, std::string& stringArithmetic)
+bool Interpreter::performArithmetic(ArithmeticStruct*& arithmeticStruct, std::vector<std::string> arithmeticVec, std::string variableType)
 {
-    //123 + varInt1 - ((varInt2 / (601 + (481)) * 456 + 1111) * varInt3) + varInt4 - 789;
-    //[PARSER] [STACK] [4]:481 |
-    //[PARSER] [STACK] [3]:601 | + |
-    //[PARSER] [STACK] [2]:varInt2 | / | * | 456 | + | 1111 |
-    //[PARSER] [STACK] [1]:* | varInt3 |
-    //[PARSER] [STACK] [0]:123 | + | varInt1 | - | + | varInt4 | - | 789 |
-    if (leftOperand != nullptr)
+    //123 [+] varInt1 - varInt2 * 456 / varInt3 + varInt4 - 789;
+    std::cout << "arithmeticVec SIZE: " << arithmeticVec.size() << std::endl;
+    for (int index = 0; index < arithmeticVec.size(); index++)
     {
-        if (variableType == "INTEGER")
+        std::cout << "arithmeticVec[" << index << "]:" << arithmeticVec[index] << std::endl;
+    };
+    std::cout << "CURRENT INDEX: " << arithmeticStruct->index << std::endl;
+    if (arithmeticStruct->index >= arithmeticVec.size())
+    {
+        return true;
+    };
+    std::string operatorString = arithmeticVec[arithmeticStruct->index];
+    if (arithmeticStruct->index + 1 >= arithmeticVec.size() || arithmeticVec[arithmeticStruct->index].size() != 1 || operatorString != "+" && operatorString != "-" && operatorString != "*" && operatorString != "/")
+    {
+        return false;
+    };
+    if (variableType == "INTEGER")
+    {
+        std::string secondOperandString = arithmeticVec[arithmeticStruct->index + 1];
+        if (this->variablesMap.find(secondOperandString) != this->variablesMap.end())
         {
-            bool leftOperandIsAVariable = false;
-            std::string leftOperandString = arithmeticOperationsVector[leftOperand->row][leftOperand->col];
-            int leftOperandInteger = 0;
-            VariableStruct* leftOperandVariableStruct;
-            if (this->variablesMap.find(leftOperandString) != this->variablesMap.end())
+            VariableStruct* secondOperandStruct = this->variableStructMap[this->variablesMap[secondOperandString]];
+            if (secondOperandStruct->variableType == "INTEGER")
             {
-                leftOperandVariableStruct = this->variableStructMap[this->variablesMap[leftOperandString]];
-                if (leftOperandVariableStruct->variableType == "INTEGER")
+                if (operatorString == "+")
                 {
-                    leftOperandIsAVariable = true;
+                    arithmeticStruct->integerArithmeticResult += secondOperandStruct->integer;
+                }
+                else if (operatorString == "-")
+                {
+                    arithmeticStruct->integerArithmeticResult -= secondOperandStruct->integer;
+                }
+                else if (operatorString == "*")
+                {
+                    arithmeticStruct->integerArithmeticResult *= secondOperandStruct->integer;
+                }
+                else if (operatorString == "/" && secondOperandStruct->integer != 0)
+                {
+                    arithmeticStruct->integerArithmeticResult /= secondOperandStruct->integer;
                 }
                 else
                 {
+                    std::cout << "[INTERPRETER] Error! Attempted To Perform Division By 0!" << std::endl;
+                    this->terminalOutputVec.push_back("[SYSTEM ERROR] Error! Attempted To Perform Division By 0!");
                     return false;
                 };
-            }
-            else if (leftOperandString == "+" || leftOperandString == "-" || leftOperandString == "*" || leftOperandString == "/")
-            {
-                /*
-                WE MUST HANDLE WHEN LEFT SIDE IS ALREADY A COMPLETED OPERATION
-                */
+                arithmeticStruct->index += 2;
+                return this->performArithmetic(arithmeticStruct, arithmeticVec, variableType);
             }
             else
             {
-                try
-                {
-                    leftOperandInteger = std::stoi(leftOperandString);
-                }
-                catch (...)
-                {
-                    std::cout << "[INTERPRETER] Error! Cannot Perform Arithmetic On A Non-Integer For An Integer!" << std::endl;
-                    return false;
-                };
+                std::cout << "[INTERPRETER] Error! Attempting To Perform Arithmetic On Non Integer To A Integer!" << std::endl;
+                this->terminalOutputVec.push_back("[SYSTEM ERROR] Error! Attempting To Perform Arithmetic On Non Integer To A Integer!");
+                return false;
             };
-            //123 + varInt1 - ((varInt2 / (601 + (481)) * 456 + 1111) * varInt3) + varInt4 - 789;
-            //[PARSER] [STACK] [4]:481 |
-            //[PARSER] [STACK] [3]:601 | + |
-            //[PARSER] [STACK] [2]:varInt2 | / | * | 456 | + | 1111 |
-            //[PARSER] [STACK] [1]:* | varInt3 |
-            //[PARSER] [STACK] [0]:123 | + | varInt1 | - | + | varInt4 | - | 789 |
-            if (leftOperand->col + 1 < arithmeticOperationsVector[leftOperand->row].size())
-            {
-                std::string operatorString = arithmeticOperationsVector[leftOperand->row][leftOperand->col + 1];
-                if (operatorString == "+" || operatorString == "-" || operatorString == "*" || operatorString == "/")
-                {
-                    if (leftOperand->col + 2 < arithmeticOperationsVector[leftOperand->row].size())
-                    {
-                        std::string rightOperandString = arithmeticOperationsVector[leftOperand->row][leftOperand->col + 2];
-                        if (this->variablesMap.find(rightOperandString) != this->variablesMap.end())
-                        {
-                            VariableStruct* rightOperandVariableStruct = this->variableStructMap[this->variablesMap[rightOperandString]];
-                            if (rightOperandVariableStruct->variableType == "INTEGER")
-                            {
-                                if (leftOperandIsAVariable)
-                                {
-                                    if (operatorString == "+")
-                                    {
-                                        leftOperand->integer = leftOperandVariableStruct->integer + rightOperandVariableStruct->integer;
-                                        integerArithmetic = leftOperand->integer;
-                                    }
-                                    else if (operatorString == "-")
-                                    {
-                                        leftOperand->integer = leftOperandVariableStruct->integer - rightOperandVariableStruct->integer;
-                                        integerArithmetic = leftOperand->integer;
-                                    }
-                                    else if (operatorString == "*")
-                                    {
-                                        leftOperand->integer = leftOperandVariableStruct->integer * rightOperandVariableStruct->integer;
-                                        integerArithmetic = leftOperand->integer;
-                                    }
-                                    else if (operatorString == "/" && rightOperandVariableStruct->integer != 0)
-                                    {
-                                        leftOperand->integer = leftOperandVariableStruct->integer / rightOperandVariableStruct->integer;
-                                        integerArithmetic = leftOperand->integer;
-                                    }
-                                    else
-                                    {
-                                        return false;
-                                    };
-                                    leftOperand->col += 3;
-                                    return this->performArithmetic(leftOperand, variableType, arithmeticOperationsVector, integerArithmetic, decimalArithmetic, stringArithmetic);
-                                }
-                                else
-                                {
-                                    if (operatorString == "+")
-                                    {
-                                        leftOperand->integer = leftOperandInteger + rightOperandVariableStruct->integer;
-                                        integerArithmetic = leftOperand->integer;
-                                    }
-                                    else if (operatorString == "-")
-                                    {
-                                        leftOperand->integer = leftOperandInteger - rightOperandVariableStruct->integer;
-                                        integerArithmetic = leftOperand->integer;
-                                    }
-                                    else if (operatorString == "*")
-                                    {
-                                        leftOperand->integer = leftOperandInteger * rightOperandVariableStruct->integer;
-                                        integerArithmetic = leftOperand->integer;
-                                    }
-                                    else if (operatorString == "/" && rightOperandVariableStruct->integer != 0)
-                                    {
-                                        leftOperand->integer = leftOperandInteger / rightOperandVariableStruct->integer;
-                                        integerArithmetic = leftOperand->integer;
-                                    }
-                                    else
-                                    {
-                                        return false;
-                                    };
-                                    leftOperand->col += 3;
-                                    return this->performArithmetic(leftOperand, variableType, arithmeticOperationsVector, integerArithmetic, decimalArithmetic, stringArithmetic);
-                                };
-                            }
-                            else
-                            {
-                                return false;
-                            };
-                        }
-                        else
-                        {
-                            int rightOperandInteger = 0;
-                            try
-                            {
-                                leftOperandInteger = std::stoi(rightOperandString);
-                            }
-                            catch (...)
-                            {
-                                std::cout << "[INTERPRETER] Error! Cannot Perform Arithmetic On A Non-Integer For An Integer!" << std::endl;
-                                return false;
-                            };
-                            if (leftOperandIsAVariable)
-                            {
-                                if (operatorString == "+")
-                                {
-                                    leftOperand->integer = leftOperandVariableStruct->integer + rightOperandInteger;
-                                    integerArithmetic = leftOperand->integer;
-                                }
-                                else if (operatorString == "-")
-                                {
-                                    leftOperand->integer = leftOperandVariableStruct->integer - rightOperandInteger;
-                                    integerArithmetic = leftOperand->integer;
-                                }
-                                else if (operatorString == "*")
-                                {
-                                    leftOperand->integer = leftOperandVariableStruct->integer * rightOperandInteger;
-                                    integerArithmetic = leftOperand->integer;
-                                }
-                                else if (operatorString == "/" && rightOperandInteger != 0)
-                                {
-                                    leftOperand->integer = leftOperandVariableStruct->integer / rightOperandInteger;
-                                    integerArithmetic = leftOperand->integer;
-                                }
-                                else
-                                {
-                                    return false;
-                                };
-                            }
-                            else
-                            {
-                                if (operatorString == "+")
-                                {
-                                    leftOperand->integer = leftOperandInteger + rightOperandInteger;
-                                    integerArithmetic = leftOperand->integer;
-                                }
-                                else if (operatorString == "-")
-                                {
-                                    leftOperand->integer = leftOperandInteger - rightOperandInteger;
-                                    integerArithmetic = leftOperand->integer;
-                                }
-                                else if (operatorString == "*")
-                                {
-                                    leftOperand->integer = leftOperandInteger * rightOperandInteger;
-                                    integerArithmetic = leftOperand->integer;
-                                }
-                                else if (operatorString == "/" && rightOperandInteger != 0)
-                                {
-                                    leftOperand->integer = leftOperandInteger / rightOperandInteger;
-                                    integerArithmetic = leftOperand->integer;
-                                }
-                                else
-                                {
-                                    return false;
-                                };
-                            };
-                        };
-                    };
-                }
-                else
-                {
-                    return false;
-                };
-            }
-            else
-            {
-                try
-                {
-                    leftOperandInteger = std::stoi(leftOperandString);
-                }
-                catch (...)
-                {
-                    std::cout << "[INTERPRETER] Error! Cannot Perform Arithmetic On A Non-Integer For An Integer!" << std::endl;
-                    return false;
-                };
-
-            };
-        }
-        else if (variableType == "DECIMAL")
-        {
-
-        }
-        else if (variableType == "STRING")
-        {
-
         }
         else
         {
+            int secondOperandInteger = 0;
+            try
+            {
+                secondOperandInteger = std::stoi(secondOperandString);
+                if (operatorString == "+")
+                {
+                    arithmeticStruct->integerArithmeticResult += secondOperandInteger;
+                }
+                else if (operatorString == "-")
+                {
+                    arithmeticStruct->integerArithmeticResult -= secondOperandInteger;
+                }
+                else if (operatorString == "*")
+                {
+                    arithmeticStruct->integerArithmeticResult *= secondOperandInteger;
+                }
+                else if (operatorString == "/" && secondOperandInteger != 0)
+                {
+                    arithmeticStruct->integerArithmeticResult /= secondOperandInteger;
+                }
+                else
+                {
+                    std::cout << "[INTERPRETER] Error! Attempted To Perform Division By 0!" << std::endl;
+                    this->terminalOutputVec.push_back("[SYSTEM ERROR] Error! Attempted To Perform Division By 0!");
+                    return false;
+                };
+                arithmeticStruct->index += 2;
+                return this->performArithmetic(arithmeticStruct, arithmeticVec, variableType);
+            }
+            catch(...)
+            {
+                std::cout << "[INTERPRETER] Error! Attempting To Perform Arithmetic On Non Integer To A Integer!" << std::endl;
+                this->terminalOutputVec.push_back("[SYSTEM ERROR] Error! Attempting To Perform Arithmetic On Non Integer To A Integer!");
+                return false;
+            };
+        };
+    }
+    else if (variableType == "DECIMAL")
+    {
+        std::string secondOperandString = arithmeticVec[arithmeticStruct->index + 1];
+        if (this->variablesMap.find(secondOperandString) != this->variablesMap.end())
+        {
+            VariableStruct* secondOperandStruct = this->variableStructMap[this->variablesMap[secondOperandString]];
+            if (secondOperandStruct->variableType == "DECIMAL")
+            {
+                if (operatorString == "+")
+                {
+                    arithmeticStruct->decimalArithmeticResult += secondOperandStruct->decimal;
+                }
+                else if (operatorString == "-")
+                {
+                    arithmeticStruct->decimalArithmeticResult -= secondOperandStruct->decimal;
+                }
+                else if (operatorString == "*")
+                {
+                    arithmeticStruct->decimalArithmeticResult *= secondOperandStruct->decimal;
+                }
+                else if (operatorString == "/" && secondOperandStruct->decimal != 0)
+                {
+                    arithmeticStruct->decimalArithmeticResult /= secondOperandStruct->decimal;
+                }
+                else
+                {
+                    std::cout << "[INTERPRETER] Error! Attempted To Perform Division By 0!" << std::endl;
+                    this->terminalOutputVec.push_back("[SYSTEM ERROR] Error! Attempted To Perform Division By 0!");
+                    return false;
+                };
+                arithmeticStruct->index += 2;
+                return this->performArithmetic(arithmeticStruct, arithmeticVec, variableType);
+            }
+            else
+            {
+                std::cout << "[INTERPRETER] Error! Attempting To Perform Arithmetic On Non Decimal To A Decimal!" << std::endl;
+                this->terminalOutputVec.push_back("[SYSTEM ERROR] Error! Attempting To Perform Arithmetic On Non Decimal To A Decimal!");
+                return false;
+            };
+        }
+        else
+        {
+            int secondOperandInteger = 0;
+            try
+            {
+                secondOperandInteger = std::stoi(secondOperandString);
+                if (operatorString == "+")
+                {
+                    arithmeticStruct->decimalArithmeticResult += secondOperandInteger;
+                }
+                else if (operatorString == "-")
+                {
+                    arithmeticStruct->decimalArithmeticResult -= secondOperandInteger;
+                }
+                else if (operatorString == "*")
+                {
+                    arithmeticStruct->decimalArithmeticResult *= secondOperandInteger;
+                }
+                else if (operatorString == "/" && secondOperandInteger != 0)
+                {
+                    arithmeticStruct->decimalArithmeticResult /= secondOperandInteger;
+                }
+                else
+                {
+                    std::cout << "[INTERPRETER] Error! Attempted To Perform Division By 0!" << std::endl;
+                    this->terminalOutputVec.push_back("[SYSTEM ERROR] Error! Attempted To Perform Division By 0!");
+                    return false;
+                };
+                arithmeticStruct->index += 2;
+                return this->performArithmetic(arithmeticStruct, arithmeticVec, variableType);
+            }
+            catch(...)
+            {
+                std::cout << "[INTERPRETER] Error! Attempting To Perform Arithmetic On Non Decimal To A Decimal!" << std::endl;
+                this->terminalOutputVec.push_back("[SYSTEM ERROR] Error! Attempting To Perform Arithmetic On Non Decimal To A Decimal!");
+                return false;
+            };
+        };
+    }
+    else if (variableType == "STRING")
+    {
+        std::string secondOperandString = arithmeticVec[arithmeticStruct->index + 1];
+        if (this->variablesMap.find(secondOperandString) != this->variablesMap.end())
+        {
+            VariableStruct* secondOperandStruct = this->variableStructMap[this->variablesMap[secondOperandString]];
+            if (secondOperandStruct->variableType == "STRING")
+            {
+                if (operatorString == "+")
+                {
+                    arithmeticStruct->stringArithmeticResult += secondOperandStruct->string;
+                }
+                else
+                {
+                    std::cout << "[INTERPRETER] Error! Attempted To Perform Non Addition Operation On A String!" << std::endl;
+                    this->terminalOutputVec.push_back("[SYSTEM ERROR] Error! Attempted To Perform Non Addition Operation On A String!");
+                    return false;
+                };
+                arithmeticStruct->index += 2;
+                return this->performArithmetic(arithmeticStruct, arithmeticVec, variableType);
+            }
+            else
+            {
+                std::cout << "[INTERPRETER] Error! Attempting To Perform Arithmetic On Non String To A String!" << std::endl;
+                this->terminalOutputVec.push_back("[SYSTEM ERROR] Error! Attempting To Perform Arithmetic On Non String To A String!");
+                return false;
+            };
+        }
+        else if (secondOperandString[0] == '"' && secondOperandString[secondOperandString.size() - 1] == '"')
+        {
+            arithmeticStruct->stringArithmeticResult += secondOperandString.substr(1, secondOperandString.size() - 2);
+            /*
+            FIX THIS:
+            STRING string1 = "HELLO WORLD!";
+            output(string1);
+            string1 = string1 + " " + string1;
+            output(string1);
+            
+            STRING string1 = "HELLO WORLD!";
+            output(string1);
+            string1 = string1 + "a" + string1;
+            output(string1);
+            */
+        }
+        else
+        {
+            std::cout << "[INTERPRETER] Error! Attempting To Perform Arithmetic On Non String To A String!" << std::endl;
+            this->terminalOutputVec.push_back("[SYSTEM ERROR] Error! Attempting To Perform Arithmetic On Non String To A String!");
             return false;
         };
     };

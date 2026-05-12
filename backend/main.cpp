@@ -1,4 +1,4 @@
-/* UPDATE VERSION [37] */
+/* UPDATE VERSION [38] */
 
 /*
 ==================================================
@@ -159,7 +159,7 @@ INTEGER varInt4 = 10000;
 INTEGER additionExample1;
 output("additionExample1:");
 output(additionExample1);
-additionExample1 = 123 + varInt1 - ((varInt2 / (601 + (481)) * 456 + 1111) * varInt3) + varInt4 - 789;
+additionExample1 = 123 + varInt1 - varInt2 * 456 / varInt3 + varInt4 - 789;
 output("additionExample1:");
 output(additionExample1);
 

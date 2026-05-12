@@ -1,4 +1,4 @@
-/* UPDATE VERSION [37] */
+/* UPDATE VERSION [38] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -66,7 +66,7 @@ struct ASTNode
     std::string variableName = "";
     std::string assignmentVariableName = "";
     std::string assignmentOperatorValue = "";
-    std::vector<std::vector<std::string>> arithmeticOperationsVector;
+    std::vector<std::string> arithmeticVec;
     ~ASTNode()
     {
         for (ASTNode* childASTNode: childASTNodesVec)
@@ -874,100 +874,15 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
         std::vector<std::string> arithmeticTokensVector = this->splitCodeLine(newCodeLine);
         if (this->isValidVariableName(arithmeticTokensVector[0], true) && arithmeticTokensVector[1] == "=")
         {
-            int stackTop = 0;
-            std::vector<std::vector<std::string>> arithmeticOperationsVector(1);
             for (int index = 2; index < arithmeticTokensVector.size(); index++)
             {
-                std::string arithmeticToken = arithmeticTokensVector[index];
-                if (arithmeticToken.size() == 1)
-                {
-                    if (arithmeticToken[0] == '+' || arithmeticToken[0] == '-' || arithmeticToken[0] == '*' || arithmeticToken[0] == '/')
-                    {
-                        arithmeticOperationsVector[stackTop].push_back(arithmeticToken);
-                    }
-                    else if (std::isdigit(arithmeticToken[0]) || this->isValidVariableName(arithmeticToken, true))
-                    {
-                        arithmeticOperationsVector[stackTop].push_back(arithmeticToken);
-                    }
-                    else
-                    {
-                        return false;
-                    };
-                }
-                else
-                {
-                    bool addedToArithmeticOperationsVector = false;
-                    std::string arithmeticTokenSubstring = "";
-                    for (int index2 = 0; index2 < arithmeticToken.size(); index2++)
-                    {
-                        if (arithmeticToken[index2] == '(')
-                        {
-                            stackTop++;
-                            if (stackTop >= arithmeticOperationsVector.size())
-                            {
-                                std::vector<std::string> newArithmeticVector;
-                                arithmeticOperationsVector.push_back(newArithmeticVector);
-                            };
-                        }
-                        else if (arithmeticToken[index2] == ')')
-                        {
-                            stackTop--;
-                            if (stackTop < 0)
-                            {
-                                return false;
-                            }
-                            else if (!addedToArithmeticOperationsVector)
-                            {
-                                if (this->isValidVariableAssignment(arithmeticTokenSubstring + ";", "INTEGER") || this->isValidVariableAssignment(arithmeticTokenSubstring + ";", "DECIMAL") || this->isValidVariableAssignment(arithmeticTokenSubstring + ";", "STRING") || this->isValidVariableName(arithmeticTokenSubstring, true))
-                                {
-                                    addedToArithmeticOperationsVector = true;
-                                    arithmeticOperationsVector[stackTop + 1].push_back(arithmeticTokenSubstring);
-                                }
-                                else
-                                {
-                                    return false;
-                                };
-                            };
-                        }
-                        else
-                        {
-                            arithmeticTokenSubstring += arithmeticToken[index2];
-                        };
-                    };
-                    if (!addedToArithmeticOperationsVector)
-                    {
-                        if (this->isValidVariableAssignment(arithmeticTokenSubstring + ";", "INTEGER") || this->isValidVariableAssignment(arithmeticTokenSubstring + ";", "DECIMAL") || this->isValidVariableAssignment(arithmeticTokenSubstring + ";", "STRING") || this->isValidVariableName(arithmeticTokenSubstring, true))
-                        {
-                            arithmeticOperationsVector[stackTop].push_back(arithmeticTokenSubstring);
-                        }
-                        else
-                        {
-                            return false;
-                        };
-                    };
-                };
-            };
-            if (stackTop != 0)
-            {
-                return false;
+                newASTNode->arithmeticVec.push_back(arithmeticTokensVector[index]);
             };
             newASTNode->variableName = arithmeticTokensVector[0];
-            newASTNode->arithmeticOperationsVector = arithmeticOperationsVector;
-            for (int index1 = newASTNode->arithmeticOperationsVector.size() - 1; index1 >= 0; index1--)
-            {
-                std::string stringStack = "";
-                for (int index2 = 0; index2 < newASTNode->arithmeticOperationsVector[index1].size(); index2++)
-                {
-                    stringStack += newASTNode->arithmeticOperationsVector[index1][index2] + " | ";
-                };
-                std::cout << "[PARSER] [STACK] [" << index1 << "]:" << stringStack << std::endl;
-            };
-            //123 + varInt1 - ((varInt2 / (601 + (481)) * 456 + 1111) * varInt3) + varInt4 - 789;
-            //[PARSER] [STACK] [4]:481 |
-            //[PARSER] [STACK] [3]:601 | + |
-            //[PARSER] [STACK] [2]:varInt2 | / | * | 456 | + | 1111 |
-            //[PARSER] [STACK] [1]:* | varInt3 |
-            //[PARSER] [STACK] [0]:123 | + | varInt1 | - | + | varInt4 | - | 789 |
+        }
+        else
+        {
+            return false;
         };
     }
     else
