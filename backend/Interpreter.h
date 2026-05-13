@@ -1,4 +1,4 @@
-/* UPDATE VERSION [38] */
+/* UPDATE VERSION [39] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -644,13 +644,6 @@ Recursively Performs Arithmetic Operations On Integers, Decimals Or Strings Only
 */
 bool Interpreter::performArithmetic(ArithmeticStruct*& arithmeticStruct, std::vector<std::string> arithmeticVec, std::string variableType)
 {
-    //123 [+] varInt1 - varInt2 * 456 / varInt3 + varInt4 - 789;
-    std::cout << "arithmeticVec SIZE: " << arithmeticVec.size() << std::endl;
-    for (int index = 0; index < arithmeticVec.size(); index++)
-    {
-        std::cout << "arithmeticVec[" << index << "]:" << arithmeticVec[index] << std::endl;
-    };
-    std::cout << "CURRENT INDEX: " << arithmeticStruct->index << std::endl;
     if (arithmeticStruct->index >= arithmeticVec.size())
     {
         return true;
@@ -820,7 +813,9 @@ bool Interpreter::performArithmetic(ArithmeticStruct*& arithmeticStruct, std::ve
     }
     else if (variableType == "STRING")
     {
+        std::cout << "STRING ARITHMETIC!" << std::endl;
         std::string secondOperandString = arithmeticVec[arithmeticStruct->index + 1];
+        std::cout << "secondOperandString:" << secondOperandString << std::endl;
         if (this->variablesMap.find(secondOperandString) != this->variablesMap.end())
         {
             VariableStruct* secondOperandStruct = this->variableStructMap[this->variablesMap[secondOperandString]];
@@ -849,18 +844,9 @@ bool Interpreter::performArithmetic(ArithmeticStruct*& arithmeticStruct, std::ve
         else if (secondOperandString[0] == '"' && secondOperandString[secondOperandString.size() - 1] == '"')
         {
             arithmeticStruct->stringArithmeticResult += secondOperandString.substr(1, secondOperandString.size() - 2);
-            /*
-            FIX THIS:
-            STRING string1 = "HELLO WORLD!";
-            output(string1);
-            string1 = string1 + " " + string1;
-            output(string1);
-            
-            STRING string1 = "HELLO WORLD!";
-            output(string1);
-            string1 = string1 + "a" + string1;
-            output(string1);
-            */
+            std::cout << "2. arithmeticStruct->stringArithmeticResult:" << arithmeticStruct->stringArithmeticResult << std::endl;
+            arithmeticStruct->index += 2;
+            return this->performArithmetic(arithmeticStruct, arithmeticVec, variableType);
         }
         else
         {

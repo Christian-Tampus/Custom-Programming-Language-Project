@@ -1,4 +1,4 @@
-# UPDATE VERSION [38]
+# UPDATE VERSION [39]
 # Custom Programming Language Project Title
 ## Custom Programming Language Project Description
 ### To Do List
@@ -16,7 +16,7 @@
 ### 2. [COMPLETED] Variables (Integer, Decimal, Character, Boolean, String)
 ### 3. [COMPLETED] Constants (Integer, Decimal, Character, Boolean, String)
 ### 4. [COMPLETED] Standard I/O (Input, Output)
-### 5. [_] Basic Arithmetic (Assignment Operator, Addition, Subtraction, Multiplication, Division)
+### 5. [COMPLETED] Basic Arithmetic (Assignment Operator, Addition, Subtraction, Multiplication, Division)
 ### 6. [_] Control Flow (If, Else If, Else)
 ### 7. [_] Arrays (Integer, Decimal, Character, Boolean, String)
 ### 8. [_] Loops (For, While, Do-While)

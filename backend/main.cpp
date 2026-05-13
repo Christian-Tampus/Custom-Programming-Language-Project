@@ -1,4 +1,4 @@
-/* UPDATE VERSION [38] */
+/* UPDATE VERSION [39] */
 
 /*
 ==================================================
@@ -16,7 +16,6 @@ using json = nlohmann::json;
 
 /*
 Sample Code:
-
 !This Is A Comment, The Language Only Supports Single-Line Comments
 
 !Below Is An Example Of output() Using String Literals
@@ -156,34 +155,125 @@ INTEGER varInt2 = 7500;
 INTEGER varInt3 = 5000;
 INTEGER varInt4 = 10000;
 
-INTEGER additionExample1;
-output("additionExample1:");
-output(additionExample1);
-additionExample1 = 123 + varInt1 - varInt2 * 456 / varInt3 + varInt4 - 789;
-output("additionExample1:");
-output(additionExample1);
+INTEGER arithmeticExample1;
+output("arithmeticExample1:");
+output(arithmeticExample1);
+arithmeticExample1 = 123 + varInt1 - varInt2 * 456 / varInt3 + varInt4 - 789;
+output("arithmeticExample1:");
+output(arithmeticExample1);
 
-INTEGER additionExample2 = 123;
-output("additionExample2:");
-output(additionExample2);
-additionExample2 = varInt1 + 123 + varInt2 + 456 + varInt3 + 789 + varInt4;
-output("additionExample2:");
-output(additionExample2);
+INTEGER arithmeticExample2 = 123;
+output("arithmeticExample2:");
+output(arithmeticExample2);
+arithmeticExample2 = varInt1 + 123 - varInt2 * 456 / varInt3 + 789 - varInt4;
+output("arithmeticExample2:");
+output(arithmeticExample2);
 
-INTEGER additionExample3 = 456;
-output("additionExample3:");
-output(additionExample3);
-additionExample3 = additionExample3 + 123 + varInt1 + varInt2 + 456 + varInt3 + varInt4 + 789;
-output("additionExample3:");
-output(additionExample3);
+INTEGER arithmeticExample3 = 456;
+output("arithmeticExample3:");
+output(arithmeticExample3);
+arithmeticExample3 = arithmeticExample3 + 123 - varInt1 * varInt2 / 456 + varInt3 - varInt4 * 789;
+output("arithmeticExample3:");
+output(arithmeticExample3);
 
-INTEGER additionExample4 = varInt1 + 123 + varInt2 + 456 + varInt3 + varInt4 + 789;
-output("additionExample4:");
-output(additionExample4);
+DECIMAL varDec1 = 2500.0;
+DECIMAL varDec2 = 7500.0;
+DECIMAL varDec3 = 5000.0;
+DECIMAL varDec4 = 10000.0;
 
-INTEGER additionExample5 = 123 + varInt1 + varInt2 + 456 + varInt3 + varInt4 + 789 + additionExample4;
-output("additionExample5:");
-output(additionExample5);
+DECIMAL arithmeticExample4;
+output("arithmeticExample4:");
+output(arithmeticExample4);
+arithmeticExample4 = 123.0 + varDec1 - varDec2 * 456.0 / varDec3 + varDec4 - 789.0;
+output("arithmeticExample4:");
+output(arithmeticExample4);
+
+DECIMAL arithmeticExample5 = 123.0;
+output("arithmeticExample5:");
+output(arithmeticExample5);
+arithmeticExample5 = varDec1 + 123.0 - varDec2 * 456.0 / varDec3 + 789.0 - varDec4;
+output("arithmeticExample5:");
+output(arithmeticExample5);
+
+DECIMAL arithmeticExample6 = 456.0;
+output("arithmeticExample6:");
+output(arithmeticExample6);
+arithmeticExample6 = arithmeticExample6 + 123.0 - varDec1 * varDec2 / 456.0 + varDec3 - varDec4 * 789.0;
+output("arithmeticExample6:");
+output(arithmeticExample6);
+
+STRING varStr1 = " Variable String 1 ";
+STRING varStr2 = " Variable String 2 ";
+STRING varStr3 = " Variable String 3 ";
+STRING varStr4 = " Variable String 4 ";
+
+STRING arithmeticExample7;
+output("arithmeticExample7:");
+output(arithmeticExample7);
+arithmeticExample7 = " Literal String 1 " + varStr1 + varStr2 + " Literal String 2 " + varStr3 + varStr4 + " Literal String 3 ";
+output("arithmeticExample7:");
+output(arithmeticExample7);
+
+STRING arithmeticExample8 = " Arithmetic String 1 ";
+output("arithmeticExample8:");
+output(arithmeticExample8);
+arithmeticExample8 = varStr1 + " Literal String 1 " + varStr2 + " Literal String 2 " + varStr3 + " Literal String 2 " + varStr4;
+output("arithmeticExample8:");
+output(arithmeticExample8);
+
+STRING arithmeticExample9 = " Arithmetic String 2 ";
+output("arithmeticExample9:");
+output(arithmeticExample9);
+arithmeticExample9 = arithmeticExample9 + " Literal String 1 " + varStr1 + varStr2 + " Literal String 2 " + varStr3 + varStr4 + " Literal String 3 ";
+output("arithmeticExample9:");
+output(arithmeticExample9);
+
+!Below Is An Example Of Control Flow (If, Else If, Else)
+INTEGER controlFlowInt1 = 1;
+INTEGER controlFlowInt2 = 1;
+INTEGER controlFlowInt3 = 2;
+IF (controlFlowInt1 EQ controlFlowInt2) AND (controlFlowInt2 NE controlFlowInt3) OR (controlFlowInt1 NE controlFlowInt3) BRANCH;
+output("INSIDE IF STATEMENT!");
+END;
+
+COMPARISON_OPERATORS:
+EQ:==
+NE:!=
+GE:>=
+LE:<=
+GT:>
+LT:<
+
+LOGICAL_OPERATORS:
+AND:&&
+OR:||
+NOT:!
+
+IF (LEFT_OPERAND_1 COMPARISON_OPERATOR_1 RIGHT_OPERAND_1) LOGICAL_OPERATOR_1 (LEFT_OPERAND_2 COMPARISON_OPERATOR_2 RIGHT_OPERAND_2) LOGICAL_OPERATOR_2 ETC.. (LEFT_OPERAND_N COMPARISON_OPERATOR_N RIGHT_OPERAND_N) LOGICAL_OPERATOR_N BRANCH
+...
+...
+...
+CODE
+...
+...
+...
+ELSE IF (LEFT_OPERAND_1 COMPARISON_OPERATOR_1 RIGHT_OPERAND_1) LOGICAL_OPERATOR_1 (LEFT_OPERAND_2 COMPARISON_OPERATOR_2 RIGHT_OPERAND_2) LOGICAL_OPERATOR_2 ETC.. (LEFT_OPERAND_N COMPARISON_OPERATOR_N RIGHT_OPERAND_N) LOGICAL_OPERATOR_N BRANCH
+...
+...
+...
+CODE
+...
+...
+...
+ELSE
+...
+...
+...
+CODE
+...
+...
+...
+END
 
 !Below Is An Example Of output() Using String Literals
 output("[SYSTEM MESSAGE] Program Terminated...");

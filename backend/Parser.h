@@ -1,4 +1,4 @@
-/* UPDATE VERSION [38] */
+/* UPDATE VERSION [39] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -38,6 +38,75 @@ enum Command
     C_CONSTANT_STRING,
     C_ASSIGNMENT_OPERATOR,
     C_ARITHMETIC,
+    C_CONTROL_FLOW,
+};
+
+/*
+==================================================
+Comparison Operators Enums
+==================================================
+*/
+enum ComparisonOperator
+{
+    EQ,
+    NE,
+    GT,
+    LT,
+    GE,
+    LE,
+};
+
+/*
+==================================================
+Logical Operators Enums
+==================================================
+*/
+enum LogicalOperator
+{
+    AND,
+    OR,
+    NOT,
+};
+
+/*
+==================================================
+Data Type Enums
+==================================================
+*/
+enum DataType
+{
+    D_NULL,
+    D_VARIABLE,
+    D_INTEGER,
+    D_DECIMAL,
+    D_CHARACTER,
+    D_BOOLEAN,
+    D_STRING,
+};
+
+/*
+==================================================
+Comparison Struct
+==================================================
+*/
+struct ComparisonStruct
+{
+    int integerOperand1 = 0;
+    int integerOperand2 = 0;
+    double decimalOperand1 = 0.0;
+    double decimalOperand2 = 0.0;
+    bool booleanOperand1 = false;
+    bool booleanOperand2 = false;
+    char characterOperand1 = ' ';
+    char characterOperand2 = ' ';
+    std::string stringOperand1 = "";
+    std::string stringOperand2 = "";
+    DataType dataType = D_NULL;
+    bool operand1IsAVariable = false;
+    bool operand2IsAVariable = false;
+    std::string operand1VariableName = "";
+    std::string operand2VariableName = "";
+    ComparisonOperator comparisonOperator = EQ;
 };
 
 /*
@@ -67,6 +136,8 @@ struct ASTNode
     std::string assignmentVariableName = "";
     std::string assignmentOperatorValue = "";
     std::vector<std::string> arithmeticVec;
+    std::vector<ComparisonStruct> comparisonStructVec;
+    std::vector<LogicalOperator> logicalOperatorVec;
     ~ASTNode()
     {
         for (ASTNode* childASTNode: childASTNodesVec)
@@ -101,6 +172,7 @@ class Parser
         std::vector<std::string> splitCodeLine(std::string codeLine);
         bool checkIfVariableNameExists(std::string variableName);
         bool checkIfArithmeticOperations(std::string inputString);
+        DataType checkDataType(std::string data);
     public:
         Parser();
         Parser(std::vector<std::string> tokensVec);
@@ -311,6 +383,12 @@ void Parser::parse()
                         commandFound = true;
                         std::cout << "[PARSER] Command: CONSTANT STRING" << std::endl;
                         commandType = C_CONSTANT_STRING;
+                    }
+                    else if (commandString == "IF" || commandString == "ELSE IF" || commandString == "ELSE" || commandString == "END")
+                    {
+                        commandFound = true;
+                        std::cout << "[PARSER] Command: CONTROL FLOW" << std::endl;
+                        commandType = C_CONTROL_FLOW;
                     }
                     else if (currentCodeLine[index2] == ' ' && this->isValidVariableName(commandString.substr(0, commandString.length() - 1), true) && index2 + 1 < currentCodeLine.length() && currentCodeLine[index2 + 1] == '=' && index2 + 2 < currentCodeLine.length() && currentCodeLine[index2 + 2] == ' ')
                     {
@@ -871,7 +949,51 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
     {
         std::string newCodeLine = codeLine;
         newCodeLine.erase(std::remove(newCodeLine.begin(), newCodeLine.end(), ';'), newCodeLine.end());
-        std::vector<std::string> arithmeticTokensVector = this->splitCodeLine(newCodeLine);
+        std::vector<std::string> arithmeticTokensVector;
+        bool tokenIsAString = false;
+        std::string currentToken = "";
+        for (int index = 0; index < newCodeLine.length(); index++)
+        {
+            if (currentToken.length() == 0)
+            {
+                if (newCodeLine[index] == '"')
+                {
+                    tokenIsAString = true;
+                    currentToken += newCodeLine[index];
+                }
+                else if (newCodeLine[index] != ' ')
+                {
+                    tokenIsAString = false;
+                    currentToken += newCodeLine[index];
+                };
+            }
+            else if (tokenIsAString)
+            {
+                if (newCodeLine[index] == '"')
+                {
+                    currentToken += newCodeLine[index];
+                    arithmeticTokensVector.push_back(currentToken);
+                    currentToken = "";
+                }
+                else
+                {
+                    currentToken += newCodeLine[index];
+                };
+            }
+            else if (newCodeLine[index] != ' ')
+            {
+                currentToken += newCodeLine[index];
+            }
+            else
+            {
+                arithmeticTokensVector.push_back(currentToken);
+                currentToken = "";
+            };
+        };
+        if (currentToken.length() > 0)
+        {
+            arithmeticTokensVector.push_back(currentToken);
+        };
         if (this->isValidVariableName(arithmeticTokensVector[0], true) && arithmeticTokensVector[1] == "=")
         {
             for (int index = 2; index < arithmeticTokensVector.size(); index++)
@@ -884,6 +1006,96 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
         {
             return false;
         };
+    }
+    else if (commandType == C_CONTROL_FLOW)
+    {
+        std::cout << "CONTROL FLOW CODE LINE:" << codeLine << std::endl;
+        std::regex re(R"([()])");
+        std::sregex_token_iterator it(codeLine.begin(), codeLine.end(), re, {-1});
+        std::sregex_token_iterator end;
+        std::vector<std::string> parts(it, end);
+        for (int index = 0; index < parts.size(); index++)
+        {
+            parts[index] = this->trimString(parts[index]);
+            std::cout << parts[index] << std::endl;
+        };
+        if (parts[0] == "IF" && parts[parts.size() - 1] == "BRANCH;")
+        {
+            for (int index = 2; index < parts.size(); index += 2)
+            {
+                if (index != parts.size() - 1)
+                {
+                    if (parts[index] != "AND" && parts[index] != "OR")
+                    {
+                        return false;
+                    }
+                    else if (parts[index] == "AND")
+                    {
+                        LogicalOperator logicalOperator = AND;
+                        newASTNode->logicalOperatorVec.push_back(logicalOperator);
+                    }
+                    else if (parts[index] == "OR")
+                    {
+                        LogicalOperator logicalOperator = OR;
+                        newASTNode->logicalOperatorVec.push_back(logicalOperator);
+                    };
+                };
+            };
+            for (int index = 1; index < parts.size(); index += 2)
+            {
+                std::regex re(R"( EQ | NE | GT | LT | GE | LE )");
+                std::sregex_token_iterator begin(parts[index].begin(), parts[index].end(), re, -1);
+                std::sregex_token_iterator end;
+                std::vector<std::string> operandsVec;
+                if (operandsVec.size() == 2)
+                {
+                    DataType leftOperandDataType = this->checkDataType(operandsVec[0]);
+                    DataType rightOperandDataType = this->checkDataType(operandsVec[1]);
+                    if (leftOperandDataType != D_NULL && rightOperandDataType != D_NULL)
+                    {
+                        if (leftOperandDataType != D_VARIABLE && rightOperandDataType != D_VARIABLE && leftOperandDataType == rightOperandDataType)
+                        {
+                            if (leftOperandDataType == D_INTEGER)
+                            {
+                                ComparisonStruct newComparisonStruct;
+                                newComparisonStruct.integerOperand1 = std::stoi(operandsVec[0]);
+                                newComparisonStruct.integerOperand2 = std::stoi(operandsVec[1]);
+                            };
+
+
+
+
+
+
+
+
+                            
+                        }
+                        else
+                        {
+
+                        };
+                    }
+                    else
+                    {
+                        return false;
+                    };
+                }
+                else
+                {
+                    return false;
+                };
+            };
+        }
+        else
+        {
+            return false;
+        };
+        /*
+        IF (controlFlowInt1 EQ controlFlowInt2) AND (controlFlowInt2 NE controlFlowInt3) OR (controlFlowInt1 NE controlFlowInt3) BRANCH;
+        output("INSIDE IF STATEMENT!");
+        END;
+        */
     }
     else
     {
@@ -1142,10 +1354,14 @@ bool Parser::checkIfArithmeticOperations(std::string inputString)
     std::sregex_token_iterator it(inputString.begin(), inputString.end(), re, {-1});
     std::sregex_token_iterator end;
     std::vector<std::string> parts(it, end);
-    bool isArithmeticOperation = true;
-    for (auto& part : parts)
+    if (parts.size() <= 1)
     {
-        std::string variableOrLiteral = part;
+        return false;
+    };
+    bool isArithmeticOperation = true;
+    for (int index = 0; index < parts.size(); index++)
+    {
+        std::string variableOrLiteral = parts[index];
         variableOrLiteral.erase(std::remove(variableOrLiteral.begin(), variableOrLiteral.end(), '('), variableOrLiteral.end());
         variableOrLiteral.erase(std::remove(variableOrLiteral.begin(), variableOrLiteral.end(), ')'), variableOrLiteral.end());
         variableOrLiteral.erase(std::remove(variableOrLiteral.begin(), variableOrLiteral.end(), ';'), variableOrLiteral.end());
@@ -1157,4 +1373,41 @@ bool Parser::checkIfArithmeticOperations(std::string inputString)
     };
     return isArithmeticOperation;
 };
+
+/*
+==================================================
+Checks & Returns The Data Type
+==================================================
+*/
+DataType Parser::checkDataType(std::string data)
+{
+    data += ";";
+    DataType dataType = D_NULL;
+    if (this->isValidVariableName(data, true))
+    {
+        dataType = D_VARIABLE;
+    }
+    else if (this->isValidVariableAssignment(data, "INTEGER"))
+    {
+        dataType = D_INTEGER;
+    }
+    else if (this->isValidVariableAssignment(data, "DECIMAL"))
+    {
+        dataType = D_DECIMAL;
+    }
+    else if (this->isValidVariableAssignment(data, "CHARACTER"))
+    {
+        dataType = D_CHARACTER;
+    }
+    else if (this->isValidVariableAssignment(data, "BOOLEAN"))
+    {
+        dataType = D_BOOLEAN;
+    }
+    else if (this->isValidVariableAssignment(data, "STRING"))
+    {
+        dataType = D_STRING;
+    };
+    return dataType;
+};
+
 #endif
