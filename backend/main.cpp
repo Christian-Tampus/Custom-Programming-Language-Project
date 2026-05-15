@@ -1,4 +1,4 @@
-/* UPDATE VERSION [39] */
+/* UPDATE VERSION [40] */
 
 /*
 ==================================================
@@ -233,8 +233,13 @@ INTEGER controlFlowInt1 = 1;
 INTEGER controlFlowInt2 = 1;
 INTEGER controlFlowInt3 = 2;
 IF (controlFlowInt1 EQ controlFlowInt2) AND (controlFlowInt2 NE controlFlowInt3) OR (controlFlowInt1 NE controlFlowInt3) BRANCH;
-output("INSIDE IF STATEMENT!");
+    output("INSIDE IF STATEMENT!");
+ELSE IF (1 EQ 1) AND (1.1 NE 2.2) OR ('A' GT 'Z') AND ("STRING A" LT "STRING B') OR (TRUE EQ FALSE) AND (5 GE 3) OR (7.7 LE 8.8) BRANCH;
+    output("INSIDE ELSE IF STATEMENT!");
+ELSE BRANCH;
+    output("INSIDE ELSE STATEMENT!");
 END;
+output("[SYSTEM MESSAGE] Program Terminated");
 
 COMPARISON_OPERATORS:
 EQ:==

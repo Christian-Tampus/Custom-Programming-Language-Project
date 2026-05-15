@@ -1,4 +1,4 @@
-/* UPDATE VERSION [39] */
+/* UPDATE VERSION [40] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -623,9 +623,9 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                 break;
             };
         };
-        if (currentASTNode->childASTNodesVec.size() > 0)
+        if (currentASTNode->sequentialASTNode != nullptr)
         {
-            currentASTNode = currentASTNode->childASTNodesVec[currentASTNode->branchIndex];
+            currentASTNode = currentASTNode->sequentialASTNode;
         }
         else
         {
