@@ -1,4 +1,4 @@
-/* UPDATE VERSION [40] */
+/* UPDATE VERSION [41] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -153,13 +153,7 @@ struct ASTNode
     std::vector<std::string> arithmeticVec;
     std::vector<ComparisonStruct> comparisonStructVec;
     std::vector<LogicalOperator> logicalOperatorVec;
-    ~ASTNode()
-    {
-        delete this->sequentialASTNode;
-        delete this->controlFlowASTNode;
-        sequentialASTNode = nullptr;
-        controlFlowASTNode = nullptr;
-    };
+    ~ASTNode() = default;
 };
 
 /*
@@ -184,6 +178,7 @@ class Parser
         int variableMemoryAddressCounter;
         ASTNode* root;
         ASTNode* currentASTNode;
+        std::vector<ASTNode*> ASTNodesVec;
         std::vector<std::string> tokensVec;
         std::vector<std::string> variableNamesVec;
         std::vector<TempVariableStruct> tempVariableStructVec;
@@ -229,6 +224,11 @@ Parser::Parser()
     this->variableMemoryAddressCounter = 0;
     this->currentASTNode = nullptr;
     this->root = nullptr;
+    for (int index = 0; index < this->ASTNodesVec.size(); index++)
+    {
+        delete this->ASTNodesVec[index];
+    };
+    this->ASTNodesVec.clear();
     this->parsedSuccessfully = false;
     this->errorString = "";
 };
@@ -500,6 +500,7 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
     std::cout << "[PARSER] codeLine:" << codeLine << std::endl;
     bool buildASTSuccessfully = false;
     ASTNode* newASTNode = new ASTNode;
+    this->ASTNodesVec.push_back(newASTNode);
     std::string ASTNodeType = "SEQUENTIAL AST NODE";
     newASTNode->command = commandType;
     if (commandType == C_COMMENT)
@@ -1060,7 +1061,6 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
     }
     else if (commandType == C_CONTROL_FLOW)
     {
-        std::cout << "CONTROL FLOW:" << codeLine << std::endl;
         std::regex re(R"([()])");
         std::sregex_token_iterator it(codeLine.begin(), codeLine.end(), re, {-1});
         std::sregex_token_iterator end;
@@ -1069,7 +1069,6 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
         for (int index = 0; index < parts.size(); index++)
         {
             parts[index] = this->trimString(parts[index]);
-            std::cout << "parts[index]:" << parts[index] << std::endl;
         };
         if (parts[0] == "IF" && parts[parts.size() - 1] == "BRANCH;" || parts[0] == "ELSE IF" && parts[parts.size() - 1] == "BRANCH;")
         {
@@ -1078,12 +1077,10 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                 isAnIfStatement = false;
                 ASTNodeType = "CONTROL FLOW AST NODE";
                 newASTNode->controlFlowType = ELSE_IF;
-                std::cout << "[PARSER] ELSE IF BRANCH!" << std::endl;
             }
             else
             {
                 newASTNode->controlFlowType = IF;
-                std::cout << "[PARSER] IF BRANCH!" << std::endl;
             };
             for (int index = 2; index < parts.size(); index += 2)
             {
@@ -1205,17 +1202,19 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                             std::string rightOperandDataTypeString = "";
                             if (leftOperandDataType == D_VARIABLE)
                             {
+                                bool foundLeftOperandVariableName = false;
                                 for (int index = 0; index < this->tempVariableStructVec.size(); index++)
                                 {
                                     if (this->tempVariableStructVec[index].variableName == operandsVec[0])
                                     {
                                         leftOperandDataTypeString = this->tempVariableStructVec[index].variableType;
+                                        foundLeftOperandVariableName = true;
                                         break;
-                                    }
-                                    else
-                                    {
-                                        return false;
                                     };
+                                };
+                                if (foundLeftOperandVariableName == false)
+                                {
+                                    return false;
                                 };
                             }
                             else
@@ -1247,17 +1246,19 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                             };
                             if (rightOperandDataType == D_VARIABLE)
                             {
+                                bool foundRightOperandVariableName = false;
                                 for (int index = 0; index < this->tempVariableStructVec.size(); index++)
                                 {
                                     if (this->tempVariableStructVec[index].variableName == operandsVec[1])
                                     {
                                         rightOperandDataTypeString = this->tempVariableStructVec[index].variableType;
+                                        foundRightOperandVariableName = true;
                                         break;
-                                    }
-                                    else
-                                    {
-                                        return false;
                                     };
+                                };
+                                if (foundRightOperandVariableName == false)
+                                {
+                                    return false;
                                 };
                             }
                             else
@@ -1323,32 +1324,26 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                                 };
                                 if (rightOperandDataType == D_INTEGER)
                                 {
-                                    newComparisonStruct.dataType = D_INTEGER;
                                     newComparisonStruct.integerOperand2 = std::stoi(operandsVec[1]);
                                 }
                                 else if (rightOperandDataType == D_DECIMAL)
                                 {
-                                    newComparisonStruct.dataType = D_DECIMAL;
                                     newComparisonStruct.decimalOperand2 = std::stod(operandsVec[1]);
                                 }
                                 else if (rightOperandDataType == D_CHARACTER)
                                 {
-                                    newComparisonStruct.dataType = D_CHARACTER;
                                     newComparisonStruct.characterOperand2 = operandsVec[1][1];
                                 }
                                 else if (rightOperandDataType == D_BOOLEAN)
                                 {
-                                    newComparisonStruct.dataType = D_BOOLEAN;
                                     newComparisonStruct.booleanOperand2 = (operandsVec[1] == "TRUE" ? true : false);
                                 }
                                 else if (rightOperandDataType == D_STRING)
                                 {
-                                    newComparisonStruct.dataType = D_STRING;
                                     newComparisonStruct.stringOperand2 = operandsVec[1].substr(1, operandsVec[1].size() - 2);
                                 }
                                 else if (rightOperandDataType == D_VARIABLE)
                                 {
-                                    newComparisonStruct.dataType = D_VARIABLE;
                                     newComparisonStruct.operand2VariableName = operandsVec[1];
                                     newComparisonStruct.operand2IsAVariable = true;
                                 };
@@ -1422,13 +1417,11 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
         {
             ASTNodeType = "CONTROL FLOW AST NODE";
             newASTNode->controlFlowType = ELSE;
-            std::cout << "[PARSER] ELSE BRANCH!" << std::endl;
         }
         else if (codeLine == "END;")
         {
             ASTNodeType = "CONTROL FLOW AST NODE END";
             newASTNode->controlFlowType = END;
-            std::cout << "[PARSER] CONTROL FLOW END!" << std::endl;
         }
         else
         {

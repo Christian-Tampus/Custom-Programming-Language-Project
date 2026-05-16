@@ -1,4 +1,4 @@
-/* UPDATE VERSION [40] */
+/* UPDATE VERSION [41] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -127,6 +127,7 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
     ASTNode* currentASTNode = root;
     while (currentASTNode != nullptr)
     {
+        bool takeControlFlowBranch = false;
         if (currentASTNode->command != C_COMMENT && currentASTNode->command != C_NONE)
         {
             if (currentASTNode->command == C_OUTPUT)
@@ -616,6 +617,418 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                     break;
                 };
             }
+            else if (currentASTNode->command == C_CONTROL_FLOW)
+            {
+                if (currentASTNode->controlFlowType == IF || currentASTNode->controlFlowType == ELSE_IF)
+                {
+                    std::vector<bool> comparisonResultsVec;
+                    for (int index = 0; index < currentASTNode->comparisonStructVec.size(); index++)
+                    {
+                        ComparisonStruct currentComparisonStruct = currentASTNode->comparisonStructVec[index];
+                        VariableStruct* operand1VariableStruct = nullptr;
+                        VariableStruct* operand2VariableStruct = nullptr;
+                        if (currentComparisonStruct.operand1IsAVariable == true)
+                        {
+                            if (this->variablesMap.find(currentComparisonStruct.operand1VariableName) != this->variablesMap.end())
+                            {
+                                operand1VariableStruct = this->variableStructMap[this->variablesMap[currentComparisonStruct.operand1VariableName]];
+                            }
+                            else
+                            {
+                                newInterpretationSuccess = false;
+                                currentASTNode = nullptr;
+                                break;
+                            };
+                        };
+                        if (currentComparisonStruct.operand2IsAVariable == true)
+                        {
+                            if (this->variablesMap.find(currentComparisonStruct.operand2VariableName) != this->variablesMap.end())
+                            {
+                                operand2VariableStruct = this->variableStructMap[this->variablesMap[currentComparisonStruct.operand2VariableName]];
+                            }
+                            else
+                            {
+                                newInterpretationSuccess = false;
+                                currentASTNode = nullptr;
+                                break;
+                            };
+                        };
+                        if (currentComparisonStruct.dataType == D_INTEGER)
+                        {
+                            int operand1Value = 0;
+                            int operand2Value = 0;
+                            if (operand1VariableStruct != nullptr)
+                            {
+                                if (operand1VariableStruct->variableType == "INTEGER" || operand1VariableStruct->variableType == "CONSTANT INTEGER")
+                                {
+                                    operand1Value = operand1VariableStruct->integer;
+                                }
+                                else
+                                {
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            }
+                            else
+                            {
+                                operand1Value = currentComparisonStruct.integerOperand1;
+                            };
+                            if (operand2VariableStruct != nullptr)
+                            {
+                                if (operand2VariableStruct->variableType == "INTEGER" || operand2VariableStruct->variableType == "CONSTANT INTEGER")
+                                {
+                                    operand2Value = operand2VariableStruct->integer;
+                                }
+                                else
+                                {
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            }
+                            else
+                            {
+                                operand2Value = currentComparisonStruct.integerOperand2;
+                            };
+                            if (currentComparisonStruct.comparisonOperator == EQ)
+                            {
+                                comparisonResultsVec.push_back((operand1Value == operand2Value));
+                            }
+                            else if (currentComparisonStruct.comparisonOperator == NE)
+                            {
+                                comparisonResultsVec.push_back((operand1Value != operand2Value));
+                            }
+                            else if (currentComparisonStruct.comparisonOperator == GT)
+                            {
+                                comparisonResultsVec.push_back((operand1Value > operand2Value));
+                            }
+                            else if (currentComparisonStruct.comparisonOperator == LT)
+                            {
+                                comparisonResultsVec.push_back((operand1Value < operand2Value));
+                            }
+                            else if (currentComparisonStruct.comparisonOperator == GE)
+                            {
+                                comparisonResultsVec.push_back((operand1Value >= operand2Value));
+                            }
+                            else if (currentComparisonStruct.comparisonOperator == LE)
+                            {
+                                comparisonResultsVec.push_back((operand1Value <= operand2Value));
+                            };
+                        }
+                        else if (currentComparisonStruct.dataType == D_DECIMAL)
+                        {
+                            double operand1Value = 0.0;
+                            double operand2Value = 0.0;
+                            if (operand1VariableStruct != nullptr)
+                            {
+                                if (operand1VariableStruct->variableType == "DECIMAL" || operand1VariableStruct->variableType == "CONSTANT DECIMAL")
+                                {
+                                    operand1Value = operand1VariableStruct->decimal;
+                                }
+                                else
+                                {
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            }
+                            else
+                            {
+                                operand1Value = currentComparisonStruct.decimalOperand1;
+                            };
+                            if (operand2VariableStruct != nullptr)
+                            {
+                                if (operand2VariableStruct->variableType == "DECIMAL" || operand2VariableStruct->variableType == "CONSTANT DECIMAL")
+                                {
+                                    operand2Value = operand2VariableStruct->decimal;
+                                }
+                                else
+                                {
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            }
+                            else
+                            {
+                                operand2Value = currentComparisonStruct.decimalOperand2;
+                            };
+                            if (currentComparisonStruct.comparisonOperator == EQ)
+                            {
+                                comparisonResultsVec.push_back((operand1Value == operand2Value));
+                            }
+                            else if (currentComparisonStruct.comparisonOperator == NE)
+                            {
+                                comparisonResultsVec.push_back((operand1Value != operand2Value));
+                            }
+                            else if (currentComparisonStruct.comparisonOperator == GT)
+                            {
+                                comparisonResultsVec.push_back((operand1Value > operand2Value));
+                            }
+                            else if (currentComparisonStruct.comparisonOperator == LT)
+                            {
+                                comparisonResultsVec.push_back((operand1Value < operand2Value));
+                            }
+                            else if (currentComparisonStruct.comparisonOperator == GE)
+                            {
+                                comparisonResultsVec.push_back((operand1Value >= operand2Value));
+                            }
+                            else if (currentComparisonStruct.comparisonOperator == LE)
+                            {
+                                comparisonResultsVec.push_back((operand1Value <= operand2Value));
+                            };
+                        }
+                        else if (currentComparisonStruct.dataType == D_CHARACTER)
+                        {
+                            char operand1Value = ' ';
+                            char operand2Value = ' ';
+                            if (operand1VariableStruct != nullptr)
+                            {
+                                if (operand1VariableStruct->variableType == "CHARACTER" || operand1VariableStruct->variableType == "CONSTANT CHARACTER")
+                                {
+                                    operand1Value = operand1VariableStruct->character;
+                                }
+                                else
+                                {
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            }
+                            else
+                            {
+                                operand1Value = currentComparisonStruct.characterOperand1;
+                            };
+                            if (operand2VariableStruct != nullptr)
+                            {
+                                if (operand2VariableStruct->variableType == "CHARACTER" || operand2VariableStruct->variableType == "CONSTANT CHARACTER")
+                                {
+                                    operand2Value = operand2VariableStruct->character;
+                                }
+                                else
+                                {
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            }
+                            else
+                            {
+                                operand2Value = currentComparisonStruct.characterOperand2;
+                            };
+                            if (currentComparisonStruct.comparisonOperator == EQ)
+                            {
+                                comparisonResultsVec.push_back((operand1Value == operand2Value));
+                            }
+                            else if (currentComparisonStruct.comparisonOperator == NE)
+                            {
+                                comparisonResultsVec.push_back((operand1Value != operand2Value));
+                            }
+                            else if (currentComparisonStruct.comparisonOperator == GT)
+                            {
+                                comparisonResultsVec.push_back((operand1Value > operand2Value));
+                            }
+                            else if (currentComparisonStruct.comparisonOperator == LT)
+                            {
+                                comparisonResultsVec.push_back((operand1Value < operand2Value));
+                            }
+                            else if (currentComparisonStruct.comparisonOperator == GE)
+                            {
+                                comparisonResultsVec.push_back((operand1Value >= operand2Value));
+                            }
+                            else if (currentComparisonStruct.comparisonOperator == LE)
+                            {
+                                comparisonResultsVec.push_back((operand1Value <= operand2Value));
+                            };
+                        }
+                        else if (currentComparisonStruct.dataType == D_BOOLEAN)
+                        {
+                            bool operand1Value = false;
+                            bool operand2Value = false;
+                            if (operand1VariableStruct != nullptr)
+                            {
+                                if (operand1VariableStruct->variableType == "BOOLEAN" || operand1VariableStruct->variableType == "CONSTANT BOOLEAN")
+                                {
+                                    operand1Value = operand1VariableStruct->boolean;
+                                }
+                                else
+                                {
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            }
+                            else
+                            {
+                                operand1Value = currentComparisonStruct.booleanOperand1;
+                            };
+                            if (operand2VariableStruct != nullptr)
+                            {
+                                if (operand2VariableStruct->variableType == "BOOLEAN" || operand2VariableStruct->variableType == "CONSTANT BOOLEAN")
+                                {
+                                    operand2Value = operand2VariableStruct->boolean;
+                                }
+                                else
+                                {
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            }
+                            else
+                            {
+                                operand2Value = currentComparisonStruct.booleanOperand2;
+                            };
+                            if (currentComparisonStruct.comparisonOperator == EQ)
+                            {
+                                comparisonResultsVec.push_back((operand1Value == operand2Value));
+                            }
+                            else if (currentComparisonStruct.comparisonOperator == NE)
+                            {
+                                comparisonResultsVec.push_back((operand1Value != operand2Value));
+                            };
+                        }
+                        else if (currentComparisonStruct.dataType == D_STRING)
+                        {
+                            std::string operand1Value = "";
+                            std::string operand2Value = "";
+                            if (operand1VariableStruct != nullptr)
+                            {
+                                if (operand1VariableStruct->variableType == "STRING" || operand1VariableStruct->variableType == "CONSTANT STRING")
+                                {
+                                    operand1Value = operand1VariableStruct->string;
+                                }
+                                else
+                                {
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            }
+                            else
+                            {
+                                operand1Value = currentComparisonStruct.stringOperand1;
+                            };
+                            if (operand2VariableStruct != nullptr)
+                            {
+                                if (operand2VariableStruct->variableType == "STRING" || operand2VariableStruct->variableType == "CONSTANT STRING")
+                                {
+                                    operand2Value = operand2VariableStruct->string;
+                                }
+                                else
+                                {
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            }
+                            else
+                            {
+                                operand2Value = currentComparisonStruct.stringOperand2;
+                            };
+                            if (currentComparisonStruct.comparisonOperator == EQ)
+                            {
+                                comparisonResultsVec.push_back((operand1Value == operand2Value));
+                            }
+                            else if (currentComparisonStruct.comparisonOperator == NE)
+                            {
+                                comparisonResultsVec.push_back((operand1Value != operand2Value));
+                            }
+                            else if (currentComparisonStruct.comparisonOperator == GT)
+                            {
+                                comparisonResultsVec.push_back((operand1Value > operand2Value));
+                            }
+                            else if (currentComparisonStruct.comparisonOperator == LT)
+                            {
+                                comparisonResultsVec.push_back((operand1Value < operand2Value));
+                            }
+                            else if (currentComparisonStruct.comparisonOperator == GE)
+                            {
+                                comparisonResultsVec.push_back((operand1Value >= operand2Value));
+                            }
+                            else if (currentComparisonStruct.comparisonOperator == LE)
+                            {
+                                comparisonResultsVec.push_back((operand1Value <= operand2Value));
+                            };
+                        }
+                        else
+                        {
+                            newInterpretationSuccess = false;
+                            currentASTNode = nullptr;
+                            break;
+                        };
+                    };
+                    if (currentASTNode->comparisonStructVec.size() != comparisonResultsVec.size() || comparisonResultsVec.size() != currentASTNode->logicalOperatorVec.size() + 1)
+                    {
+                        newInterpretationSuccess = false;
+                        currentASTNode = nullptr;
+                        break;
+                    }
+                    else if (comparisonResultsVec.size() == 1 && currentASTNode->logicalOperatorVec.size() == 0)
+                    {
+                        if (comparisonResultsVec[0] == false)
+                        {
+                            takeControlFlowBranch = true;
+                        };
+                    }
+                    else
+                    {
+                        //[true,true,true,false,false,true,false,true,false,false]
+                        //[AND,AND,AND,OR,AND,AND,OR,AND,AND]
+                        int comparisonResultsVecIndex = 0;
+                        bool breakEarly = false;
+                        for (int index = 0; index < currentASTNode->logicalOperatorVec.size(); index++)
+                        {
+                            if (currentASTNode->logicalOperatorVec[index] == OR)
+                            {
+                                bool continueChecks = false;
+                                while (comparisonResultsVecIndex <= index)
+                                {
+                                    if (comparisonResultsVec[comparisonResultsVecIndex] == false)
+                                    {
+                                        continueChecks = true;
+                                        break;
+                                    };
+                                    comparisonResultsVecIndex++;
+                                };
+                                comparisonResultsVecIndex = index + 1;
+                                if (continueChecks == false)
+                                {
+                                    breakEarly = true;
+                                    break;
+                                };
+                            };
+                        };
+                        if (breakEarly == false)
+                        {
+                            while (comparisonResultsVecIndex < comparisonResultsVec.size())
+                            {
+                                if (comparisonResultsVec[comparisonResultsVecIndex] == false)
+                                {
+                                    takeControlFlowBranch = true;
+                                    break;
+                                };
+                                comparisonResultsVecIndex++;
+                            };
+                        };
+                    };
+                }
+                else if (currentASTNode->controlFlowType == ELSE)
+                {
+                    std::cout << "[INTERPRETER] ELSE BRANCH!" << std::endl;
+                }
+                else if (currentASTNode->controlFlowType == END)
+                {
+                    std::cout << "[INTERPRETER] END CONTROL FLOW!" << std::endl;
+                }
+                else
+                {
+                    newInterpretationSuccess = false;
+                    currentASTNode = nullptr;
+                    break;
+                };
+            }
             else
             {
                 newInterpretationSuccess = false;
@@ -623,14 +1036,31 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                 break;
             };
         };
-        if (currentASTNode->sequentialASTNode != nullptr)
+        if (takeControlFlowBranch == false)
         {
-            currentASTNode = currentASTNode->sequentialASTNode;
+            if (currentASTNode->sequentialASTNode != nullptr)
+            {
+                currentASTNode = currentASTNode->sequentialASTNode;
+            }
+            else
+            {
+                currentASTNode = nullptr;
+                break;
+            };
         }
         else
         {
-            currentASTNode = nullptr;
-            break;
+            if (currentASTNode->controlFlowASTNode != nullptr)
+            {
+                currentASTNode = currentASTNode->controlFlowASTNode;
+            }
+            else
+            {
+                std::cout << "[INTERPRETER] ERROR, NEEDED TO TAKE CONTROL FLOW BRANCH BUT currentASTNode->controlFlowASTNode IS NULLPTR!" << std::endl;
+                newInterpretationSuccess = false;
+                currentASTNode = nullptr;
+                break;
+            };
         };
     };
     this->interpretationSuccess = newInterpretationSuccess;
