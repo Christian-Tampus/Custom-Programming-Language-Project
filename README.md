@@ -1,4 +1,4 @@
-# UPDATE VERSION [41]
+# UPDATE VERSION [42]
 # Custom Programming Language Project Title
 ## Custom Programming Language Project Description
 ### To Do List
@@ -17,8 +17,15 @@
 ### 3. [COMPLETED] Constants (Integer, Decimal, Character, Boolean, String)
 ### 4. [COMPLETED] Standard I/O (Input, Output)
 ### 5. [COMPLETED] Basic Arithmetic (Assignment Operator, Addition, Subtraction, Multiplication, Division)
-### 6. [_] Control Flow (If, Else If, Else)
+### 6. [COMPLETED] Control Flow (If, Else If, Else)
 ### 7. [_] Arrays (Integer, Decimal, Character, Boolean, String)
 ### 8. [_] Loops (For, While, Do-While)
 ### 9. [_] Functions (Void, Integer, Decimal, Character, Boolean, String)
 ### 10. [_] Load Sample Code & Sample Inputs Button
+
+# Features To Implement If Time Permits:
+### 1. [_] Control Flow NOT Logical Operator
+### 2. [_] Basic Arithmetic Order Of Precidence With Parenthesis
+### 3. [_] String & Character Built In Functions (upper(string/character), lower(string/character), substring(startIndex, endIndex), reverse(string), indexof(string,character))
+### 4. [_] Advanced Arithmetic Built In Functions (square(integer/decimal,integer), root(integer/decimal,integer), factorial(integer,integer), round(decimal,integer) etc...)
+### 5. [_] HashMaps & Sets

@@ -1,4 +1,4 @@
-/* UPDATE VERSION [41] */
+/* UPDATE VERSION [42] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -40,6 +40,11 @@ enum Command
     C_ASSIGNMENT_OPERATOR,
     C_ARITHMETIC,
     C_CONTROL_FLOW,
+    C_ARRAY_INTEGER,
+    C_ARRAY_DECIMAL,
+    C_ARRAY_CHARACTER,
+    C_ARRAY_BOOLEAN,
+    C_ARRAY_STRING,
 };
 
 /*
@@ -418,6 +423,36 @@ void Parser::parse()
                         commandFound = true;
                         std::cout << "[PARSER] Command: CONTROL FLOW" << std::endl;
                         commandType = C_CONTROL_FLOW;
+                    }
+                    else if (commandString == "ARRAY INTEGER")
+                    {
+                        commandFound = true;
+                        std::cout << "[PARSER] Command: ARRAY INTEGER" << std::endl;
+                        commandType = C_ARRAY_INTEGER;
+                    }
+                    else if (commandString == "ARRAY DECIMAL")
+                    {
+                        commandFound = true;
+                        std::cout << "[PARSER] Command: ARRAY DECIMAL" << std::endl;
+                        commandType = C_ARRAY_DECIMAL;
+                    }
+                    else if (commandString == "ARRAY CHARACTER")
+                    {
+                        commandFound = true;
+                        std::cout << "[PARSER] Command: ARRAY CHARACTER" << std::endl;
+                        commandType = C_ARRAY_CHARACTER;
+                    }
+                    else if (commandString == "ARRAY BOOLEAN")
+                    {
+                        commandFound = true;
+                        std::cout << "[PARSER] Command: ARRAY BOOLEAN" << std::endl;
+                        commandType = C_ARRAY_BOOLEAN;
+                    }
+                    else if (commandString == "ARRAY STRING")
+                    {
+                        commandFound = true;
+                        std::cout << "[PARSER] Command: ARRAY STRING" << std::endl;
+                        commandType = C_ARRAY_STRING;
                     }
                     else if (currentCodeLine[index2] == ' ' && this->isValidVariableName(commandString.substr(0, commandString.length() - 1), true) && index2 + 1 < currentCodeLine.length() && currentCodeLine[index2 + 1] == '=' && index2 + 2 < currentCodeLine.length() && currentCodeLine[index2 + 2] == ' ')
                     {
@@ -1318,7 +1353,26 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                                 }
                                 else if (leftOperandDataType == D_VARIABLE)
                                 {
-                                    newComparisonStruct.dataType = D_VARIABLE;
+                                    if (leftOperandDataTypeString == "INTEGER")
+                                    {
+                                        newComparisonStruct.dataType = D_INTEGER;
+                                    }
+                                    else if (leftOperandDataTypeString == "DECIMAL")
+                                    {
+                                        newComparisonStruct.dataType = D_DECIMAL;
+                                    }
+                                    else if (leftOperandDataTypeString == "CHARACTER")
+                                    {
+                                        newComparisonStruct.dataType = D_CHARACTER;
+                                    }
+                                    else if (leftOperandDataTypeString == "BOOLEAN")
+                                    {
+                                        newComparisonStruct.dataType = D_BOOLEAN;
+                                    }
+                                    else if (leftOperandDataTypeString == "STRING")
+                                    {
+                                        newComparisonStruct.dataType = D_STRING;
+                                    };
                                     newComparisonStruct.operand1VariableName = operandsVec[0];
                                     newComparisonStruct.operand1IsAVariable = true;
                                 };
@@ -1427,6 +1481,95 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
         {
             return false;
         };
+    }
+    else if (commandType == C_ARRAY_INTEGER)
+    {
+        /*
+        ARRAY INTEGER intArray1 = [];
+        ARRAY INTEGER intArray2 = [1,2,3,4,5,6,7,8,9,10];
+        */
+        std::vector<std::string> arrayIntegerTokensVec = this->splitCodeLine(codeLine);
+        if (arrayIntegerTokensVec.size() == 5)
+        {
+            if (arrayIntegerTokensVec[0] == "ARRAY" && arrayIntegerTokensVec[1] == "INTEGER" && this->isValidVariableName(arrayIntegerTokensVec[2], false) && arrayIntegerTokensVec[3] == "=" && arrayIntegerTokensVec[4][0] == '[' && arrayIntegerTokensVec[4][arrayIntegerTokensVec[4].length() - 2] == ']' && arrayIntegerTokensVec[4][arrayIntegerTokensVec[4].length() - 1] == ';')
+            {
+                std::string integerArrayString = arrayIntegerTokensVec[4].substr(1, arrayIntegerTokensVec[4].length() - 3);
+                std::regex re(",");
+                std::sregex_token_iterator first(integerArrayString.begin(), integerArrayString.end(), re, -1);
+                std::sregex_token_iterator last;
+                std::vector<std::string> arrayIntegerItemsVec(first, last);
+                
+            }
+            else
+            {
+                return false;
+            };
+        }
+        else
+        {
+            return false;
+        };
+    }
+    else if (commandType == C_ARRAY_DECIMAL)
+    {
+        //ARRAY DECIMAL decArray1 = [];
+        //ARRAY DECIMAL decArray2 = [1.1,2.2,3.3,4.4,5.5];
+
+
+std::vector<std::string> constantStringTokensVector = this->splitCodeLine(codeLine);
+        if (constantStringTokensVector.size() >= 5)
+        {
+            if (constantStringTokensVector[0] == "CONSTANT" && constantStringTokensVector[1] == "STRING" && this->isValidVariableName(constantStringTokensVector[2], true) && !this->checkIfVariableNameExists(constantStringTokensVector[2]) && constantStringTokensVector[3] == "=")
+            {
+                std::string fullString = constantStringTokensVector[4];
+                for (int index = 5; index < constantStringTokensVector.size(); index++)
+                {
+                    fullString += " " + constantStringTokensVector[index];
+                };
+                if (fullString[0] == '"' && fullString[fullString.length() - 2] == '"' && fullString[fullString.length() - 1] == ';')
+                {
+                    this->assignVariableMemoryAddress(newASTNode, "CONSTANT STRING");
+                    newASTNode->variableName = constantStringTokensVector[2];
+                    this->createNewTempVariableStruct(newASTNode->variableName, "CONSTANT STRING");
+                    this->variableNamesVec.push_back(newASTNode->variableName);
+                    newASTNode->string = fullString.substr(1, fullString.size() - 3);
+                }
+                else
+                {
+                    return false;
+                };
+            }
+            else
+            {
+                return false;
+            };
+        }
+        else
+        {
+            return false;
+        };
+
+
+
+
+
+
+
+    }
+    else if (commandType == C_ARRAY_CHARACTER)
+    {
+        //ARRAY CHARACTER charArray1 = [];
+        //ARRAY CHARACTER charArray2 = ['A','B','C','D','E','F','G'];
+    }
+    else if (commandType == C_ARRAY_BOOLEAN)
+    {
+        //ARRAY BOOLEAN boolArray1 = [];
+        //ARRAY BOOLEAN boolArray2 = [TRUE,FALSE,TRUE,FALSE,TRUE];
+    }
+    else if (commandType == C_ARRAY_STRING)
+    {
+        //ARRAY STRING strArray1 = [];
+        //ARRAY STRING strArray2 = ["STRING 1","STRING 2","STRING 3"];
     }
     else
     {
@@ -1810,7 +1953,14 @@ void Parser::connectDanglingBranches(ASTNode* currentASTNode, ASTNode* connector
     {
         this->connectDanglingBranches(currentASTNode->sequentialASTNode, connectorASTNode);
     };
-    if (currentASTNode->controlFlowASTNode != nullptr)
+    if (currentASTNode->controlFlowASTNode == nullptr)
+    {
+        if (currentASTNode != connectorASTNode)
+        {
+            currentASTNode->controlFlowASTNode = connectorASTNode;
+        };
+    }
+    else
     {
         this->connectDanglingBranches(currentASTNode->controlFlowASTNode, connectorASTNode);
     };

@@ -1,4 +1,4 @@
-/* UPDATE VERSION [41] */
+/* UPDATE VERSION [42] */
 
 /*
 ==================================================
@@ -229,12 +229,6 @@ output("arithmeticExample9:");
 output(arithmeticExample9);
 
 !Below Is An Example Of Control Flow (If, Else If, Else)
-
-
-REMEMBER TO HANDLE NOT OPERATOR!!!
-
-
-
 output("[SYSTEM MESSAGE] Program Start!");
 INTEGER controlFlowInt1 = 1;
 INTEGER controlFlowInt2 = 1;
@@ -246,46 +240,51 @@ ELSE IF (1 EQ 1) AND (1.1 NE 2.2) OR ('A' GT 'Z') AND ("STRING A" LT "STRING B")
 ELSE BRANCH;
     output("3. INSIDE ELSE STATEMENT!");
 END;
-output("[SYSTEM MESSAGE] Program Terminated...");
 
-COMPARISON_OPERATORS:
-EQ:==
-NE:!=
-GE:>=
-LE:<=
-GT:>
-LT:<
+!Below Is An Example Of Arrays
+ARRAY INTEGER intArray1 = [];
+ARRAY INTEGER intArray2 = [1,2,3,4,5,6,7,8,9,10];
+ARRAY DECIMAL decArray1 = [];
+ARRAY DECIMAL decArray2 = [1.1,2.2,3.3,4.4,5.5];
+ARRAY CHARACTER charArray1 = [];
+ARRAY CHARACTER charArray2 = ['A','B','C','D','E','F','G'];
+ARRAY BOOLEAN boolArray1 = [];
+ARRAY BOOLEAN boolArray2 = [TRUE,FALSE,TRUE,FALSE,TRUE];
+ARRAY STRING strArray1 = [];
+ARRAY STRING strArray2 = ["STRING 1","STRING 2","STRING 3"];
 
-LOGICAL_OPERATORS:
-AND:&&
-OR:||
-NOT:!
+output(intArray1);
+output(intArray2);
+output(decArray1);
+output(decArray2);
+output(charArray1);
+output(charArray2);
+output(boolArray1);
+output(boolArray2);
+output(strArray1);
+output(strArray2);
 
-IF (LEFT_OPERAND_1 COMPARISON_OPERATOR_1 RIGHT_OPERAND_1) LOGICAL_OPERATOR_1 (LEFT_OPERAND_2 COMPARISON_OPERATOR_2 RIGHT_OPERAND_2) LOGICAL_OPERATOR_2 ETC.. (LEFT_OPERAND_N COMPARISON_OPERATOR_N RIGHT_OPERAND_N) LOGICAL_OPERATOR_N BRANCH
-...
-...
-...
-CODE
-...
-...
-...
-ELSE IF (LEFT_OPERAND_1 COMPARISON_OPERATOR_1 RIGHT_OPERAND_1) LOGICAL_OPERATOR_1 (LEFT_OPERAND_2 COMPARISON_OPERATOR_2 RIGHT_OPERAND_2) LOGICAL_OPERATOR_2 ETC.. (LEFT_OPERAND_N COMPARISON_OPERATOR_N RIGHT_OPERAND_N) LOGICAL_OPERATOR_N BRANCH
-...
-...
-...
-CODE
-...
-...
-...
-ELSE
-...
-...
-...
-CODE
-...
-...
-...
-END
+INTEGER intArray1Size = intArray1.size;
+INTEGER intArray2Size = intArray2.size;
+INTEGER decArray1Size = decArray1.size;
+INTEGER decArray2Size = decArray2.size;
+INTEGER charArray1Size = charArray1.size;
+INTEGER charArray2Size = charArray2.size;
+INTEGER boolArray1Size = boolArray1.size;
+INTEGER boolArray2Size = boolArray2.size;
+INTEGER strArray1Size = strArray1.size;
+INTEGER strArray2Size = strArray2.size;
+
+output(intArray1Size);
+output(intArray2Size);
+output(decArray1Size);
+output(decArray2Size);
+output(charArray1Size);
+output(charArray2Size);
+output(boolArray1Size);
+output(boolArray2Size);
+output(strArray1Size);
+output(strArray2Size);
 
 !Below Is An Example Of output() Using String Literals
 output("[SYSTEM MESSAGE] Program Terminated...");

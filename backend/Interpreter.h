@@ -1,4 +1,4 @@
-/* UPDATE VERSION [41] */
+/* UPDATE VERSION [42] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -951,12 +951,6 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                             {
                                 comparisonResultsVec.push_back((operand1Value <= operand2Value));
                             };
-                        }
-                        else
-                        {
-                            newInterpretationSuccess = false;
-                            currentASTNode = nullptr;
-                            break;
                         };
                     };
                     if (currentASTNode->comparisonStructVec.size() != comparisonResultsVec.size() || comparisonResultsVec.size() != currentASTNode->logicalOperatorVec.size() + 1)
@@ -967,6 +961,7 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                     }
                     else if (comparisonResultsVec.size() == 1 && currentASTNode->logicalOperatorVec.size() == 0)
                     {
+                        std::cout << "comparisonResultsVec[0]:" << (comparisonResultsVec[0] == true ? "TRUE" : "FALSE") << std::endl;
                         if (comparisonResultsVec[0] == false)
                         {
                             takeControlFlowBranch = true;
@@ -974,8 +969,6 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                     }
                     else
                     {
-                        //[true,true,true,false,false,true,false,true,false,false]
-                        //[AND,AND,AND,OR,AND,AND,OR,AND,AND]
                         int comparisonResultsVecIndex = 0;
                         bool breakEarly = false;
                         for (int index = 0; index < currentASTNode->logicalOperatorVec.size(); index++)
