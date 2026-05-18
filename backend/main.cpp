@@ -1,4 +1,4 @@
-/* UPDATE VERSION [42] */
+/* UPDATE VERSION [43] */
 
 /*
 ==================================================
@@ -264,27 +264,77 @@ output(boolArray2);
 output(strArray1);
 output(strArray2);
 
-INTEGER intArray1Size = intArray1.size;
-INTEGER intArray2Size = intArray2.size;
-INTEGER decArray1Size = decArray1.size;
-INTEGER decArray2Size = decArray2.size;
-INTEGER charArray1Size = charArray1.size;
-INTEGER charArray2Size = charArray2.size;
-INTEGER boolArray1Size = boolArray1.size;
-INTEGER boolArray2Size = boolArray2.size;
-INTEGER strArray1Size = strArray1.size;
-INTEGER strArray2Size = strArray2.size;
+INTEGER intArray1Size = size(intArray1);
+INTEGER intArray2Size = size(intArray2);
+INTEGER decArray1Size = size(decArray1);
+INTEGER decArray2Size = size(decArray2);
+INTEGER charArray1Size = size(charArray1);
+INTEGER charArray2Size = size(charArray2);
+INTEGER boolArray1Size = size(boolArray1);
+INTEGER boolArray2Size = size(boolArray2);
+INTEGER strArray1Size = size(strArray1);
+INTEGER strArray2Size = size(strArray2);
 
+output("");
+output("INTEGERS:");
+output("");
+
+output("intArray1:");
 output(intArray1Size);
+output("intArray2:");
 output(intArray2Size);
+output("decArray1:");
 output(decArray1Size);
+output("decArray2:");
 output(decArray2Size);
+output("charArray1:");
 output(charArray1Size);
+output("charArray2:");
 output(charArray2Size);
+output("boolArray1:");
 output(boolArray1Size);
+output("boolArray2:");
 output(boolArray2Size);
+output("strArray1:");
 output(strArray1Size);
+output("strArray2:");
 output(strArray2Size);
+
+CONSTANT INTEGER CONSTANT_intArray1Size = size(intArray1);
+CONSTANT INTEGER CONSTANT_intArray2Size = size(intArray2);
+CONSTANT INTEGER CONSTANT_decArray1Size = size(decArray1);
+CONSTANT INTEGER CONSTANT_decArray2Size = size(decArray2);
+CONSTANT INTEGER CONSTANT_charArray1Size = size(charArray1);
+CONSTANT INTEGER CONSTANT_charArray2Size = size(charArray2);
+CONSTANT INTEGER CONSTANT_boolArray1Size = size(boolArray1);
+CONSTANT INTEGER CONSTANT_boolArray2Size = size(boolArray2);
+CONSTANT INTEGER CONSTANT_strArray1Size = size(strArray1);
+CONSTANT INTEGER CONSTANT_strArray2Size = size(strArray2);
+
+output("");
+output("CONSTANT INTEGERS:");
+output("");
+
+output("intArray1:");
+output(CONSTANT_intArray1Size);
+output("intArray2:");
+output(CONSTANT_intArray2Size);
+output("decArray1:");
+output(CONSTANT_decArray1Size);
+output("decArray2:");
+output(CONSTANT_decArray2Size);
+output("charArray1:");
+output(CONSTANT_charArray1Size);
+output("charArray2:");
+output(CONSTANT_charArray2Size);
+output("boolArray1:");
+output(CONSTANT_boolArray1Size);
+output("boolArray2:");
+output(CONSTANT_boolArray2Size);
+output("strArray1:");
+output(CONSTANT_strArray1Size);
+output("strArray2:");
+output(CONSTANT_strArray2Size);
 
 !Below Is An Example Of output() Using String Literals
 output("[SYSTEM MESSAGE] Program Terminated...");

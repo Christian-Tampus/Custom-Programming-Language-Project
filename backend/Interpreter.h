@@ -1,4 +1,4 @@
-/* UPDATE VERSION [42] */
+/* UPDATE VERSION [43] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -31,6 +31,12 @@ struct VariableStruct
     std::string variableType = "";
     std::string variableName = "";
     std::string assignmentVariableName = "";
+    std::vector<int> integerArray;
+    std::vector<double> decimalArray;
+    std::vector<char> characterArray;
+    std::vector<bool> booleanArray;
+    std::vector<std::string> stringArray;
+    std::string arrayVariableNameToAssignSize = "";
     bool successfullyCreatedVariableStruct = true;
 };
 
@@ -63,7 +69,7 @@ class Interpreter
         std::map<std::string, int> variablesMap;
         std::vector<std::string> inputBufferVec;
         bool performArithmetic(ArithmeticStruct*& arithmeticStruct, std::vector<std::string> arithmeticVec, std::string variableType);
-        VariableStruct* createNewVariableStruct(int integer, double decimal, char character, bool boolean, std::string string, bool isConstant, int variableMemoryAddress, std::string variableType, std::string variableName, std::string assignmentVariableName);
+        VariableStruct* createNewVariableStruct(int integer, double decimal, char character, bool boolean, std::string string, bool isConstant, int variableMemoryAddress, std::string variableType, std::string variableName, std::string assignmentVariableName, std::vector<int> integerArray, std::vector<double> decimalArray, std::vector<char> characterArray, std::vector<bool> booleanArray, std::vector<std::string> stringArray, std::string arrayVariableNameToAssignSize);
     public:
         Interpreter();
         ~Interpreter();
@@ -158,6 +164,53 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                         else if (currentVariableStruct->variableType == "STRING" || currentVariableStruct->variableType == "CONSTANT STRING")
                         {
                             this->terminalOutputVec.push_back(currentVariableStruct->string);
+                        }
+                        else if (currentVariableStruct->variableType == "ARRAY INTEGER" || currentVariableStruct->variableType == "ARRAY DECIMAL" || currentVariableStruct->variableType == "ARRAY CHARACTER" || currentVariableStruct->variableType == "ARRAY BOOLEAN" || currentVariableStruct->variableType == "ARRAY STRING")
+                        {
+                            std::string variableType = currentVariableStruct->variableType;
+                            std::string arrayString = "[";
+                            if (variableType == "ARRAY INTEGER" && currentVariableStruct->integerArray.size() > 0)
+                            {
+                                for (int index = 0; index < currentVariableStruct->integerArray.size() - 1; index++)
+                                {
+                                    arrayString += std::to_string(currentVariableStruct->integerArray[index]) + ",";
+                                };
+                                arrayString += std::to_string(currentVariableStruct->integerArray[currentVariableStruct->integerArray.size() - 1]);
+                            }
+                            else if (variableType == "ARRAY DECIMAL" && currentVariableStruct->decimalArray.size() > 0)
+                            {
+                                for (int index = 0; index < currentVariableStruct->decimalArray.size() - 1; index++)
+                                {
+                                    arrayString += std::to_string(currentVariableStruct->decimalArray[index]) + ",";
+                                };
+                                arrayString += std::to_string(currentVariableStruct->decimalArray[currentVariableStruct->decimalArray.size() - 1]);
+                            }
+                            else if (variableType == "ARRAY CHARACTER" && currentVariableStruct->characterArray.size() > 0)
+                            {
+                                for (int index = 0; index < currentVariableStruct->characterArray.size() - 1; index++)
+                                {
+                                    arrayString += std::string("'") + currentVariableStruct->characterArray[index] + "',";
+                                };
+                                arrayString += std::string("'") + currentVariableStruct->characterArray[currentVariableStruct->characterArray.size() - 1] + "'";
+                            }
+                            else if (variableType == "ARRAY BOOLEAN" && currentVariableStruct->booleanArray.size() > 0)
+                            {
+                                for (int index = 0; index < currentVariableStruct->booleanArray.size() - 1; index++)
+                                {
+                                    arrayString += (currentVariableStruct->booleanArray[index] == true ? "TRUE," : "FALSE,");
+                                };
+                                arrayString += (currentVariableStruct->booleanArray[currentVariableStruct->booleanArray.size() - 1] == true ? "TRUE" : "FALSE");
+                            }
+                            else if (variableType == "ARRAY STRING" && currentVariableStruct->stringArray.size() > 0)
+                            {
+                                for (int index = 0; index < currentVariableStruct->stringArray.size() - 1; index++)
+                                {
+                                    arrayString += "\"" + currentVariableStruct->stringArray[index] + "\",";
+                                };
+                                arrayString += "\"" + currentVariableStruct->stringArray[currentVariableStruct->stringArray.size() - 1] + "\"";
+                            };
+                            arrayString += "]";
+                            this->terminalOutputVec.push_back(arrayString);
                         }
                         else
                         {
@@ -281,11 +334,12 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                     break;
                 };
             }
-            else if (currentASTNode->command == C_INTEGER || currentASTNode->command == C_DECIMAL || currentASTNode->command == C_CHARACTER || currentASTNode->command == C_BOOLEAN || currentASTNode->command == C_STRING || currentASTNode->command == C_CONSTANT_INTEGER || currentASTNode->command == C_CONSTANT_DECIMAL || currentASTNode->command == C_CONSTANT_CHARACTER || currentASTNode->command == C_CONSTANT_BOOLEAN || currentASTNode->command == C_CONSTANT_STRING)
+            else if (currentASTNode->command == C_INTEGER || currentASTNode->command == C_DECIMAL || currentASTNode->command == C_CHARACTER || currentASTNode->command == C_BOOLEAN || currentASTNode->command == C_STRING || currentASTNode->command == C_CONSTANT_INTEGER || currentASTNode->command == C_CONSTANT_DECIMAL || currentASTNode->command == C_CONSTANT_CHARACTER || currentASTNode->command == C_CONSTANT_BOOLEAN || currentASTNode->command == C_CONSTANT_STRING || currentASTNode->command == C_ARRAY_INTEGER || currentASTNode->command == C_ARRAY_DECIMAL || currentASTNode->command == C_ARRAY_BOOLEAN || currentASTNode->command == C_ARRAY_CHARACTER || currentASTNode->command == C_ARRAY_STRING)
             {
+                std::cout << "currentASTNode->variableName:" << currentASTNode->variableName << std::endl;
                 if (this->variableStructMap.find(currentASTNode->variableMemoryAddress) == this->variableStructMap.end())
                 {
-                    VariableStruct* newVariableStruct = this->createNewVariableStruct(currentASTNode->integer, currentASTNode->decimal, currentASTNode->character, currentASTNode->boolean, currentASTNode->string, currentASTNode->isConstant, currentASTNode->variableMemoryAddress, currentASTNode->variableType, currentASTNode->variableName, currentASTNode->assignmentVariableName);
+                    VariableStruct* newVariableStruct = this->createNewVariableStruct(currentASTNode->integer, currentASTNode->decimal, currentASTNode->character, currentASTNode->boolean, currentASTNode->string, currentASTNode->isConstant, currentASTNode->variableMemoryAddress, currentASTNode->variableType, currentASTNode->variableName, currentASTNode->assignmentVariableName, currentASTNode->integerArray, currentASTNode->decimalArray, currentASTNode->characterArray, currentASTNode->booleanArray, currentASTNode->stringArray, currentASTNode->arrayVariableNameToAssignSize);
                     if (newVariableStruct->successfullyCreatedVariableStruct == false)
                     {
                         newInterpretationSuccess = false;
@@ -1286,7 +1340,7 @@ bool Interpreter::performArithmetic(ArithmeticStruct*& arithmeticStruct, std::ve
 Returns terminalOutputVec
 ==================================================
 */
-VariableStruct* Interpreter::createNewVariableStruct(int integer, double decimal, char character, bool boolean, std::string string, bool isConstant, int variableMemoryAddress, std::string variableType, std::string variableName, std::string assignmentVariableName)
+VariableStruct* Interpreter::createNewVariableStruct(int integer, double decimal, char character, bool boolean, std::string string, bool isConstant, int variableMemoryAddress, std::string variableType, std::string variableName, std::string assignmentVariableName, std::vector<int> integerArray, std::vector<double> decimalArray, std::vector<char> characterArray, std::vector<bool> booleanArray, std::vector<std::string> stringArray, std::string arrayVariableNameToAssignSize)
 {
     VariableStruct* newVariableStruct = new VariableStruct;
     newVariableStruct->integer = integer;
@@ -1299,6 +1353,39 @@ VariableStruct* Interpreter::createNewVariableStruct(int integer, double decimal
     newVariableStruct->variableType = variableType;
     newVariableStruct->variableName = variableName;
     newVariableStruct->assignmentVariableName = assignmentVariableName;
+    newVariableStruct->integerArray = integerArray;
+    newVariableStruct->decimalArray = decimalArray;
+    newVariableStruct->characterArray = characterArray;
+    newVariableStruct->booleanArray = booleanArray;
+    newVariableStruct->stringArray = stringArray;
+    newVariableStruct->arrayVariableNameToAssignSize = arrayVariableNameToAssignSize;
+    if (newVariableStruct->arrayVariableNameToAssignSize.length() > 0)
+    {
+        if (this->variablesMap.find(newVariableStruct->arrayVariableNameToAssignSize) != this->variablesMap.end())
+        {
+            VariableStruct* arrayVariableStruct = this->variableStructMap[this->variablesMap[newVariableStruct->arrayVariableNameToAssignSize]];
+            if (arrayVariableStruct->variableType == "ARRAY INTEGER")
+            {
+                newVariableStruct->integer = arrayVariableStruct->integerArray.size();
+            }
+            else if (arrayVariableStruct->variableType == "ARRAY DECIMAL")
+            {
+                newVariableStruct->integer = arrayVariableStruct->decimalArray.size();
+            }
+            else if (arrayVariableStruct->variableType == "ARRAY CHARACTER")
+            {
+                newVariableStruct->integer = arrayVariableStruct->characterArray.size();
+            }
+            else if (arrayVariableStruct->variableType == "ARRAY BOOLEAN")
+            {
+                newVariableStruct->integer = arrayVariableStruct->booleanArray.size();
+            }
+            else if (arrayVariableStruct->variableType == "ARRAY STRING")
+            {
+                newVariableStruct->integer = arrayVariableStruct->stringArray.size();
+            };
+        };
+    };
     if (newVariableStruct->assignmentVariableName.length() > 0 && this->variablesMap.find(newVariableStruct->assignmentVariableName) != this->variablesMap.end())
     {
         VariableStruct* otherVariableStruct = this->variableStructMap[this->variablesMap[newVariableStruct->assignmentVariableName]];
@@ -1345,6 +1432,31 @@ VariableStruct* Interpreter::createNewVariableStruct(int integer, double decimal
     std::cout << "[INTERPRETER] newVariableStruct->variableType:" << newVariableStruct->variableType << std::endl;
     std::cout << "[INTERPRETER] newVariableStruct->variableName:" << newVariableStruct->variableName << std::endl;
     std::cout << "[INTERPRETER] newVariableStruct->assignmentVariableName:" << newVariableStruct->assignmentVariableName << std::endl;
+    std::cout << "[INTERPRETER] newVariableStruct->integerArray.size():" << newVariableStruct->integerArray.size() << std::endl;
+    for (int index = 0; index < newVariableStruct->integerArray.size(); index++)
+    {
+        std::cout << "[INTERPRETER] newVariableStruct->integerArray[" << index << "]:" << newVariableStruct->integerArray[index] << std::endl;
+    };
+    std::cout << "[INTERPRETER] newVariableStruct->decimalArray.size():" << newVariableStruct->decimalArray.size() << std::endl;
+    for (int index = 0; index < newVariableStruct->decimalArray.size(); index++)
+    {
+        std::cout << "[INTERPRETER] newVariableStruct->decimalArray[" << index << "]:" << newVariableStruct->decimalArray[index] << std::endl;
+    };
+    std::cout << "[INTERPRETER] newVariableStruct->characterArray.size():" << newVariableStruct->characterArray.size() << std::endl;
+    for (int index = 0; index < newVariableStruct->characterArray.size(); index++)
+    {
+        std::cout << "[INTERPRETER] newVariableStruct->characterArray[" << index << "]:" << newVariableStruct->characterArray[index] << std::endl;
+    };
+    std::cout << "[INTERPRETER] newVariableStruct->booleanArray.size():" << newVariableStruct->booleanArray.size() << std::endl;
+    for (int index = 0; index < newVariableStruct->booleanArray.size(); index++)
+    {
+        std::cout << "[INTERPRETER] newVariableStruct->booleanArray[" << index << "]:" << newVariableStruct->booleanArray[index] << std::endl;
+    };
+    std::cout << "[INTERPRETER] newVariableStruct->stringArray.size():" << newVariableStruct->stringArray.size() << std::endl;
+    for (int index = 0; index < newVariableStruct->stringArray.size(); index++)
+    {
+        std::cout << "[INTERPRETER] newVariableStruct->stringArray[" << index << "]:" << newVariableStruct->stringArray[index] << std::endl;
+    };
     std::cout << "[INTERPRETER] ==================================================" << std::endl;
     return newVariableStruct;
 };

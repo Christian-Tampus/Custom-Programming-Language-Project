@@ -1,4 +1,4 @@
-/* UPDATE VERSION [42] */
+/* UPDATE VERSION [43] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -158,6 +158,12 @@ struct ASTNode
     std::vector<std::string> arithmeticVec;
     std::vector<ComparisonStruct> comparisonStructVec;
     std::vector<LogicalOperator> logicalOperatorVec;
+    std::string arrayVariableNameToAssignSize = "";
+    std::vector<int> integerArray;
+    std::vector<double> decimalArray;
+    std::vector<char> characterArray;
+    std::vector<bool> booleanArray;
+    std::vector<std::string> stringArray;
     ~ASTNode() = default;
 };
 
@@ -621,6 +627,31 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                     this->variableNamesVec.push_back(newASTNode->variableName);
                     newASTNode->assignmentVariableName = integerTokensVec[3].substr(0, integerTokensVec[3].length() - 1);
                 }
+                else if (integerTokensVec[3].substr(0, 5) == "size(" && integerTokensVec[3].substr(integerTokensVec[3].length() - 2) == ");" && this->isValidVariableName(integerTokensVec[3].substr(5, integerTokensVec[3].length() - 7), true))
+                {
+                    bool assignArraySize = false;
+                    std::string arrayVariableName = integerTokensVec[3].substr(5, integerTokensVec[3].length() - 7);
+                    for (int index = 0; index < this->tempVariableStructVec.size(); index++)
+                    {
+                        if (this->tempVariableStructVec[index].variableName == arrayVariableName)
+                        {
+                            assignArraySize = true;
+                            break;
+                        };
+                    };
+                    if (assignArraySize == true)
+                    {
+                        this->assignVariableMemoryAddress(newASTNode, "INTEGER");
+                        newASTNode->variableName = integerTokensVec[1];
+                        this->createNewTempVariableStruct(newASTNode->variableName, "INTEGER");
+                        this->variableNamesVec.push_back(newASTNode->variableName);
+                        newASTNode->arrayVariableNameToAssignSize = arrayVariableName;
+                    }
+                    else
+                    {
+                        return false;
+                    };
+                }
                 else
                 {
                     return false;
@@ -879,6 +910,35 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                 std::string extractVariable = constantIntegerTokensVec[4].substr(0, constantIntegerTokensVec[4].length() - 1);
                 newASTNode->integer = std::stoi(extractVariable);
                 newASTNode->isConstant = true;
+            }
+            else if (constantIntegerTokensVec[0] == "CONSTANT" && constantIntegerTokensVec[1] == "INTEGER" && this->isValidVariableName(constantIntegerTokensVec[2], true) && !this->checkIfVariableNameExists(constantIntegerTokensVec[2]) && constantIntegerTokensVec[3] == "=" && constantIntegerTokensVec[4].substr(0, 5) == "size(" && constantIntegerTokensVec[4].substr(constantIntegerTokensVec[4].length() - 2) == ");" && this->isValidVariableName(constantIntegerTokensVec[4].substr(5, constantIntegerTokensVec[4].length() - 7), true))
+            {
+                bool assignArraySize = false;
+                std::string arrayVariableName = constantIntegerTokensVec[4].substr(5, constantIntegerTokensVec[4].length() - 7);
+                for (int index = 0; index < this->tempVariableStructVec.size(); index++)
+                {
+                    if (this->tempVariableStructVec[index].variableName == arrayVariableName)
+                    {
+                        std::string variableType = this->tempVariableStructVec[index].variableType;
+                        if (variableType == "ARRAY INTEGER" || variableType == "ARRAY DECIMAL" || variableType == "ARRAY CHARACTER" || variableType == "ARRAY BOOLEAN" || variableType == "ARRAY STRING")
+                        {
+                            assignArraySize = true;
+                            break;
+                        };
+                    };
+                };
+                if (assignArraySize == true)
+                {
+                    this->assignVariableMemoryAddress(newASTNode, "CONSTANT INTEGER");
+                    newASTNode->variableName = constantIntegerTokensVec[2];
+                    this->createNewTempVariableStruct(newASTNode->variableName, "CONSTANT INTEGER");
+                    this->variableNamesVec.push_back(newASTNode->variableName);
+                    newASTNode->arrayVariableNameToAssignSize = arrayVariableName;
+                }
+                else
+                {
+                    return false;
+                };
             }
             else
             {
@@ -1484,21 +1544,37 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
     }
     else if (commandType == C_ARRAY_INTEGER)
     {
-        /*
-        ARRAY INTEGER intArray1 = [];
-        ARRAY INTEGER intArray2 = [1,2,3,4,5,6,7,8,9,10];
-        */
         std::vector<std::string> arrayIntegerTokensVec = this->splitCodeLine(codeLine);
         if (arrayIntegerTokensVec.size() == 5)
         {
-            if (arrayIntegerTokensVec[0] == "ARRAY" && arrayIntegerTokensVec[1] == "INTEGER" && this->isValidVariableName(arrayIntegerTokensVec[2], false) && arrayIntegerTokensVec[3] == "=" && arrayIntegerTokensVec[4][0] == '[' && arrayIntegerTokensVec[4][arrayIntegerTokensVec[4].length() - 2] == ']' && arrayIntegerTokensVec[4][arrayIntegerTokensVec[4].length() - 1] == ';')
+            if (arrayIntegerTokensVec[0] == "ARRAY" && arrayIntegerTokensVec[1] == "INTEGER" && this->isValidVariableName(arrayIntegerTokensVec[2], true) && arrayIntegerTokensVec[3] == "=" && arrayIntegerTokensVec[4][0] == '[' && arrayIntegerTokensVec[4][arrayIntegerTokensVec[4].length() - 2] == ']' && arrayIntegerTokensVec[4][arrayIntegerTokensVec[4].length() - 1] == ';')
             {
-                std::string integerArrayString = arrayIntegerTokensVec[4].substr(1, arrayIntegerTokensVec[4].length() - 3);
-                std::regex re(",");
-                std::sregex_token_iterator first(integerArrayString.begin(), integerArrayString.end(), re, -1);
-                std::sregex_token_iterator last;
-                std::vector<std::string> arrayIntegerItemsVec(first, last);
-                
+                if (arrayIntegerTokensVec[4] != "[];")
+                {
+                    std::string integerArrayString = arrayIntegerTokensVec[4].substr(1, arrayIntegerTokensVec[4].length() - 3);
+                    std::regex re(",");
+                    std::sregex_token_iterator first(integerArrayString.begin(), integerArrayString.end(), re, -1);
+                    std::sregex_token_iterator last;
+                    std::vector<std::string> arrayIntegerItemsVec(first, last);
+                    for (int index = 0; index < arrayIntegerItemsVec.size(); index++)
+                    {
+                        if (this->isValidVariableAssignment(arrayIntegerItemsVec[index] + ";", "INTEGER"))
+                        {
+                            newASTNode->integerArray.push_back(std::stoi(arrayIntegerItemsVec[index]));
+                        };
+                    };
+                    this->assignVariableMemoryAddress(newASTNode, "ARRAY INTEGER");
+                    newASTNode->variableName = arrayIntegerTokensVec[2];
+                    this->createNewTempVariableStruct(newASTNode->variableName, "ARRAY INTEGER");
+                    this->variableNamesVec.push_back(newASTNode->variableName);
+                }
+                else
+                {
+                    this->assignVariableMemoryAddress(newASTNode, "ARRAY INTEGER");
+                    newASTNode->variableName = arrayIntegerTokensVec[2];
+                    this->createNewTempVariableStruct(newASTNode->variableName, "ARRAY INTEGER");
+                    this->variableNamesVec.push_back(newASTNode->variableName);
+                };
             }
             else
             {
@@ -1512,31 +1588,36 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
     }
     else if (commandType == C_ARRAY_DECIMAL)
     {
-        //ARRAY DECIMAL decArray1 = [];
-        //ARRAY DECIMAL decArray2 = [1.1,2.2,3.3,4.4,5.5];
-
-
-std::vector<std::string> constantStringTokensVector = this->splitCodeLine(codeLine);
-        if (constantStringTokensVector.size() >= 5)
+        std::vector<std::string> arrayDecimalTokensVec = this->splitCodeLine(codeLine);
+        if (arrayDecimalTokensVec.size() == 5)
         {
-            if (constantStringTokensVector[0] == "CONSTANT" && constantStringTokensVector[1] == "STRING" && this->isValidVariableName(constantStringTokensVector[2], true) && !this->checkIfVariableNameExists(constantStringTokensVector[2]) && constantStringTokensVector[3] == "=")
+            if (arrayDecimalTokensVec[0] == "ARRAY" && arrayDecimalTokensVec[1] == "DECIMAL" && this->isValidVariableName(arrayDecimalTokensVec[2], true) && arrayDecimalTokensVec[3] == "=" && arrayDecimalTokensVec[4][0] == '[' && arrayDecimalTokensVec[4][arrayDecimalTokensVec[4].length() - 2] == ']' && arrayDecimalTokensVec[4][arrayDecimalTokensVec[4].length() - 1] == ';')
             {
-                std::string fullString = constantStringTokensVector[4];
-                for (int index = 5; index < constantStringTokensVector.size(); index++)
+                if (arrayDecimalTokensVec[4] != "[];")
                 {
-                    fullString += " " + constantStringTokensVector[index];
-                };
-                if (fullString[0] == '"' && fullString[fullString.length() - 2] == '"' && fullString[fullString.length() - 1] == ';')
-                {
-                    this->assignVariableMemoryAddress(newASTNode, "CONSTANT STRING");
-                    newASTNode->variableName = constantStringTokensVector[2];
-                    this->createNewTempVariableStruct(newASTNode->variableName, "CONSTANT STRING");
+                    std::string decimalArrayString = arrayDecimalTokensVec[4].substr(1, arrayDecimalTokensVec[4].length() - 3);
+                    std::regex re(",");
+                    std::sregex_token_iterator first(decimalArrayString.begin(), decimalArrayString.end(), re, -1);
+                    std::sregex_token_iterator last;
+                    std::vector<std::string> arrayDecimalItemsVec(first, last);
+                    for (int index = 0; index < arrayDecimalItemsVec.size(); index++)
+                    {
+                        if (this->isValidVariableAssignment(arrayDecimalItemsVec[index] + ";", "DECIMAL"))
+                        {
+                            newASTNode->decimalArray.push_back(std::stod(arrayDecimalItemsVec[index]));
+                        };
+                    };
+                    this->assignVariableMemoryAddress(newASTNode, "ARRAY DECIMAL");
+                    newASTNode->variableName = arrayDecimalTokensVec[2];
+                    this->createNewTempVariableStruct(newASTNode->variableName, "ARRAY DECIMAL");
                     this->variableNamesVec.push_back(newASTNode->variableName);
-                    newASTNode->string = fullString.substr(1, fullString.size() - 3);
                 }
                 else
                 {
-                    return false;
+                    this->assignVariableMemoryAddress(newASTNode, "ARRAY DECIMAL");
+                    newASTNode->variableName = arrayDecimalTokensVec[2];
+                    this->createNewTempVariableStruct(newASTNode->variableName, "ARRAY DECIMAL");
+                    this->variableNamesVec.push_back(newASTNode->variableName);
                 };
             }
             else
@@ -1548,28 +1629,155 @@ std::vector<std::string> constantStringTokensVector = this->splitCodeLine(codeLi
         {
             return false;
         };
-
-
-
-
-
-
-
     }
     else if (commandType == C_ARRAY_CHARACTER)
     {
-        //ARRAY CHARACTER charArray1 = [];
-        //ARRAY CHARACTER charArray2 = ['A','B','C','D','E','F','G'];
+        std::vector<std::string> arrayCharacterTokensVec = this->splitCodeLine(codeLine);
+        if (arrayCharacterTokensVec.size() == 5)
+        {
+            if (arrayCharacterTokensVec[0] == "ARRAY" && arrayCharacterTokensVec[1] == "CHARACTER" && this->isValidVariableName(arrayCharacterTokensVec[2], true) && arrayCharacterTokensVec[3] == "=" && arrayCharacterTokensVec[4][0] == '[' && arrayCharacterTokensVec[4][arrayCharacterTokensVec[4].length() - 2] == ']' && arrayCharacterTokensVec[4][arrayCharacterTokensVec[4].length() - 1] == ';')
+            {
+                if (arrayCharacterTokensVec[4] != "[];")
+                {
+                    bool incorrectFormat = false;
+                    for (int index = 1; index < arrayCharacterTokensVec[4].length() - 2; index+=4)
+                    {
+                        if (arrayCharacterTokensVec[4][index] == '\'' && arrayCharacterTokensVec[4][index + 2] == '\'')
+                        {
+                            newASTNode->characterArray.push_back(arrayCharacterTokensVec[4][index + 1]);
+                        }
+                        else
+                        {
+                            incorrectFormat = true;  
+                        };
+                    };
+                    if (incorrectFormat == false)
+                    {
+                        this->assignVariableMemoryAddress(newASTNode, "ARRAY CHARACTER");
+                        newASTNode->variableName = arrayCharacterTokensVec[2];
+                        this->createNewTempVariableStruct(newASTNode->variableName, "ARRAY CHARACTER");
+                        this->variableNamesVec.push_back(newASTNode->variableName);
+                    }
+                    else
+                    {
+                        return false;
+                    };
+                }
+                else
+                {
+                    this->assignVariableMemoryAddress(newASTNode, "ARRAY CHARACTER");
+                    newASTNode->variableName = arrayCharacterTokensVec[2];
+                    this->createNewTempVariableStruct(newASTNode->variableName, "ARRAY CHARACTER");
+                    this->variableNamesVec.push_back(newASTNode->variableName);
+                };
+            }
+            else
+            {
+                return false;
+            };
+        }
+        else
+        {
+            return false;
+        };
     }
     else if (commandType == C_ARRAY_BOOLEAN)
     {
-        //ARRAY BOOLEAN boolArray1 = [];
-        //ARRAY BOOLEAN boolArray2 = [TRUE,FALSE,TRUE,FALSE,TRUE];
+        std::vector<std::string> arrayBooleanTokensVec = this->splitCodeLine(codeLine);
+        if (arrayBooleanTokensVec.size() == 5)
+        {
+            if (arrayBooleanTokensVec[0] == "ARRAY" && arrayBooleanTokensVec[1] == "BOOLEAN" && this->isValidVariableName(arrayBooleanTokensVec[2], true) && arrayBooleanTokensVec[3] == "=" && arrayBooleanTokensVec[4][0] == '[' && arrayBooleanTokensVec[4][arrayBooleanTokensVec[4].length() - 2] == ']' && arrayBooleanTokensVec[4][arrayBooleanTokensVec[4].length() - 1] == ';')
+            {
+                if (arrayBooleanTokensVec[4] != "[];")
+                {
+                    std::string booleanArrayString = arrayBooleanTokensVec[4].substr(1, arrayBooleanTokensVec[4].length() - 3);
+                    std::regex re(",");
+                    std::sregex_token_iterator first(booleanArrayString.begin(), booleanArrayString.end(), re, -1);
+                    std::sregex_token_iterator last;
+                    std::vector<std::string> arrayBooleanItemsVec(first, last);
+                    for (int index = 0; index < arrayBooleanItemsVec.size(); index++)
+                    {
+                        if (this->isValidVariableAssignment(arrayBooleanItemsVec[index] + ";", "BOOLEAN"))
+                        {
+                            newASTNode->booleanArray.push_back((arrayBooleanItemsVec[index] == "TRUE" ? true : false));
+                        };
+                    };
+                    this->assignVariableMemoryAddress(newASTNode, "ARRAY BOOLEAN");
+                    newASTNode->variableName = arrayBooleanTokensVec[2];
+                    this->createNewTempVariableStruct(newASTNode->variableName, "ARRAY BOOLEAN");
+                    this->variableNamesVec.push_back(newASTNode->variableName);
+                }
+                else
+                {
+                    this->assignVariableMemoryAddress(newASTNode, "ARRAY BOOLEAN");
+                    newASTNode->variableName = arrayBooleanTokensVec[2];
+                    this->createNewTempVariableStruct(newASTNode->variableName, "ARRAY BOOLEAN");
+                    this->variableNamesVec.push_back(newASTNode->variableName);
+                };
+            }
+            else
+            {
+                return false;
+            };
+        }
+        else
+        {
+            return false;
+        };
     }
     else if (commandType == C_ARRAY_STRING)
     {
-        //ARRAY STRING strArray1 = [];
-        //ARRAY STRING strArray2 = ["STRING 1","STRING 2","STRING 3"];
+        std::vector<std::string> arrayStringTokensVec = this->splitCodeLine(codeLine);
+        if (arrayStringTokensVec.size() == 5 && arrayStringTokensVec[0] == "ARRAY" && arrayStringTokensVec[1] == "STRING" && this->isValidVariableName(arrayStringTokensVec[2], true) && arrayStringTokensVec[3] == "=" && arrayStringTokensVec[4] == "[];")
+        {
+            this->assignVariableMemoryAddress(newASTNode, "ARRAY STRING");
+            newASTNode->variableName = arrayStringTokensVec[2];
+            this->createNewTempVariableStruct(newASTNode->variableName, "ARRAY STRING");
+            this->variableNamesVec.push_back(newASTNode->variableName);
+        }
+        else if (arrayStringTokensVec.size() >= 5)
+        {
+            if (arrayStringTokensVec[0] == "ARRAY" && arrayStringTokensVec[1] == "STRING" && this->isValidVariableName(arrayStringTokensVec[2], true) && arrayStringTokensVec[3] == "=")
+            {
+                std::string stringArray = "";
+                for (int index = 4; index < arrayStringTokensVec.size(); index++)
+                {
+                    stringArray += arrayStringTokensVec[index] + " ";
+                };
+                std::string stringArrayString = this->trimString(stringArray);
+                std::regex re(R"(",")");
+                std::sregex_token_iterator first(stringArrayString.begin(), stringArrayString.end(), re, -1);
+                std::sregex_token_iterator last;
+                std::vector<std::string> arrayStringItemsVec(first, last);
+                for (int index = 0; index < arrayStringItemsVec.size(); index++)
+                {
+                    if (index == 0)
+                    {
+                        newASTNode->stringArray.push_back(arrayStringItemsVec[index].substr(2));
+                    }
+                    else if (index + 1 == arrayStringItemsVec.size())
+                    {
+                        newASTNode->stringArray.push_back(arrayStringItemsVec[index].substr(0, arrayStringItemsVec[index].size() - 3));
+                    }
+                    else
+                    {
+                        newASTNode->stringArray.push_back(arrayStringItemsVec[index]);
+                    };
+                };
+                this->assignVariableMemoryAddress(newASTNode, "ARRAY STRING");
+                newASTNode->variableName = arrayStringTokensVec[2];
+                this->createNewTempVariableStruct(newASTNode->variableName, "ARRAY STRING");
+                this->variableNamesVec.push_back(newASTNode->variableName);
+            }
+            else
+            {
+                return false;
+            };
+        }
+        else
+        {
+            return false;
+        };
     }
     else
     {

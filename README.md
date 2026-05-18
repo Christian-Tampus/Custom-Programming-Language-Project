@@ -1,4 +1,4 @@
-# UPDATE VERSION [42]
+# UPDATE VERSION [43]
 # Custom Programming Language Project Title
 ## Custom Programming Language Project Description
 ### To Do List
@@ -29,3 +29,4 @@
 ### 3. [_] String & Character Built In Functions (upper(string/character), lower(string/character), substring(startIndex, endIndex), reverse(string), indexof(string,character))
 ### 4. [_] Advanced Arithmetic Built In Functions (square(integer/decimal,integer), root(integer/decimal,integer), factorial(integer,integer), round(decimal,integer) etc...)
 ### 5. [_] HashMaps & Sets
+### 6. [_] Make Arrays Handle Variables Not Just Literals
