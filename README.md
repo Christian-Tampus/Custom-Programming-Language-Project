@@ -18,7 +18,7 @@
 ### 4. [COMPLETED] Standard I/O (Input, Output)
 ### 5. [COMPLETED] Basic Arithmetic (Assignment Operator, Addition, Subtraction, Multiplication, Division)
 ### 6. [COMPLETED] Control Flow (If, Else If, Else)
-### 7. [_] Arrays (Integer, Decimal, Character, Boolean, String)
+### 7. [COMPLETED] Arrays (Integer, Decimal, Character, Boolean, String)
 ### 8. [_] Loops (For, While, Do-While)
 ### 9. [_] Functions (Void, Integer, Decimal, Character, Boolean, String)
 ### 10. [_] Load Sample Code & Sample Inputs Button
