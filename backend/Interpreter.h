@@ -1,4 +1,4 @@
-/* UPDATE VERSION [43] */
+/* UPDATE VERSION [44] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -69,7 +69,7 @@ class Interpreter
         std::map<std::string, int> variablesMap;
         std::vector<std::string> inputBufferVec;
         bool performArithmetic(ArithmeticStruct*& arithmeticStruct, std::vector<std::string> arithmeticVec, std::string variableType);
-        VariableStruct* createNewVariableStruct(int integer, double decimal, char character, bool boolean, std::string string, bool isConstant, int variableMemoryAddress, std::string variableType, std::string variableName, std::string assignmentVariableName, std::vector<int> integerArray, std::vector<double> decimalArray, std::vector<char> characterArray, std::vector<bool> booleanArray, std::vector<std::string> stringArray, std::string arrayVariableNameToAssignSize);
+        VariableStruct* createNewVariableStruct(ASTNode* currentASTNode);
     public:
         Interpreter();
         ~Interpreter();
@@ -339,7 +339,7 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                 std::cout << "currentASTNode->variableName:" << currentASTNode->variableName << std::endl;
                 if (this->variableStructMap.find(currentASTNode->variableMemoryAddress) == this->variableStructMap.end())
                 {
-                    VariableStruct* newVariableStruct = this->createNewVariableStruct(currentASTNode->integer, currentASTNode->decimal, currentASTNode->character, currentASTNode->boolean, currentASTNode->string, currentASTNode->isConstant, currentASTNode->variableMemoryAddress, currentASTNode->variableType, currentASTNode->variableName, currentASTNode->assignmentVariableName, currentASTNode->integerArray, currentASTNode->decimalArray, currentASTNode->characterArray, currentASTNode->booleanArray, currentASTNode->stringArray, currentASTNode->arrayVariableNameToAssignSize);
+                    VariableStruct* newVariableStruct = this->createNewVariableStruct(currentASTNode);
                     if (newVariableStruct->successfullyCreatedVariableStruct == false)
                     {
                         newInterpretationSuccess = false;
@@ -1340,25 +1340,242 @@ bool Interpreter::performArithmetic(ArithmeticStruct*& arithmeticStruct, std::ve
 Returns terminalOutputVec
 ==================================================
 */
-VariableStruct* Interpreter::createNewVariableStruct(int integer, double decimal, char character, bool boolean, std::string string, bool isConstant, int variableMemoryAddress, std::string variableType, std::string variableName, std::string assignmentVariableName, std::vector<int> integerArray, std::vector<double> decimalArray, std::vector<char> characterArray, std::vector<bool> booleanArray, std::vector<std::string> stringArray, std::string arrayVariableNameToAssignSize)
+VariableStruct* Interpreter::createNewVariableStruct(ASTNode* currentASTNode)
 {
     VariableStruct* newVariableStruct = new VariableStruct;
-    newVariableStruct->integer = integer;
-    newVariableStruct->decimal = decimal;
-    newVariableStruct->character = character;
-    newVariableStruct->boolean = boolean;
-    newVariableStruct->string = string;
-    newVariableStruct->isConstant = isConstant;
-    newVariableStruct->variableMemoryAddress = variableMemoryAddress;
-    newVariableStruct->variableType = variableType;
-    newVariableStruct->variableName = variableName;
-    newVariableStruct->assignmentVariableName = assignmentVariableName;
-    newVariableStruct->integerArray = integerArray;
-    newVariableStruct->decimalArray = decimalArray;
-    newVariableStruct->characterArray = characterArray;
-    newVariableStruct->booleanArray = booleanArray;
-    newVariableStruct->stringArray = stringArray;
-    newVariableStruct->arrayVariableNameToAssignSize = arrayVariableNameToAssignSize;
+    newVariableStruct->integer = currentASTNode->integer;
+    newVariableStruct->decimal = currentASTNode->decimal;
+    newVariableStruct->character = currentASTNode->character;
+    newVariableStruct->boolean = currentASTNode->boolean;
+    newVariableStruct->string = currentASTNode->string;
+    newVariableStruct->isConstant = currentASTNode->isConstant;
+    newVariableStruct->variableMemoryAddress = currentASTNode->variableMemoryAddress;
+    newVariableStruct->variableType = currentASTNode->variableType;
+    newVariableStruct->variableName = currentASTNode->variableName;
+    newVariableStruct->assignmentVariableName = currentASTNode->assignmentVariableName;
+    newVariableStruct->integerArray = currentASTNode->integerArray;
+    newVariableStruct->decimalArray = currentASTNode->decimalArray;
+    newVariableStruct->characterArray = currentASTNode->characterArray;
+    newVariableStruct->booleanArray = currentASTNode->booleanArray;
+    newVariableStruct->stringArray = currentASTNode->stringArray;
+    newVariableStruct->arrayVariableNameToAssignSize = currentASTNode->arrayVariableNameToAssignSize;
+    std::cout << "currentASTNode->indexToExtractFromArray:" << currentASTNode->indexToExtractFromArray << std::endl;
+    std::cout << "currentASTNode->variableNameToGetIntegerIndex:" << currentASTNode->variableNameToGetIntegerIndex << std::endl;
+    std::cout << "currentASTNode->arrayVariableNameToExtractDataFrom:" << currentASTNode->arrayVariableNameToExtractDataFrom << std::endl;
+    if (currentASTNode->arrayVariableNameToExtractDataFrom.size() > 0)
+    {
+        std::cout << "WORKING 1" << std::endl;
+        if (this->variablesMap.find(currentASTNode->arrayVariableNameToExtractDataFrom) != this->variablesMap.end())
+        {
+            std::cout << "WORKING 2" << std::endl;
+            VariableStruct* arrayVariableStruct = this->variableStructMap[this->variablesMap[currentASTNode->arrayVariableNameToExtractDataFrom]];
+            if (currentASTNode->indexToExtractFromArray >= 0)
+            {
+                std::cout << "WORKING 3:" << arrayVariableStruct->variableType << std::endl;
+                if (arrayVariableStruct->variableType == "ARRAY INTEGER")
+                {
+                    std::cout << "WORKING 4" << std::endl;
+                    if (newVariableStruct->variableType == "INTEGER" || newVariableStruct->variableType == "CONSTANT INTEGER")
+                    {
+                        std::cout << "WORKING 5:" << arrayVariableStruct->integerArray[currentASTNode->indexToExtractFromArray] << std::endl;
+                        if (currentASTNode->indexToExtractFromArray <= arrayVariableStruct->integerArray.size() - 1)
+                        {
+                            newVariableStruct->integer = arrayVariableStruct->integerArray[currentASTNode->indexToExtractFromArray];
+                        }
+                        else
+                        {
+                            newVariableStruct->successfullyCreatedVariableStruct = false;
+                        };
+                    }
+                    else
+                    {
+                        newVariableStruct->successfullyCreatedVariableStruct = false;
+                    };
+                }
+                else if (arrayVariableStruct->variableType == "ARRAY DECIMAL")
+                {
+                    if (newVariableStruct->variableType == "DECIMAL" || newVariableStruct->variableType == "CONSTANT DECIMAL")
+                    {
+                        if (currentASTNode->indexToExtractFromArray <= arrayVariableStruct->decimalArray.size() - 1)
+                        {
+                            newVariableStruct->decimal = arrayVariableStruct->decimalArray[currentASTNode->indexToExtractFromArray];
+                        }
+                        else
+                        {
+                            newVariableStruct->successfullyCreatedVariableStruct = false;
+                        };
+                    }
+                    else
+                    {
+                        newVariableStruct->successfullyCreatedVariableStruct = false;
+                    };
+                }
+                else if (arrayVariableStruct->variableType == "ARRAY CHARACTER")
+                {
+                    if (newVariableStruct->variableType == "CHARACTER" || newVariableStruct->variableType == "CONSTANT CHARACTER")
+                    {
+                        if (currentASTNode->indexToExtractFromArray <= arrayVariableStruct->characterArray.size() - 1)
+                        {
+                            newVariableStruct->character = arrayVariableStruct->characterArray[currentASTNode->indexToExtractFromArray];
+                        }
+                        else
+                        {
+                            newVariableStruct->successfullyCreatedVariableStruct = false;
+                        };
+                    }
+                    else
+                    {
+                        newVariableStruct->successfullyCreatedVariableStruct = false;
+                    };
+                }
+                else if (arrayVariableStruct->variableType == "ARRAY BOOLEAN")
+                {
+                    if (newVariableStruct->variableType == "BOOLEAN" || newVariableStruct->variableType == "CONSTANT BOOLEAN")
+                    {
+                        if (currentASTNode->indexToExtractFromArray <= arrayVariableStruct->booleanArray.size() - 1)
+                        {
+                            newVariableStruct->boolean = arrayVariableStruct->booleanArray[currentASTNode->indexToExtractFromArray];
+                        }
+                        else
+                        {
+                            newVariableStruct->successfullyCreatedVariableStruct = false;
+                        };
+                    }
+                    else
+                    {
+                        newVariableStruct->successfullyCreatedVariableStruct = false;
+                    };
+                }
+                else if (arrayVariableStruct->variableType == "ARRAY STRING")
+                {
+                    if (newVariableStruct->variableType == "STRING" || newVariableStruct->variableType == "CONSTANT STRING")
+                    {
+                        if (currentASTNode->indexToExtractFromArray <= arrayVariableStruct->stringArray.size() - 1)
+                        {
+                            newVariableStruct->string = arrayVariableStruct->stringArray[currentASTNode->indexToExtractFromArray];
+                        }
+                        else
+                        {
+                            newVariableStruct->successfullyCreatedVariableStruct = false;
+                        };
+                    }
+                    else
+                    {
+                        newVariableStruct->successfullyCreatedVariableStruct = false;
+                    };
+                }
+                else
+                {
+                    newVariableStruct->successfullyCreatedVariableStruct = false;
+                };
+            }
+            else if (currentASTNode->variableNameToGetIntegerIndex.size() > 0 && this->variablesMap.find(currentASTNode->variableNameToGetIntegerIndex) != this->variablesMap.end())
+            {
+                VariableStruct* variableNameToGetIntegerIndexStruct = this->variableStructMap[this->variablesMap[currentASTNode->variableNameToGetIntegerIndex]];
+                if (variableNameToGetIntegerIndexStruct->variableType == "INTEGER" || variableNameToGetIntegerIndexStruct->variableType == "CONSTANT INTEGER")
+                {
+                    if (arrayVariableStruct->variableType == "ARRAY INTEGER")
+                    {
+                        if (newVariableStruct->variableType == "INTEGER" || newVariableStruct->variableType == "CONSTANT INTEGER")
+                        {
+                            if (variableNameToGetIntegerIndexStruct->integer <= arrayVariableStruct->integerArray.size() - 1)
+                            {
+                                newVariableStruct->integer = arrayVariableStruct->integerArray[variableNameToGetIntegerIndexStruct->integer];
+                            }
+                            else
+                            {
+                                newVariableStruct->successfullyCreatedVariableStruct = false;
+                            };
+                        }
+                        else
+                        {
+                            newVariableStruct->successfullyCreatedVariableStruct = false;
+                        };
+                    }
+                    else if (arrayVariableStruct->variableType == "ARRAY DECIMAL")
+                    {
+                        if (newVariableStruct->variableType == "DECIMAL" || newVariableStruct->variableType == "CONSTANT DECIMAL")
+                        {
+                            if (variableNameToGetIntegerIndexStruct->integer <= arrayVariableStruct->decimalArray.size() - 1)
+                            {
+                                newVariableStruct->decimal = arrayVariableStruct->decimalArray[variableNameToGetIntegerIndexStruct->integer];
+                            }
+                            else
+                            {
+                                newVariableStruct->successfullyCreatedVariableStruct = false;
+                            };
+                        }
+                        else
+                        {
+                            newVariableStruct->successfullyCreatedVariableStruct = false;
+                        };
+                    }
+                    else if (arrayVariableStruct->variableType == "ARRAY CHARACTER")
+                    {
+                        if (newVariableStruct->variableType == "CHARACTER" || newVariableStruct->variableType == "CONSTANT CHARACTER")
+                        {
+                            if (variableNameToGetIntegerIndexStruct->integer <= arrayVariableStruct->characterArray.size() - 1)
+                            {
+                                newVariableStruct->character = arrayVariableStruct->characterArray[variableNameToGetIntegerIndexStruct->integer];
+                            }
+                            else
+                            {
+                                newVariableStruct->successfullyCreatedVariableStruct = false;
+                            };
+                        }
+                        else
+                        {
+                            newVariableStruct->successfullyCreatedVariableStruct = false;
+                        };
+                    }
+                    else if (arrayVariableStruct->variableType == "ARRAY BOOLEAN")
+                    {
+                        if (newVariableStruct->variableType == "BOOLEAN" || newVariableStruct->variableType == "CONSTANT BOOLEAN")
+                        {
+                            if (variableNameToGetIntegerIndexStruct->integer <= arrayVariableStruct->booleanArray.size() - 1)
+                            {
+                                newVariableStruct->boolean = arrayVariableStruct->booleanArray[variableNameToGetIntegerIndexStruct->integer];
+                            }
+                            else
+                            {
+                                newVariableStruct->successfullyCreatedVariableStruct = false;
+                            };
+                        }
+                        else
+                        {
+                            newVariableStruct->successfullyCreatedVariableStruct = false;
+                        };
+                    }
+                    else if (arrayVariableStruct->variableType == "ARRAY STRING")
+                    {
+                        if (newVariableStruct->variableType == "STRING" || newVariableStruct->variableType == "CONSTANT STRING")
+                        {
+                            if (variableNameToGetIntegerIndexStruct->integer <= arrayVariableStruct->stringArray.size() - 1)
+                            {
+                                newVariableStruct->string = arrayVariableStruct->stringArray[variableNameToGetIntegerIndexStruct->integer];
+                            }
+                            else
+                            {
+                                newVariableStruct->successfullyCreatedVariableStruct = false;
+                            };
+                        }
+                        else
+                        {
+                            newVariableStruct->successfullyCreatedVariableStruct = false;
+                        };
+                    };
+                };
+            }
+            else
+            {
+                newVariableStruct->successfullyCreatedVariableStruct = false;
+            };
+        }
+        else
+        {
+            newVariableStruct->successfullyCreatedVariableStruct = false;
+        };
+    };
     if (newVariableStruct->arrayVariableNameToAssignSize.length() > 0)
     {
         if (this->variablesMap.find(newVariableStruct->arrayVariableNameToAssignSize) != this->variablesMap.end())

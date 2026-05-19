@@ -1,4 +1,4 @@
-/* UPDATE VERSION [43] */
+/* UPDATE VERSION [44] */
 
 /*
 ==================================================
@@ -252,6 +252,54 @@ ARRAY BOOLEAN boolArray1 = [];
 ARRAY BOOLEAN boolArray2 = [TRUE,FALSE,TRUE,FALSE,TRUE];
 ARRAY STRING strArray1 = [];
 ARRAY STRING strArray2 = ["STRING 1","STRING 2","STRING 3"];
+
+INTEGER index1 = 2;
+CONSTANT INTEGER index2 = 2;
+
+INTEGER intArray2Item1 = intArray2[0];
+INTEGER intArray2Item2 = intArray2[index1];
+DECIMAL decArray2Item1 = decArray2[0];
+DECIMAL decArray2Item2 = decArray2[index1];
+CHARACTER charArray2Item1 = charArray2[0];
+CHARACTER charArray2Item2 = charArray2[index1];
+BOOLEAN boolArray2Item1 = boolArray2[0];
+BOOLEAN boolArray2Item2 = boolArray2[index1];
+STRING strArray2Item1 = strArray2[0];
+STRING strArray2Item2 = strArray2[index1];
+
+output("VARIABLES:");
+output(intArray2Item1);
+
+CONSTANT INTEGER CONSTANT_intArray2Item1 = intArray2[0];
+CONSTANT INTEGER CONSTANT_intArray2Item2 = intArray2[index2];
+CONSTANT DECIMAL CONSTANT_decArray2Item1 = decArray2[0];
+CONSTANT DECIMAL CONSTANT_decArray2Item2 = decArray2[index2];
+CONSTANT CHARACTER CONSTANT_charArray2Item1 = charArray2[0];
+CONSTANT CHARACTER CONSTANT_charArray2Item2 = charArray2[index2];
+CONSTANT BOOLEAN CONSTANT_boolArray2Item1 = boolArray2[0];
+CONSTANT BOOLEAN CONSTANT_boolArray2Item2 = boolArray2[index2];
+CONSTANT STRING CONSTANT_strArray2Item1 = strArray2[0];
+CONSTANT STRING CONSTANT_strArray2Item2 = strArray2[index2];
+
+output("END!");
+
+
+
+
+intArray2Item1 = intArray2[1];
+intArray2Item1 = intArray2[index];
+decArray2Item1 = decArray2[1];
+decArray2Item1 = decArray2[index];
+
+
+
+
+
+
+
+
+
+
 
 output(intArray1);
 output(intArray2);

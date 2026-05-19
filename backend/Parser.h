@@ -1,4 +1,4 @@
-/* UPDATE VERSION [43] */
+/* UPDATE VERSION [44] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -164,6 +164,9 @@ struct ASTNode
     std::vector<char> characterArray;
     std::vector<bool> booleanArray;
     std::vector<std::string> stringArray;
+    int indexToExtractFromArray = -1;
+    std::string arrayVariableNameToExtractDataFrom = "";
+    std::string variableNameToGetIntegerIndex = "";
     ~ASTNode() = default;
 };
 
@@ -208,6 +211,7 @@ class Parser
         DataType checkDataType(std::string data);
         void createNewTempVariableStruct(std::string variableName, std::string variableType);
         void connectDanglingBranches(ASTNode* currentASTNode, ASTNode* connectorASTNode);
+        bool isValidArrayDataExtraction(std::string arrayVariableName, std::string variableType, ASTNode* currentASTNode);
     public:
         Parser();
         Parser(std::vector<std::string> tokensVec);
@@ -627,6 +631,13 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                     this->variableNamesVec.push_back(newASTNode->variableName);
                     newASTNode->assignmentVariableName = integerTokensVec[3].substr(0, integerTokensVec[3].length() - 1);
                 }
+                else if (this->isValidArrayDataExtraction(integerTokensVec[3], "INTEGER", newASTNode))
+                {
+                    this->assignVariableMemoryAddress(newASTNode, "INTEGER");
+                    newASTNode->variableName = integerTokensVec[1];
+                    this->createNewTempVariableStruct(newASTNode->variableName, "INTEGER");
+                    this->variableNamesVec.push_back(newASTNode->variableName);
+                }
                 else if (integerTokensVec[3].substr(0, 5) == "size(" && integerTokensVec[3].substr(integerTokensVec[3].length() - 2) == ");" && this->isValidVariableName(integerTokensVec[3].substr(5, integerTokensVec[3].length() - 7), true))
                 {
                     bool assignArraySize = false;
@@ -697,6 +708,13 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                     std::string extractVariable = decimalTokensVec[3].substr(0, decimalTokensVec[3].length() - 1);
                     newASTNode->decimal = std::stod(extractVariable);
                 }
+                else if (this->isValidArrayDataExtraction(decimalTokensVec[3], "DECIMAL", newASTNode))
+                {
+                    this->assignVariableMemoryAddress(newASTNode, "DECIMAL");
+                    newASTNode->variableName = decimalTokensVec[1];
+                    this->createNewTempVariableStruct(newASTNode->variableName, "DECIMAL");
+                    this->variableNamesVec.push_back(newASTNode->variableName);
+                }
                 else if (this->isValidVariableName(decimalTokensVec[3], false))
                 {
                     this->assignVariableMemoryAddress(newASTNode, "DECIMAL");
@@ -748,6 +766,13 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                     this->createNewTempVariableStruct(newASTNode->variableName, "CHARACTER");
                     this->variableNamesVec.push_back(newASTNode->variableName);
                     newASTNode->character = characterTokensVec[3][1];
+                }
+                else if (this->isValidArrayDataExtraction(characterTokensVec[3], "CHARACTER", newASTNode))
+                {
+                    this->assignVariableMemoryAddress(newASTNode, "CHARACTER");
+                    newASTNode->variableName = characterTokensVec[1];
+                    this->createNewTempVariableStruct(newASTNode->variableName, "CHARACTER");
+                    this->variableNamesVec.push_back(newASTNode->variableName);
                 }
                 else if (this->isValidVariableName(characterTokensVec[3], false))
                 {
@@ -816,6 +841,13 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                     this->variableNamesVec.push_back(newASTNode->variableName);
                     newASTNode->boolean = (booleanTokensVec[3] == "TRUE;" ? true : false);
                 }
+                else if (this->isValidArrayDataExtraction(booleanTokensVec[3], "BOOLEAN", newASTNode))
+                {
+                    this->assignVariableMemoryAddress(newASTNode, "BOOLEAN");
+                    newASTNode->variableName = booleanTokensVec[1];
+                    this->createNewTempVariableStruct(newASTNode->variableName, "BOOLEAN");
+                    this->variableNamesVec.push_back(newASTNode->variableName);
+                }
                 else if (this->isValidVariableName(booleanTokensVec[3], false))
                 {
                     this->assignVariableMemoryAddress(newASTNode, "BOOLEAN");
@@ -860,30 +892,40 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
         {
             if (stringTokensVec[0] == "STRING" && this->isValidVariableName(stringTokensVec[1], true) && !this->checkIfVariableNameExists(stringTokensVec[1]) && stringTokensVec[2] == "=")
             {
-                std::string fullString = stringTokensVec[3];
-                for (int index = 4; index < stringTokensVec.size(); index++)
-                {
-                    fullString += " " + stringTokensVec[index];
-                };
-                if (fullString[0] == '"' && fullString[fullString.length() - 2] == '"' && fullString[fullString.length() - 1] == ';')
+                if (this->isValidArrayDataExtraction(stringTokensVec[3], "STRING", newASTNode))
                 {
                     this->assignVariableMemoryAddress(newASTNode, "STRING");
                     newASTNode->variableName = stringTokensVec[1];
                     this->createNewTempVariableStruct(newASTNode->variableName, "STRING");
                     this->variableNamesVec.push_back(newASTNode->variableName);
-                    newASTNode->string = fullString.substr(1, fullString.size() - 3);
-                }
-                else if (this->isValidVariableName(fullString, false))
-                {
-                    this->assignVariableMemoryAddress(newASTNode, "STRING");
-                    newASTNode->variableName = stringTokensVec[1];
-                    this->createNewTempVariableStruct(newASTNode->variableName, "STRING");
-                    this->variableNamesVec.push_back(newASTNode->variableName);
-                    newASTNode->assignmentVariableName = fullString.substr(0, fullString.size() - 1);
                 }
                 else
                 {
-                    return false;
+                    std::string fullString = stringTokensVec[3];
+                    for (int index = 4; index < stringTokensVec.size(); index++)
+                    {
+                        fullString += " " + stringTokensVec[index];
+                    };
+                    if (fullString[0] == '"' && fullString[fullString.length() - 2] == '"' && fullString[fullString.length() - 1] == ';')
+                    {
+                        this->assignVariableMemoryAddress(newASTNode, "STRING");
+                        newASTNode->variableName = stringTokensVec[1];
+                        this->createNewTempVariableStruct(newASTNode->variableName, "STRING");
+                        this->variableNamesVec.push_back(newASTNode->variableName);
+                        newASTNode->string = fullString.substr(1, fullString.size() - 3);
+                    }
+                    else if (this->isValidVariableName(fullString, false))
+                    {
+                        this->assignVariableMemoryAddress(newASTNode, "STRING");
+                        newASTNode->variableName = stringTokensVec[1];
+                        this->createNewTempVariableStruct(newASTNode->variableName, "STRING");
+                        this->variableNamesVec.push_back(newASTNode->variableName);
+                        newASTNode->assignmentVariableName = fullString.substr(0, fullString.size() - 1);
+                    }
+                    else
+                    {
+                        return false;
+                    };
                 };
             }
             else
@@ -910,6 +952,13 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                 std::string extractVariable = constantIntegerTokensVec[4].substr(0, constantIntegerTokensVec[4].length() - 1);
                 newASTNode->integer = std::stoi(extractVariable);
                 newASTNode->isConstant = true;
+            }
+            else if (constantIntegerTokensVec[0] == "CONSTANT" && constantIntegerTokensVec[1] == "INTEGER" && this->isValidVariableName(constantIntegerTokensVec[2], true) && !this->checkIfVariableNameExists(constantIntegerTokensVec[2]) && constantIntegerTokensVec[3] == "=" && this->isValidArrayDataExtraction(constantIntegerTokensVec[4], "CONSTANT INTEGER", newASTNode))
+            {
+                this->assignVariableMemoryAddress(newASTNode, "CONSTANT INTEGER");
+                newASTNode->variableName = constantIntegerTokensVec[2];
+                this->createNewTempVariableStruct(newASTNode->variableName, "CONSTANT INTEGER");
+                this->variableNamesVec.push_back(newASTNode->variableName);
             }
             else if (constantIntegerTokensVec[0] == "CONSTANT" && constantIntegerTokensVec[1] == "INTEGER" && this->isValidVariableName(constantIntegerTokensVec[2], true) && !this->checkIfVariableNameExists(constantIntegerTokensVec[2]) && constantIntegerTokensVec[3] == "=" && constantIntegerTokensVec[4].substr(0, 5) == "size(" && constantIntegerTokensVec[4].substr(constantIntegerTokensVec[4].length() - 2) == ");" && this->isValidVariableName(constantIntegerTokensVec[4].substr(5, constantIntegerTokensVec[4].length() - 7), true))
             {
@@ -965,6 +1014,13 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                 newASTNode->decimal = std::stod(extractVariable);
                 newASTNode->isConstant = true;
             }
+            else if (constantDecimalTokensVec[0] == "CONSTANT" && constantDecimalTokensVec[1] == "DECIMAL" && this->isValidVariableName(constantDecimalTokensVec[2], true) && !this->checkIfVariableNameExists(constantDecimalTokensVec[2]) && constantDecimalTokensVec[3] == "=" && this->isValidArrayDataExtraction(constantDecimalTokensVec[4], "CONSTANT DECIMAL", newASTNode))
+            {
+                this->assignVariableMemoryAddress(newASTNode, "CONSTANT DECIMAL");
+                newASTNode->variableName = constantDecimalTokensVec[2];
+                this->createNewTempVariableStruct(newASTNode->variableName, "CONSTANT DECIMAL");
+                this->variableNamesVec.push_back(newASTNode->variableName);
+            }
             else
             {
                 return false;
@@ -988,6 +1044,13 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                 this->variableNamesVec.push_back(newASTNode->variableName);
                 newASTNode->character = constantCharacterTokensVec[4][1];
                 newASTNode->isConstant = true;
+            }
+            else if (constantCharacterTokensVec[0] == "CONSTANT" && constantCharacterTokensVec[1] == "CHARACTER" && this->isValidVariableName(constantCharacterTokensVec[2], true) && !this->checkIfVariableNameExists(constantCharacterTokensVec[2]) && constantCharacterTokensVec[3] == "=" && this->isValidArrayDataExtraction(constantCharacterTokensVec[4], "CONSTANT CHARACTER", newASTNode))
+            {
+                this->assignVariableMemoryAddress(newASTNode, "CONSTANT CHARACTER");
+                newASTNode->variableName = constantCharacterTokensVec[2];
+                this->createNewTempVariableStruct(newASTNode->variableName, "CONSTANT CHARACTER");
+                this->variableNamesVec.push_back(newASTNode->variableName);
             }
             else
             {
@@ -1029,6 +1092,13 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                 newASTNode->boolean = (constantBooleanTokensVec[4] == "TRUE;" ? true: false);
                 newASTNode->isConstant = true;
             }
+            else if (constantBooleanTokensVec[0] == "CONSTANT" && constantBooleanTokensVec[1] == "BOOLEAN" && this->isValidVariableName(constantBooleanTokensVec[2], true) && !this->checkIfVariableNameExists(constantBooleanTokensVec[2]) && constantBooleanTokensVec[3] == "=" && this->isValidArrayDataExtraction(constantBooleanTokensVec[4], "CONSTANT BOOLEAN", newASTNode))
+            {
+                this->assignVariableMemoryAddress(newASTNode, "CONSTANT BOOLEAN");
+                newASTNode->variableName = constantBooleanTokensVec[2];
+                this->createNewTempVariableStruct(newASTNode->variableName, "CONSTANT BOOLEAN");
+                this->variableNamesVec.push_back(newASTNode->variableName);
+            }
             else
             {
                 return false;
@@ -1046,22 +1116,32 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
         {
             if (constantStringTokensVector[0] == "CONSTANT" && constantStringTokensVector[1] == "STRING" && this->isValidVariableName(constantStringTokensVector[2], true) && !this->checkIfVariableNameExists(constantStringTokensVector[2]) && constantStringTokensVector[3] == "=")
             {
-                std::string fullString = constantStringTokensVector[4];
-                for (int index = 5; index < constantStringTokensVector.size(); index++)
-                {
-                    fullString += " " + constantStringTokensVector[index];
-                };
-                if (fullString[0] == '"' && fullString[fullString.length() - 2] == '"' && fullString[fullString.length() - 1] == ';')
+                if (constantStringTokensVector[0] == "CONSTANT" && constantStringTokensVector[1] == "STRING" && this->isValidVariableName(constantStringTokensVector[2], true) && !this->checkIfVariableNameExists(constantStringTokensVector[2]) && constantStringTokensVector[3] == "=" && this->isValidArrayDataExtraction(constantStringTokensVector[4], "CONSTANT STRING", newASTNode))
                 {
                     this->assignVariableMemoryAddress(newASTNode, "CONSTANT STRING");
                     newASTNode->variableName = constantStringTokensVector[2];
                     this->createNewTempVariableStruct(newASTNode->variableName, "CONSTANT STRING");
                     this->variableNamesVec.push_back(newASTNode->variableName);
-                    newASTNode->string = fullString.substr(1, fullString.size() - 3);
                 }
                 else
                 {
-                    return false;
+                    std::string fullString = constantStringTokensVector[4];
+                    for (int index = 5; index < constantStringTokensVector.size(); index++)
+                    {
+                        fullString += " " + constantStringTokensVector[index];
+                    };
+                    if (fullString[0] == '"' && fullString[fullString.length() - 2] == '"' && fullString[fullString.length() - 1] == ';')
+                    {
+                        this->assignVariableMemoryAddress(newASTNode, "CONSTANT STRING");
+                        newASTNode->variableName = constantStringTokensVector[2];
+                        this->createNewTempVariableStruct(newASTNode->variableName, "CONSTANT STRING");
+                        this->variableNamesVec.push_back(newASTNode->variableName);
+                        newASTNode->string = fullString.substr(1, fullString.size() - 3);
+                    }
+                    else
+                    {
+                        return false;
+                    };
                 };
             }
             else
@@ -2173,6 +2253,160 @@ void Parser::connectDanglingBranches(ASTNode* currentASTNode, ASTNode* connector
         this->connectDanglingBranches(currentASTNode->controlFlowASTNode, connectorASTNode);
     };
     return;
+};
+
+/*
+==================================================
+Checks If arrayString Is A Valid Data Extraction For An Array
+==================================================
+*/
+bool Parser::isValidArrayDataExtraction(std::string arrayVariableName, std::string variableType, ASTNode* currentASTNode)
+{
+    std::regex re(R"([\[\]])");
+    std::sregex_token_iterator it(arrayVariableName.begin(), arrayVariableName.end(), re, -1);
+    std::sregex_token_iterator end;
+    std::vector<std::string> arrayVariableNameVec(it, end);
+    if (arrayVariableNameVec.size() == 3 && arrayVariableNameVec[2] == ";" && this->isValidVariableName(arrayVariableNameVec[0], true))
+    {
+        std::cout << "WORKING HERE!" << std::endl;
+        bool isAVariable = true;
+        bool isValidVariable = false;
+        if (this->isValidVariableAssignment(arrayVariableNameVec[1] + ";", "INTEGER"))
+        {
+            isAVariable = false;
+            std::cout << "11111. IS NOT A VARIABLE!" << std::endl;
+        }
+        else if (this->isValidVariableName(arrayVariableNameVec[1], true))
+        {
+            for (int index = 0; index < this->tempVariableStructVec.size(); index++)
+            {
+                if (this->tempVariableStructVec[index].variableName == arrayVariableNameVec[1])
+                {
+                    if (this->tempVariableStructVec[index].variableType == "INTEGER" || this->tempVariableStructVec[index].variableType == "CONSTANT INTEGER")
+                    {
+                        isValidVariable = true;
+                        std::cout << "22222. IS A VARIABLE!" << std::endl;
+                        break;
+                    }
+                    else
+                    {
+                        std::cout << "WRONG VARIABLE TYPE!" << std::endl;
+                        return false;
+                    };
+                };
+            };
+        };
+        if (isAVariable == true && isValidVariable == false)
+        {
+            std::cout << "NOT A VALID VARIABLE!" << std::endl;
+            return false;
+        };
+        std::cout << "WORKING HERE SO FAR! variableType:" << variableType << std::endl;
+        if (variableType == "INTEGER" || variableType == "CONSTANT INTEGER")
+        {
+            for (int index = 0; index < this->tempVariableStructVec.size(); index++)
+            {
+                if (this->tempVariableStructVec[index].variableName == arrayVariableNameVec[0] && this->tempVariableStructVec[index].variableType == "ARRAY INTEGER")
+                {
+                    if (isAVariable == false)
+                    {
+                        currentASTNode->indexToExtractFromArray = std::stoi(arrayVariableNameVec[1]);
+                    }
+                    else
+                    {
+                        currentASTNode->variableNameToGetIntegerIndex = arrayVariableNameVec[1];
+                    };
+                    currentASTNode->arrayVariableNameToExtractDataFrom = arrayVariableNameVec[0];
+                    return true;
+                };
+            };
+        }
+        else if (variableType == "DECIMAL" || variableType == "CONSTANT DECIMAL")
+        {
+            for (int index = 0; index < this->tempVariableStructVec.size(); index++)
+            {
+                if (this->tempVariableStructVec[index].variableName == arrayVariableNameVec[0] && this->tempVariableStructVec[index].variableType == "ARRAY DECIMAL")
+                {
+                    if (isAVariable == false)
+                    {
+                        currentASTNode->indexToExtractFromArray = std::stoi(arrayVariableNameVec[1]);
+                    }
+                    else
+                    {
+                        currentASTNode->variableNameToGetIntegerIndex = arrayVariableNameVec[1];
+                    };
+                    currentASTNode->arrayVariableNameToExtractDataFrom = arrayVariableNameVec[0];
+                    return true;
+                };
+            };
+        }
+        else if (variableType == "CHARACTER" || variableType == "CONSTANT CHARACTER")
+        {
+            for (int index = 0; index < this->tempVariableStructVec.size(); index++)
+            {
+                if (this->tempVariableStructVec[index].variableName == arrayVariableNameVec[0] && this->tempVariableStructVec[index].variableType == "ARRAY CHARACTER")
+                {
+                    if (isAVariable == false)
+                    {
+                        currentASTNode->indexToExtractFromArray = std::stoi(arrayVariableNameVec[1]);
+                    }
+                    else
+                    {
+                        currentASTNode->variableNameToGetIntegerIndex = arrayVariableNameVec[1];
+                    };
+                    currentASTNode->arrayVariableNameToExtractDataFrom = arrayVariableNameVec[0];
+                    return true;
+                };
+            };
+        }
+        else if (variableType == "BOOLEAN" || variableType == "CONSTANT BOOLEAN")
+        {
+            for (int index = 0; index < this->tempVariableStructVec.size(); index++)
+            {
+                if (this->tempVariableStructVec[index].variableName == arrayVariableNameVec[0] && this->tempVariableStructVec[index].variableType == "ARRAY BOOLEAN")
+                {
+                    if (isAVariable == false)
+                    {
+                        currentASTNode->indexToExtractFromArray = std::stoi(arrayVariableNameVec[1]);
+                    }
+                    else
+                    {
+                        currentASTNode->variableNameToGetIntegerIndex = arrayVariableNameVec[1];
+                    };
+                    currentASTNode->arrayVariableNameToExtractDataFrom = arrayVariableNameVec[0];
+                    return true;
+                };
+            };
+        }
+        else if (variableType == "STRING" || variableType == "CONSTANT STRING")
+        {
+            for (int index = 0; index < this->tempVariableStructVec.size(); index++)
+            {
+                if (this->tempVariableStructVec[index].variableName == arrayVariableNameVec[0] && this->tempVariableStructVec[index].variableType == "ARRAY STRING")
+                {
+                    if (isAVariable == false)
+                    {
+                        currentASTNode->indexToExtractFromArray = std::stoi(arrayVariableNameVec[1]);
+                    }
+                    else
+                    {
+                        currentASTNode->variableNameToGetIntegerIndex = arrayVariableNameVec[1];
+                    };
+                    currentASTNode->arrayVariableNameToExtractDataFrom = arrayVariableNameVec[0];
+                    return true;
+                };
+            };
+        }
+        else
+        {
+            return false;
+        };
+    }
+    else
+    {
+        return false;
+    };
+    return false;
 };
 
 #endif
