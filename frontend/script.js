@@ -1,4 +1,4 @@
-/* UPDATE VERSION [44] */
+/* UPDATE VERSION [45] */
 
 /*
 ==================================================
@@ -88,6 +88,7 @@ function lightTheme() {
     textEditor.style.border = "1px solid " + lightThemeColor1;
     textEditor.style.setProperty(standardPlaceholderColorVariable, lightThemeColor1);
     textEditor.style.setProperty(standardPlaceholderOpacityVariable, 1);
+    terminal.style.color = lightThemeColor1;
     terminal.style.setProperty(standardPlaceholderColorVariable, lightThemeColor1);
     terminal.style.setProperty(standardPlaceholderOpacityVariable, 1);
     terminalInput.style.setProperty(standardPlaceholderColorVariable, lightThemeColor1);
@@ -124,6 +125,7 @@ function darkTheme() {
     textEditor.style.border = "1px solid " + darkThemeColor1;
     textEditor.style.setProperty(standardPlaceholderColorVariable, darkThemeColor1);
     textEditor.style.setProperty(standardPlaceholderOpacityVariable, 1);
+    terminal.style.color = darkThemeColor1;
     terminal.style.setProperty(standardPlaceholderColorVariable, darkThemeColor1);
     terminal.style.setProperty(standardPlaceholderOpacityVariable, 1);
     terminalInput.style.setProperty(standardPlaceholderColorVariable, darkThemeColor1);

@@ -1,4 +1,4 @@
-# UPDATE VERSION [44]
+# UPDATE VERSION [45]
 # Custom Programming Language Project Title
 ## Custom Programming Language Project Description
 ### To Do List
@@ -18,8 +18,8 @@
 ### 4. [COMPLETED] Standard I/O (Input, Output)
 ### 5. [COMPLETED] Basic Arithmetic (Assignment Operator, Addition, Subtraction, Multiplication, Division)
 ### 6. [COMPLETED] Control Flow (If, Else If, Else)
-### 7. [_] Arrays (Integer, Decimal, Character, Boolean, String)
-### 8. [_] Loops (For, While, Do-While)
+### 7. [COMPLETED] Arrays (Integer, Decimal, Character, Boolean, String)
+### 8. [_] Loops (For, While)
 ### 9. [_] Functions (Void, Integer, Decimal, Character, Boolean, String)
 ### 10. [_] Load Sample Code & Sample Inputs Button
 
@@ -30,3 +30,5 @@
 ### 4. [_] Advanced Arithmetic Built In Functions (square(integer/decimal,integer), root(integer/decimal,integer), factorial(integer,integer), round(decimal,integer) etc...)
 ### 5. [_] HashMaps & Sets
 ### 6. [_] Make Arrays Handle Variables Not Just Literals
+### 7. [_] Direct Arithmetic For Array Item Assignment (intArray[0] = 1 + 2 * 3 / 4)
+### 8. [_] Do-While Loop

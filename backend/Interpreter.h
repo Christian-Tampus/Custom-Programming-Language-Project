@@ -1,4 +1,4 @@
-/* UPDATE VERSION [44] */
+/* UPDATE VERSION [45] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -70,6 +70,7 @@ class Interpreter
         std::vector<std::string> inputBufferVec;
         bool performArithmetic(ArithmeticStruct*& arithmeticStruct, std::vector<std::string> arithmeticVec, std::string variableType);
         VariableStruct* createNewVariableStruct(ASTNode* currentASTNode);
+        bool extractAndAssignDataFromArray(std::string arrayVariableString, VariableStruct* variableStructToUpdate);
     public:
         Interpreter();
         ~Interpreter();
@@ -379,31 +380,124 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                         newInterpretationSuccess = false;
                         currentASTNode = nullptr;
                         break;
-                    };
-                    if (this->variablesMap.find(currentASTNode->assignmentOperatorValue) != this->variablesMap.end())
+                    }; 
+                    if (this->extractAndAssignDataFromArray(currentASTNode->assignmentOperatorValue, variableStructToUpdate) == false)
                     {
-                        VariableStruct* variableStructToUpdateWith = this->variableStructMap[this->variablesMap[currentASTNode->assignmentOperatorValue]];
-                        if (variableStructToUpdate->variableType == variableStructToUpdateWith->variableType || "CONSTANT " + variableStructToUpdate->variableType == variableStructToUpdateWith->variableType)
+                        if (this->variablesMap.find(currentASTNode->assignmentOperatorValue) != this->variablesMap.end())
+                        {
+                            VariableStruct* variableStructToUpdateWith = this->variableStructMap[this->variablesMap[currentASTNode->assignmentOperatorValue]];
+                            if (variableStructToUpdate->variableType == variableStructToUpdateWith->variableType || "CONSTANT " + variableStructToUpdate->variableType == variableStructToUpdateWith->variableType)
+                            {
+                                if (variableStructToUpdate->variableType == "INTEGER")
+                                {
+                                    variableStructToUpdate->integer = variableStructToUpdateWith->integer;
+                                }
+                                else if (variableStructToUpdate->variableType == "DECIMAL")
+                                {
+                                    variableStructToUpdate->decimal = variableStructToUpdateWith->decimal;
+                                }
+                                else if (variableStructToUpdate->variableType == "CHARACTER")
+                                {
+                                    variableStructToUpdate->character = variableStructToUpdateWith->character;
+                                }
+                                else if (variableStructToUpdate->variableType == "BOOLEAN")
+                                {
+                                    variableStructToUpdate->boolean = variableStructToUpdateWith->boolean;
+                                }
+                                else if (variableStructToUpdate->variableType == "STRING")
+                                {
+                                    variableStructToUpdate->string = variableStructToUpdateWith->string;
+                                }
+                                else
+                                {
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            }
+                            else
+                            {
+                                newInterpretationSuccess = false;
+                                currentASTNode = nullptr;
+                                break;
+                            };
+                        }
+                        else
                         {
                             if (variableStructToUpdate->variableType == "INTEGER")
                             {
-                                variableStructToUpdate->integer = variableStructToUpdateWith->integer;
+                                try
+                                {
+                                    variableStructToUpdate->integer = std::stoi(currentASTNode->assignmentOperatorValue);
+                                }
+                                catch (...)
+                                {
+                                    std::cout << "[INTERPRETER] Cannot Assign A Non Integer As A Integer For Variable: " << currentASTNode->variableName << "!" << std::endl;
+                                    this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non Integer As A Integer For Variable: " + currentASTNode->variableName + "]!");
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
                             }
                             else if (variableStructToUpdate->variableType == "DECIMAL")
                             {
-                                variableStructToUpdate->decimal = variableStructToUpdateWith->decimal;
+                                try
+                                {
+                                    variableStructToUpdate->decimal = std::stod(currentASTNode->assignmentOperatorValue);
+                                }
+                                catch (...)
+                                {
+                                    std::cout << "[INTERPRETER] Cannot Assign A Non Decimal As A Decimal For Variable: " << currentASTNode->variableName << "!" << std::endl;
+                                    this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non Decimal As A Decimal For Variable: " + currentASTNode->variableName + "]!");
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
                             }
                             else if (variableStructToUpdate->variableType == "CHARACTER")
                             {
-                                variableStructToUpdate->character = variableStructToUpdateWith->character;
+                                if (currentASTNode->assignmentOperatorValue.size() == 3 && currentASTNode->assignmentOperatorValue[0] == '\'' && currentASTNode->assignmentOperatorValue[2] == '\'')
+                                {
+                                    variableStructToUpdate->character = currentASTNode->assignmentOperatorValue[1];
+                                }
+                                else
+                                {
+                                    std::cout << "[INTERPRETER] Cannot Assign A Non Character As A Character For Variable: " << currentASTNode->variableName << "!" << std::endl;
+                                    this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non Character As A Character For Variable: " + currentASTNode->variableName + "]!");
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
                             }
                             else if (variableStructToUpdate->variableType == "BOOLEAN")
                             {
-                                variableStructToUpdate->boolean = variableStructToUpdateWith->boolean;
+                                if (currentASTNode->assignmentOperatorValue == "TRUE" || currentASTNode->assignmentOperatorValue == "FALSE")
+                                {
+                                    variableStructToUpdate->boolean = (currentASTNode->assignmentOperatorValue == "TRUE" ? true : false);
+                                }
+                                else
+                                {
+                                    std::cout << "[INTERPRETER] Cannot Assign A Non Boolean As A Boolean For Variable: " << currentASTNode->variableName << "!" << std::endl;
+                                    this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non Boolean As A Boolean For Variable: " + currentASTNode->variableName + "]!");
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
                             }
                             else if (variableStructToUpdate->variableType == "STRING")
                             {
-                                variableStructToUpdate->string = variableStructToUpdateWith->string;
+                                if (currentASTNode->assignmentOperatorValue[0] == '\"' && currentASTNode->assignmentOperatorValue[currentASTNode->assignmentOperatorValue.length() - 1] == '\"')
+                                {
+                                    variableStructToUpdate->string = currentASTNode->assignmentOperatorValue.substr(1, currentASTNode->assignmentOperatorValue.length() - 2);
+                                }
+                                else
+                                {
+                                    std::cout << "[INTERPRETER] Cannot Assign A Non String As A String For Variable: " << currentASTNode->variableName << "!" << std::endl;
+                                    this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non String As A String For Variable: " + currentASTNode->variableName + "]!");
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
                             }
                             else
                             {
@@ -411,96 +505,6 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                                 currentASTNode = nullptr;
                                 break;
                             };
-                        }
-                        else
-                        {
-                            newInterpretationSuccess = false;
-                            currentASTNode = nullptr;
-                            break;
-                        };
-                    }
-                    else
-                    {
-                        if (variableStructToUpdate->variableType == "INTEGER")
-                        {
-                            try
-                            {
-                                variableStructToUpdate->integer = std::stoi(currentASTNode->assignmentOperatorValue);
-                            }
-                            catch (...)
-                            {
-                                std::cout << "[INTERPRETER] Cannot Assign A Non Integer As A Integer For Variable: " << currentASTNode->variableName << "!" << std::endl;
-                                this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non Integer As A Integer For Variable: " + currentASTNode->variableName + "]!");
-                                newInterpretationSuccess = false;
-                                currentASTNode = nullptr;
-                                break;
-                            };
-                        }
-                        else if (variableStructToUpdate->variableType == "DECIMAL")
-                        {
-                            try
-                            {
-                                variableStructToUpdate->decimal = std::stod(currentASTNode->assignmentOperatorValue);
-                            }
-                            catch (...)
-                            {
-                                std::cout << "[INTERPRETER] Cannot Assign A Non Decimal As A Decimal For Variable: " << currentASTNode->variableName << "!" << std::endl;
-                                this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non Decimal As A Decimal For Variable: " + currentASTNode->variableName + "]!");
-                                newInterpretationSuccess = false;
-                                currentASTNode = nullptr;
-                                break;
-                            };
-                        }
-                        else if (variableStructToUpdate->variableType == "CHARACTER")
-                        {
-                            if (currentASTNode->assignmentOperatorValue.size() == 3 && currentASTNode->assignmentOperatorValue[0] == '\'' && currentASTNode->assignmentOperatorValue[2] == '\'')
-                            {
-                                variableStructToUpdate->character = currentASTNode->assignmentOperatorValue[1];
-                            }
-                            else
-                            {
-                                std::cout << "[INTERPRETER] Cannot Assign A Non Character As A Character For Variable: " << currentASTNode->variableName << "!" << std::endl;
-                                this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non Character As A Character For Variable: " + currentASTNode->variableName + "]!");
-                                newInterpretationSuccess = false;
-                                currentASTNode = nullptr;
-                                break;
-                            };
-                        }
-                        else if (variableStructToUpdate->variableType == "BOOLEAN")
-                        {
-                            if (currentASTNode->assignmentOperatorValue == "TRUE" || currentASTNode->assignmentOperatorValue == "FALSE")
-                            {
-                                variableStructToUpdate->boolean = (currentASTNode->assignmentOperatorValue == "TRUE" ? true : false);
-                            }
-                            else
-                            {
-                                std::cout << "[INTERPRETER] Cannot Assign A Non Boolean As A Boolean For Variable: " << currentASTNode->variableName << "!" << std::endl;
-                                this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non Boolean As A Boolean For Variable: " + currentASTNode->variableName + "]!");
-                                newInterpretationSuccess = false;
-                                currentASTNode = nullptr;
-                                break;
-                            };
-                        }
-                        else if (variableStructToUpdate->variableType == "STRING")
-                        {
-                            if (currentASTNode->assignmentOperatorValue[0] == '\"' && currentASTNode->assignmentOperatorValue[currentASTNode->assignmentOperatorValue.length() - 1] == '\"')
-                            {
-                                variableStructToUpdate->string = currentASTNode->assignmentOperatorValue.substr(1, currentASTNode->assignmentOperatorValue.length() - 2);
-                            }
-                            else
-                            {
-                                std::cout << "[INTERPRETER] Cannot Assign A Non String As A String For Variable: " << currentASTNode->variableName << "!" << std::endl;
-                                this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non String As A String For Variable: " + currentASTNode->variableName + "]!");
-                                newInterpretationSuccess = false;
-                                currentASTNode = nullptr;
-                                break;
-                            };
-                        }
-                        else
-                        {
-                            newInterpretationSuccess = false;
-                            currentASTNode = nullptr;
-                            break;
                         };
                     };
                 }
@@ -1359,25 +1363,17 @@ VariableStruct* Interpreter::createNewVariableStruct(ASTNode* currentASTNode)
     newVariableStruct->booleanArray = currentASTNode->booleanArray;
     newVariableStruct->stringArray = currentASTNode->stringArray;
     newVariableStruct->arrayVariableNameToAssignSize = currentASTNode->arrayVariableNameToAssignSize;
-    std::cout << "currentASTNode->indexToExtractFromArray:" << currentASTNode->indexToExtractFromArray << std::endl;
-    std::cout << "currentASTNode->variableNameToGetIntegerIndex:" << currentASTNode->variableNameToGetIntegerIndex << std::endl;
-    std::cout << "currentASTNode->arrayVariableNameToExtractDataFrom:" << currentASTNode->arrayVariableNameToExtractDataFrom << std::endl;
     if (currentASTNode->arrayVariableNameToExtractDataFrom.size() > 0)
     {
-        std::cout << "WORKING 1" << std::endl;
         if (this->variablesMap.find(currentASTNode->arrayVariableNameToExtractDataFrom) != this->variablesMap.end())
         {
-            std::cout << "WORKING 2" << std::endl;
             VariableStruct* arrayVariableStruct = this->variableStructMap[this->variablesMap[currentASTNode->arrayVariableNameToExtractDataFrom]];
             if (currentASTNode->indexToExtractFromArray >= 0)
             {
-                std::cout << "WORKING 3:" << arrayVariableStruct->variableType << std::endl;
                 if (arrayVariableStruct->variableType == "ARRAY INTEGER")
                 {
-                    std::cout << "WORKING 4" << std::endl;
                     if (newVariableStruct->variableType == "INTEGER" || newVariableStruct->variableType == "CONSTANT INTEGER")
                     {
-                        std::cout << "WORKING 5:" << arrayVariableStruct->integerArray[currentASTNode->indexToExtractFromArray] << std::endl;
                         if (currentASTNode->indexToExtractFromArray <= arrayVariableStruct->integerArray.size() - 1)
                         {
                             newVariableStruct->integer = arrayVariableStruct->integerArray[currentASTNode->indexToExtractFromArray];
@@ -1687,4 +1683,93 @@ std::vector<std::string> Interpreter::getTerminalOutputVec()
 {
     return this->terminalOutputVec;
 };
+
+/*
+==================================================
+Extracts Data From Array And Assigns It To Variable
+==================================================
+*/
+bool Interpreter::extractAndAssignDataFromArray(std::string arrayVariableString, VariableStruct* variableStructToUpdate)
+{
+    std::regex re(R"([\[\]])");
+    std::sregex_token_iterator it(arrayVariableString.begin(), arrayVariableString.end(), re, -1);
+    std::sregex_token_iterator end;
+    std::vector<std::string> arrayVariableStringVec(it, end);
+    for (int index = 0; index < arrayVariableStringVec.size(); index++)
+    {
+        std::cout << "arrayVariableStringVec[" << index << "]: " << arrayVariableStringVec[index] << std::endl;
+    };
+    if (arrayVariableStringVec.size() == 3 && arrayVariableStringVec[2] == ";")
+    {
+        std::cout << "WORKING HERE!" << std::endl;
+        std::string arrayVariableName = arrayVariableStringVec[0];
+        std::cout << "arrayVariableName:" << arrayVariableName << std::endl;
+        if (this->variablesMap.find(arrayVariableName) != this->variablesMap.end())
+        {
+            std::cout << "WORKING HERE!!!" << std::endl;
+            VariableStruct* arrayVariableStruct = this->variableStructMap[this->variablesMap[arrayVariableName]];
+            std::string arrayIndexString = arrayVariableStringVec[1];
+            int index = -1;
+            VariableStruct* indexVariableStruct;
+            std::cout << "arrayIndexString:" << arrayIndexString << std::endl;
+            try
+            {
+                index = std::stoi(arrayIndexString);
+            }
+            catch(...)
+            {
+                if (this->variablesMap.find(arrayIndexString) != this->variablesMap.end())
+                {
+                    indexVariableStruct = this->variableStructMap[this->variablesMap[arrayIndexString]];
+                    if (indexVariableStruct->variableType == "INTEGER" || indexVariableStruct->variableType == "CONSTANT INTEGER")
+                    {
+                        index = indexVariableStruct->integer;
+                    }
+                    else
+                    {
+                        return false;
+                    };
+                }
+                else
+                {
+                    return false;
+                };
+            };
+            std::cout << "index:" << index << std::endl;
+            if (index >= 0 && index <= arrayVariableStruct->integerArray.size() - 1)
+            {
+                if (arrayVariableStruct->variableType == "ARRAY INTEGER" && variableStructToUpdate->variableType == "INTEGER")
+                {
+                    variableStructToUpdate->integer = arrayVariableStruct->integerArray[index];
+                }
+                else if (arrayVariableStruct->variableType == "ARRAY DECIMAL" && variableStructToUpdate->variableType == "DECIMAL")
+                {
+                    variableStructToUpdate->decimal = arrayVariableStruct->decimalArray[index];
+                }
+                else if (arrayVariableStruct->variableType == "ARRAY CHARACTER" && variableStructToUpdate->variableType == "CHARACTER")
+                {
+                    variableStructToUpdate->character = arrayVariableStruct->characterArray[index];
+                }
+                else if (arrayVariableStruct->variableType == "ARRAY BOOLEAN" && variableStructToUpdate->variableType == "BOOLEAN")
+                {
+                    variableStructToUpdate->boolean = arrayVariableStruct->booleanArray[index];
+                }
+                else if (arrayVariableStruct->variableType == "ARRAY STRING" && variableStructToUpdate->variableType == "STRING")
+                {
+                    variableStructToUpdate->string = arrayVariableStruct->stringArray[index];
+                }
+                else
+                {
+                    return false;
+                };
+            }
+            else
+            {
+                return false;
+            };
+        };
+    };
+    return true;
+};
+
 #endif

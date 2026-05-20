@@ -1,4 +1,4 @@
-/* UPDATE VERSION [44] */
+/* UPDATE VERSION [45] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -45,6 +45,8 @@ enum Command
     C_ARRAY_CHARACTER,
     C_ARRAY_BOOLEAN,
     C_ARRAY_STRING,
+    C_FOR_LOOP,
+    C_WHILE_LOOP,
 };
 
 /*
@@ -167,6 +169,7 @@ struct ASTNode
     int indexToExtractFromArray = -1;
     std::string arrayVariableNameToExtractDataFrom = "";
     std::string variableNameToGetIntegerIndex = "";
+    std::string forLoopIncrementVariableName = "";
     ~ASTNode() = default;
 };
 
@@ -434,6 +437,18 @@ void Parser::parse()
                         std::cout << "[PARSER] Command: CONTROL FLOW" << std::endl;
                         commandType = C_CONTROL_FLOW;
                     }
+                    else if (commandString == "FOR LOOP")
+                    {
+                        commandFound = true;
+                        std::cout << "[PARSER] Command: FOR LOOP" << std::endl;
+                        commandType = C_FOR_LOOP;
+                    }
+                    else if (commandString == "WHILE LOOP")
+                    {
+                        commandFound = true;
+                        std::cout << "[PARSER] Command: WHILE LOOP" << std::endl;
+                        commandType = C_WHILE_LOOP;
+                    }
                     else if (commandString == "ARRAY INTEGER")
                     {
                         commandFound = true;
@@ -467,39 +482,48 @@ void Parser::parse()
                     else if (currentCodeLine[index2] == ' ' && this->isValidVariableName(commandString.substr(0, commandString.length() - 1), true) && index2 + 1 < currentCodeLine.length() && currentCodeLine[index2 + 1] == '=' && index2 + 2 < currentCodeLine.length() && currentCodeLine[index2 + 2] == ' ')
                     {
                         std::string assignmentValue = currentCodeLine.substr(index2 + 3);
-                        bool isArithmeticOperations = this->checkIfArithmeticOperations(assignmentValue);
-                        if (assignmentValue[assignmentValue.length() - 1] == ';')
+                        if (this->isValidArrayDataExtraction(assignmentValue, "", nullptr))
                         {
-                            if (isArithmeticOperations)
+                            commandFound = true;
+                            std::cout << "[PARSER] Command: ASSIGNMENT OPERATOR" << std::endl;
+                            commandType = C_ASSIGNMENT_OPERATOR;
+                        }
+                        else
+                        {
+                            bool isArithmeticOperations = this->checkIfArithmeticOperations(assignmentValue);
+                            if (assignmentValue[assignmentValue.length() - 1] == ';')
                             {
-                                commandFound = true;
-                                std::cout << "[PARSER] Command: ARITHMETIC" << std::endl;
-                                commandType = C_ARITHMETIC;
-                            }
-                            else
-                            {
-                                if (assignmentValue[0] == '\'' && assignmentValue[assignmentValue.length() - 2] == '\'' || assignmentValue[0] == '\"' && assignmentValue[assignmentValue.length() - 2] == '\"')
+                                if (isArithmeticOperations)
                                 {
                                     commandFound = true;
-                                    std::cout << "[PARSER] Command: ASSIGNMENT OPERATOR" << std::endl;
-                                    commandType = C_ASSIGNMENT_OPERATOR;
+                                    std::cout << "[PARSER] Command: ARITHMETIC" << std::endl;
+                                    commandType = C_ARITHMETIC;
                                 }
                                 else
                                 {
-                                    bool isAssignmentOperator = true;
-                                    for (int index3 = 1; index3 < assignmentValue.length() - 2; index3++)
-                                    {
-                                        if (assignmentValue[index3] == ' ')
-                                        {
-                                            isAssignmentOperator = false;
-                                            break;
-                                        };
-                                    };
-                                    if (isAssignmentOperator)
+                                    if (assignmentValue[0] == '\'' && assignmentValue[assignmentValue.length() - 2] == '\'' || assignmentValue[0] == '\"' && assignmentValue[assignmentValue.length() - 2] == '\"')
                                     {
                                         commandFound = true;
                                         std::cout << "[PARSER] Command: ASSIGNMENT OPERATOR" << std::endl;
                                         commandType = C_ASSIGNMENT_OPERATOR;
+                                    }
+                                    else
+                                    {
+                                        bool isAssignmentOperator = true;
+                                        for (int index3 = 1; index3 < assignmentValue.length() - 2; index3++)
+                                        {
+                                            if (assignmentValue[index3] == ' ')
+                                            {
+                                                isAssignmentOperator = false;
+                                                break;
+                                            };
+                                        };
+                                        if (isAssignmentOperator)
+                                        {
+                                            commandFound = true;
+                                            std::cout << "[PARSER] Command: ASSIGNMENT OPERATOR" << std::endl;
+                                            commandType = C_ASSIGNMENT_OPERATOR;
+                                        };
                                     };
                                 };
                             };
@@ -1157,19 +1181,27 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
     else if (commandType == C_ASSIGNMENT_OPERATOR)
     {
         std::vector<std::string> assignmentOperatorTokensVector = this->splitCodeLine(codeLine);
-        if (assignmentOperatorTokensVector.size() >= 3 && this->isValidVariableName(assignmentOperatorTokensVector[0], true) && assignmentOperatorTokensVector[1] == "=")
+        if (assignmentOperatorTokensVector.size() == 3 && this->isValidVariableName(assignmentOperatorTokensVector[0], true) && assignmentOperatorTokensVector[1] == "=" && this->isValidArrayDataExtraction(assignmentOperatorTokensVector[2], "", nullptr))
         {
             newASTNode->variableName = assignmentOperatorTokensVector[0];
-            std::string assignmentOperatorString = assignmentOperatorTokensVector[2];
-            for (int index = 3; index< assignmentOperatorTokensVector.size(); index++)
-            {
-                assignmentOperatorString += " " + assignmentOperatorTokensVector[index];
-            };
-            newASTNode->assignmentOperatorValue = assignmentOperatorString.substr(0, assignmentOperatorString.length() - 1);
+            newASTNode->assignmentOperatorValue = assignmentOperatorTokensVector[2];
         }
         else
         {
-            return false;
+            if (assignmentOperatorTokensVector.size() >= 3 && this->isValidVariableName(assignmentOperatorTokensVector[0], true) && assignmentOperatorTokensVector[1] == "=")
+            {
+                newASTNode->variableName = assignmentOperatorTokensVector[0];
+                std::string assignmentOperatorString = assignmentOperatorTokensVector[2];
+                for (int index = 3; index< assignmentOperatorTokensVector.size(); index++)
+                {
+                    assignmentOperatorString += " " + assignmentOperatorTokensVector[index];
+                };
+                newASTNode->assignmentOperatorValue = assignmentOperatorString.substr(0, assignmentOperatorString.length() - 1);
+            }
+            else
+            {
+                return false;
+            };
         };
     }
     else if (commandType == C_ARITHMETIC)
@@ -1859,6 +1891,81 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
             return false;
         };
     }
+    else if (commandType == C_FOR_LOOP)
+    {
+        std::regex re(R"([()])");
+        std::sregex_token_iterator split1Start(codeLine.begin(), codeLine.end(), re, {-1});
+        std::sregex_token_iterator split1End;
+        std::vector<std::string> forLoopTokensVec(split1Start, split1End);
+        for (int index = 0; index < forLoopTokensVec.size(); index++)
+        {
+            std::cout << "forLoopTokensVec:" << forLoopTokensVec[index] << std::endl;
+        };
+        if (forLoopTokensVec.size() == 3 && forLoopTokensVec[0] == "FOR LOOP" && forLoopTokensVec[2] == "BRANCH;")
+        {
+            std::regex re(R"([;])");
+            std::sregex_token_iterator split2Start(codeLine.begin(), codeLine.end(), re, {-1});
+            std::sregex_token_iterator split2End;
+            std::vector<std::string> conditionTokensVec(split1Start, split2End);
+            for (int index = 0; index < conditionTokensVec.size(); index++)
+            {
+                conditionTokensVec[index] = this->trimString(conditionTokensVec[index]);
+            };
+            if (conditionTokensVec.size() == 3)
+            {
+                std::string initializationString = conditionTokensVec[0];
+                std::string conditionString = conditionTokensVec[1];
+                std::string incrementString = conditionTokensVec[2];
+                std::vector<std::string> initializationVec = this->splitCodeLine(initializationString);
+
+                if (initializationVec.size() == 4 && initializationVec[0] == "INTEGER" && this->isValidVariableName(initializationVec[1], true) && !this->checkIfVariableNameExists(initializationVec[1]) && initializationVec[2] == "=" && this->isValidVariableAssignment(initializationVec[3] + ";", "INTEGER"))
+                {
+                    newASTNode->forLoopIncrementVariableName = initializationVec[1];
+                    ASTNode* incrementVariableASTNode = new ASTNode;
+                    incrementVariableASTNode->command = C_INTEGER;
+                    this->assignVariableMemoryAddress(incrementVariableASTNode, "INTEGER");
+                    incrementVariableASTNode->variableName = initializationVec[1];
+                    this->createNewTempVariableStruct(incrementVariableASTNode->variableName, "INTEGER");
+                    this->variableNamesVec.push_back(newASTNode->variableName);
+                    incrementVariableASTNode->integer = std::stoi(initializationVec[3]);
+                    std::regex re(R"( (EQ|NE|GT|LT|GE|LE) )");
+                    std::sregex_token_iterator split3Start(conditionString.begin(), conditionString.end(), re, -1);
+                    std::sregex_token_iterator split3End;
+                    std::vector<std::string> operandsVec(split3Start, split3End);
+                    if (operandsVec.size() == 2)
+                    {
+                        DataType leftOperandDataType = this->checkDataType(operandsVec[0]);
+                        DataType rightOperandDataType = this->checkDataType(operandsVec[1]);
+
+
+
+
+
+
+
+
+                        
+                    };
+                }
+                else
+                {
+                    return false;
+                };
+            }
+            else
+            {
+                return false;
+            };
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else if (commandType == C_WHILE_LOOP)
+    {
+
+    }
     else
     {
         return false;
@@ -2266,135 +2373,136 @@ bool Parser::isValidArrayDataExtraction(std::string arrayVariableName, std::stri
     std::sregex_token_iterator it(arrayVariableName.begin(), arrayVariableName.end(), re, -1);
     std::sregex_token_iterator end;
     std::vector<std::string> arrayVariableNameVec(it, end);
-    if (arrayVariableNameVec.size() == 3 && arrayVariableNameVec[2] == ";" && this->isValidVariableName(arrayVariableNameVec[0], true))
+    if (currentASTNode != nullptr && variableType != "")
     {
-        std::cout << "WORKING HERE!" << std::endl;
-        bool isAVariable = true;
-        bool isValidVariable = false;
-        if (this->isValidVariableAssignment(arrayVariableNameVec[1] + ";", "INTEGER"))
+        if (arrayVariableNameVec.size() == 3 && arrayVariableNameVec[2] == ";" && this->isValidVariableName(arrayVariableNameVec[0], true))
         {
-            isAVariable = false;
-            std::cout << "11111. IS NOT A VARIABLE!" << std::endl;
-        }
-        else if (this->isValidVariableName(arrayVariableNameVec[1], true))
-        {
-            for (int index = 0; index < this->tempVariableStructVec.size(); index++)
+            bool isAVariable = true;
+            bool isValidVariable = false;
+            if (this->isValidVariableAssignment(arrayVariableNameVec[1] + ";", "INTEGER"))
             {
-                if (this->tempVariableStructVec[index].variableName == arrayVariableNameVec[1])
+                isAVariable = false;
+            }
+            else if (this->isValidVariableName(arrayVariableNameVec[1], true))
+            {
+                for (int index = 0; index < this->tempVariableStructVec.size(); index++)
                 {
-                    if (this->tempVariableStructVec[index].variableType == "INTEGER" || this->tempVariableStructVec[index].variableType == "CONSTANT INTEGER")
+                    if (this->tempVariableStructVec[index].variableName == arrayVariableNameVec[1])
                     {
-                        isValidVariable = true;
-                        std::cout << "22222. IS A VARIABLE!" << std::endl;
-                        break;
-                    }
-                    else
-                    {
-                        std::cout << "WRONG VARIABLE TYPE!" << std::endl;
-                        return false;
+                        if (this->tempVariableStructVec[index].variableType == "INTEGER" || this->tempVariableStructVec[index].variableType == "CONSTANT INTEGER")
+                        {
+                            isValidVariable = true;
+                            break;
+                        }
+                        else
+                        {
+                            return false;
+                        };
                     };
                 };
             };
-        };
-        if (isAVariable == true && isValidVariable == false)
-        {
-            std::cout << "NOT A VALID VARIABLE!" << std::endl;
-            return false;
-        };
-        std::cout << "WORKING HERE SO FAR! variableType:" << variableType << std::endl;
-        if (variableType == "INTEGER" || variableType == "CONSTANT INTEGER")
-        {
-            for (int index = 0; index < this->tempVariableStructVec.size(); index++)
+            if (isAVariable == true && isValidVariable == false)
             {
-                if (this->tempVariableStructVec[index].variableName == arrayVariableNameVec[0] && this->tempVariableStructVec[index].variableType == "ARRAY INTEGER")
-                {
-                    if (isAVariable == false)
-                    {
-                        currentASTNode->indexToExtractFromArray = std::stoi(arrayVariableNameVec[1]);
-                    }
-                    else
-                    {
-                        currentASTNode->variableNameToGetIntegerIndex = arrayVariableNameVec[1];
-                    };
-                    currentASTNode->arrayVariableNameToExtractDataFrom = arrayVariableNameVec[0];
-                    return true;
-                };
+                return false;
             };
-        }
-        else if (variableType == "DECIMAL" || variableType == "CONSTANT DECIMAL")
-        {
-            for (int index = 0; index < this->tempVariableStructVec.size(); index++)
+            if (variableType == "INTEGER" || variableType == "CONSTANT INTEGER")
             {
-                if (this->tempVariableStructVec[index].variableName == arrayVariableNameVec[0] && this->tempVariableStructVec[index].variableType == "ARRAY DECIMAL")
+                for (int index = 0; index < this->tempVariableStructVec.size(); index++)
                 {
-                    if (isAVariable == false)
+                    if (this->tempVariableStructVec[index].variableName == arrayVariableNameVec[0] && this->tempVariableStructVec[index].variableType == "ARRAY INTEGER")
                     {
-                        currentASTNode->indexToExtractFromArray = std::stoi(arrayVariableNameVec[1]);
-                    }
-                    else
-                    {
-                        currentASTNode->variableNameToGetIntegerIndex = arrayVariableNameVec[1];
+                        if (isAVariable == false)
+                        {
+                            currentASTNode->indexToExtractFromArray = std::stoi(arrayVariableNameVec[1]);
+                        }
+                        else
+                        {
+                            currentASTNode->variableNameToGetIntegerIndex = arrayVariableNameVec[1];
+                        };
+                        currentASTNode->arrayVariableNameToExtractDataFrom = arrayVariableNameVec[0];
+                        return true;
                     };
-                    currentASTNode->arrayVariableNameToExtractDataFrom = arrayVariableNameVec[0];
-                    return true;
                 };
-            };
-        }
-        else if (variableType == "CHARACTER" || variableType == "CONSTANT CHARACTER")
-        {
-            for (int index = 0; index < this->tempVariableStructVec.size(); index++)
+            }
+            else if (variableType == "DECIMAL" || variableType == "CONSTANT DECIMAL")
             {
-                if (this->tempVariableStructVec[index].variableName == arrayVariableNameVec[0] && this->tempVariableStructVec[index].variableType == "ARRAY CHARACTER")
+                for (int index = 0; index < this->tempVariableStructVec.size(); index++)
                 {
-                    if (isAVariable == false)
+                    if (this->tempVariableStructVec[index].variableName == arrayVariableNameVec[0] && this->tempVariableStructVec[index].variableType == "ARRAY DECIMAL")
                     {
-                        currentASTNode->indexToExtractFromArray = std::stoi(arrayVariableNameVec[1]);
-                    }
-                    else
-                    {
-                        currentASTNode->variableNameToGetIntegerIndex = arrayVariableNameVec[1];
+                        if (isAVariable == false)
+                        {
+                            currentASTNode->indexToExtractFromArray = std::stoi(arrayVariableNameVec[1]);
+                        }
+                        else
+                        {
+                            currentASTNode->variableNameToGetIntegerIndex = arrayVariableNameVec[1];
+                        };
+                        currentASTNode->arrayVariableNameToExtractDataFrom = arrayVariableNameVec[0];
+                        return true;
                     };
-                    currentASTNode->arrayVariableNameToExtractDataFrom = arrayVariableNameVec[0];
-                    return true;
                 };
-            };
-        }
-        else if (variableType == "BOOLEAN" || variableType == "CONSTANT BOOLEAN")
-        {
-            for (int index = 0; index < this->tempVariableStructVec.size(); index++)
+            }
+            else if (variableType == "CHARACTER" || variableType == "CONSTANT CHARACTER")
             {
-                if (this->tempVariableStructVec[index].variableName == arrayVariableNameVec[0] && this->tempVariableStructVec[index].variableType == "ARRAY BOOLEAN")
+                for (int index = 0; index < this->tempVariableStructVec.size(); index++)
                 {
-                    if (isAVariable == false)
+                    if (this->tempVariableStructVec[index].variableName == arrayVariableNameVec[0] && this->tempVariableStructVec[index].variableType == "ARRAY CHARACTER")
                     {
-                        currentASTNode->indexToExtractFromArray = std::stoi(arrayVariableNameVec[1]);
-                    }
-                    else
-                    {
-                        currentASTNode->variableNameToGetIntegerIndex = arrayVariableNameVec[1];
+                        if (isAVariable == false)
+                        {
+                            currentASTNode->indexToExtractFromArray = std::stoi(arrayVariableNameVec[1]);
+                        }
+                        else
+                        {
+                            currentASTNode->variableNameToGetIntegerIndex = arrayVariableNameVec[1];
+                        };
+                        currentASTNode->arrayVariableNameToExtractDataFrom = arrayVariableNameVec[0];
+                        return true;
                     };
-                    currentASTNode->arrayVariableNameToExtractDataFrom = arrayVariableNameVec[0];
-                    return true;
                 };
-            };
-        }
-        else if (variableType == "STRING" || variableType == "CONSTANT STRING")
-        {
-            for (int index = 0; index < this->tempVariableStructVec.size(); index++)
+            }
+            else if (variableType == "BOOLEAN" || variableType == "CONSTANT BOOLEAN")
             {
-                if (this->tempVariableStructVec[index].variableName == arrayVariableNameVec[0] && this->tempVariableStructVec[index].variableType == "ARRAY STRING")
+                for (int index = 0; index < this->tempVariableStructVec.size(); index++)
                 {
-                    if (isAVariable == false)
+                    if (this->tempVariableStructVec[index].variableName == arrayVariableNameVec[0] && this->tempVariableStructVec[index].variableType == "ARRAY BOOLEAN")
                     {
-                        currentASTNode->indexToExtractFromArray = std::stoi(arrayVariableNameVec[1]);
-                    }
-                    else
-                    {
-                        currentASTNode->variableNameToGetIntegerIndex = arrayVariableNameVec[1];
+                        if (isAVariable == false)
+                        {
+                            currentASTNode->indexToExtractFromArray = std::stoi(arrayVariableNameVec[1]);
+                        }
+                        else
+                        {
+                            currentASTNode->variableNameToGetIntegerIndex = arrayVariableNameVec[1];
+                        };
+                        currentASTNode->arrayVariableNameToExtractDataFrom = arrayVariableNameVec[0];
+                        return true;
                     };
-                    currentASTNode->arrayVariableNameToExtractDataFrom = arrayVariableNameVec[0];
-                    return true;
                 };
+            }
+            else if (variableType == "STRING" || variableType == "CONSTANT STRING")
+            {
+                for (int index = 0; index < this->tempVariableStructVec.size(); index++)
+                {
+                    if (this->tempVariableStructVec[index].variableName == arrayVariableNameVec[0] && this->tempVariableStructVec[index].variableType == "ARRAY STRING")
+                    {
+                        if (isAVariable == false)
+                        {
+                            currentASTNode->indexToExtractFromArray = std::stoi(arrayVariableNameVec[1]);
+                        }
+                        else
+                        {
+                            currentASTNode->variableNameToGetIntegerIndex = arrayVariableNameVec[1];
+                        };
+                        currentASTNode->arrayVariableNameToExtractDataFrom = arrayVariableNameVec[0];
+                        return true;
+                    };
+                };
+            }
+            else
+            {
+                return false;
             };
         }
         else
@@ -2404,7 +2512,38 @@ bool Parser::isValidArrayDataExtraction(std::string arrayVariableName, std::stri
     }
     else
     {
-        return false;
+        if (arrayVariableNameVec.size() == 3 && arrayVariableNameVec[2] == ";" && this->isValidVariableName(arrayVariableNameVec[0], true))
+        {
+            bool isAVariable = true;
+            bool isValidVariable = false;
+            if (this->isValidVariableAssignment(arrayVariableNameVec[1] + ";", "INTEGER"))
+            {
+                isAVariable = false;
+            }
+            else if (this->isValidVariableName(arrayVariableNameVec[1], true))
+            {
+                for (int index = 0; index < this->tempVariableStructVec.size(); index++)
+                {
+                    if (this->tempVariableStructVec[index].variableName == arrayVariableNameVec[1])
+                    {
+                        if (this->tempVariableStructVec[index].variableType == "INTEGER" || this->tempVariableStructVec[index].variableType == "CONSTANT INTEGER")
+                        {
+                            isValidVariable = true;
+                            break;
+                        }
+                        else
+                        {
+                            return false;
+                        };
+                    };
+                };
+            };
+            if (isAVariable == true && isValidVariable == false)
+            {
+                return false;
+            };
+            return true;
+        };
     };
     return false;
 };

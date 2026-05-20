@@ -1,4 +1,4 @@
-/* UPDATE VERSION [44] */
+/* UPDATE VERSION [45] */
 
 /*
 ==================================================
@@ -267,9 +267,6 @@ BOOLEAN boolArray2Item2 = boolArray2[index1];
 STRING strArray2Item1 = strArray2[0];
 STRING strArray2Item2 = strArray2[index1];
 
-output("VARIABLES:");
-output(intArray2Item1);
-
 CONSTANT INTEGER CONSTANT_intArray2Item1 = intArray2[0];
 CONSTANT INTEGER CONSTANT_intArray2Item2 = intArray2[index2];
 CONSTANT DECIMAL CONSTANT_decArray2Item1 = decArray2[0];
@@ -281,21 +278,128 @@ CONSTANT BOOLEAN CONSTANT_boolArray2Item2 = boolArray2[index2];
 CONSTANT STRING CONSTANT_strArray2Item1 = strArray2[0];
 CONSTANT STRING CONSTANT_strArray2Item2 = strArray2[index2];
 
-output("END!");
-
-
-
-
+output("");
+output("ASSIGNMENT OPERATOR:");
 intArray2Item1 = intArray2[1];
 intArray2Item1 = intArray2[index];
-decArray2Item1 = decArray2[1];
-decArray2Item1 = decArray2[index];
+output("intArray2Item1:");
+output(intArray2Item1);
+output("intArray2Item1:");
+output(intArray2Item1);
+
+output("END!");
+
+ARRAY INTEGER intArray2 = [1,2,3,4,5,6,7,8,9,10];
+ARRAY DECIMAL decArray2 = [1.1,2.2,3.3,4.4,5.5];
+ARRAY CHARACTER charArray2 = ['A','B','C','D','E','F','G'];
+ARRAY BOOLEAN boolArray2 = [TRUE,FALSE,TRUE,FALSE,TRUE];
+ARRAY STRING strArray2 = ["STRING 1","STRING 2","STRING 3"];
+
+INTEGER index1 = 1;
+CONSTANT INTEGER index2 = 2;
+
+INTEGER intArray2Item;
+DECIMAL decArray2Item;
+CHARACTER charArray2Item;
+BOOLEAN boolArray2Item;
+STRING strArray2Item;
+
+output("INTEGER:");
+intArray2Item = intArray2[0];
+output("intArray2Item [0]:");
+output(intArray2Item);
+intArray2Item = intArray2[index1];
+output("intArray2Item [index1]:");
+output(intArray2Item);
+intArray2Item = intArray2[index2];
+output("intArray2Item [index2]:");
+output(intArray2Item);
+
+output("DECIMAL:");
+decArray2Item = decArray2[0];
+output("decArray2Item [0]:");
+output(decArray2Item);
+decArray2Item = decArray2[index1];
+output("decArray2Item [index1]:");
+output(decArray2Item);
+decArray2Item = decArray2[index2];
+output("decArray2Item [index2]:");
+output(decArray2Item);
+
+output("CHARACTER:");
+charArray2Item = charArray2[0];
+output("charArray2Item [0]:");
+output(charArray2Item);
+charArray2Item = charArray2[index1];
+output("charArray2Item [index1]:");
+output(charArray2Item);
+charArray2Item = charArray2[index2];
+output("charArray2Item [index2]:");
+output(charArray2Item);
+
+output("BOOLEAN:");
+boolArray2Item = boolArray2[0];
+output("boolArray2Item [0]:");
+output(boolArray2Item);
+boolArray2Item = boolArray2[index1];
+output("boolArray2Item [index1]:");
+output(boolArray2Item);
+boolArray2Item = boolArray2[index2];
+output("boolArray2Item [index2]:");
+output(boolArray2Item);
+
+output("STRING:");
+strArray2Item = strArray2[0];
+output("strArray2Item [0]:");
+output(strArray2Item);
+strArray2Item = strArray2[index1];
+output("strArray2Item [index1]:");
+output(strArray2Item);
+strArray2Item = strArray2[index2];
+output("strArray2Item [index2]:");
+output(strArray2Item);
+
+output("END!");
+
+ARRAY INTEGER intArray2 = [1,2,3,4,5,6,7,8,9,10];
+
+FOR LOOP (index; index LT intArray2Size; index = index + 1;) BRANCH;
+
+SPLIT BY ()
+
+[ "FOR LOOP" , "INTEGER index; index LT intArray2Size; index = index + 1;" , "BRANCH;" ]
+
+SPLIT BY ; OF "index; index LT intArray2Size; index = index + 1;"
+
+[ "INTEGER index" , " index LT intArray2Size" , " index = index + 1"]
+
+TRIMSTRING
+
+[ "index" , "index LT intArray2Size" , "index = index + 1"]
 
 
+FOR LOOP (INTEGER index = 0; index LT intArray2Size; index = index + 1;) BRANCH;
+FOR LOOP (INTEGER index = 0; index LT intArray2Size; index = index - 1;) BRANCH;
+FOR LOOP (INTEGER index = 0; index LT intArray2Size; index++;) BRANCH;
+FOR LOOP (INTEGER index = 0; index LT intArray2Size; index--;) BRANCH;
+...
+...
+...
+CODE HERE
+...
+...
+...
+FOR END;
 
-
-
-
+WHILE LOOP (controlFlowInt1 EQ controlFlowInt2) AND (controlFlowInt2 NE controlFlowInt3) OR (controlFlowInt1 NE controlFlowInt3) BRANCH;
+...
+...
+...
+CODE HERE
+...
+...
+...
+WHILE END;
 
 
 
