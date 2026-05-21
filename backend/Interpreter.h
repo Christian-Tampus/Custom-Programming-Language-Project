@@ -1,4 +1,4 @@
-/* UPDATE VERSION [45] */
+/* UPDATE VERSION [46] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -1080,6 +1080,434 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                     break;
                 };
             }
+            else if (currentASTNode->command == C_FOR_LOOP)
+            {
+                /*
+                FOR LOOP (INTEGER index = 0; index LT intArray2Size; index++;) BRANCH;
+                */
+                std::cout << "FOR LOOP!!!!!" << std::endl;
+                if (currentASTNode->controlFlowType == FOR)
+                {
+                    bool hasIncrementedOrDecrement = false;
+                    std::cout << "FOR BRANCH;" << std::endl;
+                    std::cout << "currentASTNode->forLoopIncrementVariableName:" << currentASTNode->forLoopIncrementVariableName << std::endl;
+                    if (currentASTNode->forLoopIncrementVariableName.size() > 0)
+                    {
+                        std::cout << "WORKING HERE 11111!" << std::endl;
+                        if (this->variablesMap.find(currentASTNode->forLoopIncrementVariableName) != this->variablesMap.end())
+                        {
+                            std::cout << "WORKING HERE 22222!" << std::endl;
+                            VariableStruct* variableToIncrementOrDecrement = this->variableStructMap[this->variablesMap[currentASTNode->forLoopIncrementVariableName]];
+                            if (variableToIncrementOrDecrement->variableType == "INTEGER")
+                            {
+                                std::cout << "WORKING HERE 33333!" << std::endl;
+                                if (currentASTNode->forLoopIncrementOrDecrementVariableCommand == C_FOR_LOOP_INCREMENT)
+                                {
+                                    hasIncrementedOrDecrement = true;
+                                    variableToIncrementOrDecrement->integer += 1;
+                                    std::cout << "INCREMENT! variableToIncrementOrDecrement->integer:" << variableToIncrementOrDecrement->integer << std::endl;
+                                }
+                                else if (currentASTNode->forLoopIncrementOrDecrementVariableCommand == C_FOR_LOOP_DECREMENT)
+                                {
+                                    hasIncrementedOrDecrement = true;
+                                    variableToIncrementOrDecrement->integer -= 1;
+                                    std::cout << "DECREMENT! variableToIncrementOrDecrement->integer:" << variableToIncrementOrDecrement->integer << std::endl;
+                                }
+                                else
+                                {
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            }
+                            else
+                            {
+                                newInterpretationSuccess = false;
+                                currentASTNode = nullptr;
+                                break;
+                            };
+                        }
+                        else
+                        {
+                            newInterpretationSuccess = false;
+                            currentASTNode = nullptr;
+                            break;
+                        };
+                    }
+                    else
+                    {
+                        newInterpretationSuccess = false;
+                        currentASTNode = nullptr;
+                        break;
+                    };
+                    std::cout << "hasIncrementedOrDecrement: " << (hasIncrementedOrDecrement == true ? "TRUE" : "FALSE") << std::endl;
+                    if (hasIncrementedOrDecrement == true)
+                    {
+                        std::cout << "currentASTNode->comparisonStructVec.size():" << currentASTNode->comparisonStructVec.size() << std::endl;
+                        if (currentASTNode->comparisonStructVec.size() == 1)
+                        {
+                            std::cout << "WORKING HERE! 55555" << std::endl;
+                            bool comparisonResult = false;
+                            ComparisonStruct forLoopConditionComparisonStruct = currentASTNode->comparisonStructVec[0];
+                            VariableStruct* operand1VariableStruct = nullptr;
+                            VariableStruct* operand2VariableStruct = nullptr;
+                            if (forLoopConditionComparisonStruct.operand1IsAVariable == true)
+                            {
+                                if (this->variablesMap.find(forLoopConditionComparisonStruct.operand1VariableName) != this->variablesMap.end())
+                                {
+                                    operand1VariableStruct = this->variableStructMap[this->variablesMap[forLoopConditionComparisonStruct.operand1VariableName]];
+                                }
+                                else
+                                {
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            };
+                            if (forLoopConditionComparisonStruct.operand2IsAVariable == true)
+                            {
+                                if (this->variablesMap.find(forLoopConditionComparisonStruct.operand2VariableName) != this->variablesMap.end())
+                                {
+                                    operand2VariableStruct = this->variableStructMap[this->variablesMap[forLoopConditionComparisonStruct.operand2VariableName]];
+                                }
+                                else
+                                {
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            };
+                            if (forLoopConditionComparisonStruct.dataType == D_INTEGER)
+                            {
+                                int operand1Value = 0;
+                                int operand2Value = 0;
+                                if (operand1VariableStruct != nullptr)
+                                {
+                                    if (operand1VariableStruct->variableType == "INTEGER" || operand1VariableStruct->variableType == "CONSTANT INTEGER")
+                                    {
+                                        operand1Value = operand1VariableStruct->integer;
+                                    }
+                                    else
+                                    {
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                }
+                                else
+                                {
+                                    operand1Value = forLoopConditionComparisonStruct.integerOperand1;
+                                };
+                                if (operand2VariableStruct != nullptr)
+                                {
+                                    if (operand2VariableStruct->variableType == "INTEGER" || operand2VariableStruct->variableType == "CONSTANT INTEGER")
+                                    {
+                                        operand2Value = operand2VariableStruct->integer;
+                                    }
+                                    else
+                                    {
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                }
+                                else
+                                {
+                                    operand2Value = forLoopConditionComparisonStruct.integerOperand2;
+                                };
+                                if (forLoopConditionComparisonStruct.comparisonOperator == EQ)
+                                {
+                                    comparisonResult = (operand1Value == operand2Value);
+                                }
+                                else if (forLoopConditionComparisonStruct.comparisonOperator == NE)
+                                {
+                                    comparisonResult = (operand1Value != operand2Value);
+                                }
+                                else if (forLoopConditionComparisonStruct.comparisonOperator == GT)
+                                {
+                                    comparisonResult = (operand1Value > operand2Value);
+                                }
+                                else if (forLoopConditionComparisonStruct.comparisonOperator == LT)
+                                {
+                                    comparisonResult = (operand1Value < operand2Value);
+                                }
+                                else if (forLoopConditionComparisonStruct.comparisonOperator == GE)
+                                {
+                                    comparisonResult = (operand1Value >= operand2Value);
+                                }
+                                else if (forLoopConditionComparisonStruct.comparisonOperator == LE)
+                                {
+                                    comparisonResult = (operand1Value <= operand2Value);
+                                };
+                            }
+                            else if (forLoopConditionComparisonStruct.dataType == D_DECIMAL)
+                            {
+                                double operand1Value = 0.0;
+                                double operand2Value = 0.0;
+                                if (operand1VariableStruct != nullptr)
+                                {
+                                    if (operand1VariableStruct->variableType == "DECIMAL" || operand1VariableStruct->variableType == "CONSTANT DECIMAL")
+                                    {
+                                        operand1Value = operand1VariableStruct->decimal;
+                                    }
+                                    else
+                                    {
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                }
+                                else
+                                {
+                                    operand1Value = forLoopConditionComparisonStruct.decimalOperand1;
+                                };
+                                if (operand2VariableStruct != nullptr)
+                                {
+                                    if (operand2VariableStruct->variableType == "DECIMAL" || operand2VariableStruct->variableType == "CONSTANT DECIMAL")
+                                    {
+                                        operand2Value = operand2VariableStruct->decimal;
+                                    }
+                                    else
+                                    {
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                }
+                                else
+                                {
+                                    operand2Value = forLoopConditionComparisonStruct.decimalOperand2;
+                                };
+                                if (forLoopConditionComparisonStruct.comparisonOperator == EQ)
+                                {
+                                    comparisonResult = (operand1Value == operand2Value);
+                                }
+                                else if (forLoopConditionComparisonStruct.comparisonOperator == NE)
+                                {
+                                    comparisonResult = (operand1Value != operand2Value);
+                                }
+                                else if (forLoopConditionComparisonStruct.comparisonOperator == GT)
+                                {
+                                    comparisonResult = (operand1Value > operand2Value);
+                                }
+                                else if (forLoopConditionComparisonStruct.comparisonOperator == LT)
+                                {
+                                    comparisonResult = (operand1Value < operand2Value);
+                                }
+                                else if (forLoopConditionComparisonStruct.comparisonOperator == GE)
+                                {
+                                    comparisonResult = (operand1Value >= operand2Value);
+                                }
+                                else if (forLoopConditionComparisonStruct.comparisonOperator == LE)
+                                {
+                                    comparisonResult = (operand1Value <= operand2Value);
+                                };
+                            }
+                            else if (forLoopConditionComparisonStruct.dataType == D_CHARACTER)
+                            {
+                                char operand1Value = ' ';
+                                char operand2Value = ' ';
+                                if (operand1VariableStruct != nullptr)
+                                {
+                                    if (operand1VariableStruct->variableType == "CHARACTER" || operand1VariableStruct->variableType == "CONSTANT CHARACTER")
+                                    {
+                                        operand1Value = operand1VariableStruct->character;
+                                    }
+                                    else
+                                    {
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                }
+                                else
+                                {
+                                    operand1Value = forLoopConditionComparisonStruct.characterOperand1;
+                                };
+                                if (operand2VariableStruct != nullptr)
+                                {
+                                    if (operand2VariableStruct->variableType == "CHARACTER" || operand2VariableStruct->variableType == "CONSTANT CHARACTER")
+                                    {
+                                        operand2Value = operand2VariableStruct->character;
+                                    }
+                                    else
+                                    {
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                }
+                                else
+                                {
+                                    operand2Value = forLoopConditionComparisonStruct.characterOperand2;
+                                };
+                                if (forLoopConditionComparisonStruct.comparisonOperator == EQ)
+                                {
+                                    comparisonResult = (operand1Value == operand2Value);
+                                }
+                                else if (forLoopConditionComparisonStruct.comparisonOperator == NE)
+                                {
+                                    comparisonResult = (operand1Value != operand2Value);
+                                }
+                                else if (forLoopConditionComparisonStruct.comparisonOperator == GT)
+                                {
+                                    comparisonResult = (operand1Value > operand2Value);
+                                }
+                                else if (forLoopConditionComparisonStruct.comparisonOperator == LT)
+                                {
+                                    comparisonResult = (operand1Value < operand2Value);
+                                }
+                                else if (forLoopConditionComparisonStruct.comparisonOperator == GE)
+                                {
+                                    comparisonResult = (operand1Value >= operand2Value);
+                                }
+                                else if (forLoopConditionComparisonStruct.comparisonOperator == LE)
+                                {
+                                    comparisonResult = (operand1Value <= operand2Value);
+                                };
+                            }
+                            else if (forLoopConditionComparisonStruct.dataType == D_BOOLEAN)
+                            {
+                                bool operand1Value = false;
+                                bool operand2Value = false;
+                                if (operand1VariableStruct != nullptr)
+                                {
+                                    if (operand1VariableStruct->variableType == "BOOLEAN" || operand1VariableStruct->variableType == "CONSTANT BOOLEAN")
+                                    {
+                                        operand1Value = operand1VariableStruct->boolean;
+                                    }
+                                    else
+                                    {
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                }
+                                else
+                                {
+                                    operand1Value = forLoopConditionComparisonStruct.booleanOperand1;
+                                };
+                                if (operand2VariableStruct != nullptr)
+                                {
+                                    if (operand2VariableStruct->variableType == "BOOLEAN" || operand2VariableStruct->variableType == "CONSTANT BOOLEAN")
+                                    {
+                                        operand2Value = operand2VariableStruct->boolean;
+                                    }
+                                    else
+                                    {
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                }
+                                else
+                                {
+                                    operand2Value = forLoopConditionComparisonStruct.booleanOperand2;
+                                };
+                                if (forLoopConditionComparisonStruct.comparisonOperator == EQ)
+                                {
+                                    comparisonResult = (operand1Value == operand2Value);
+                                }
+                                else if (forLoopConditionComparisonStruct.comparisonOperator == NE)
+                                {
+                                    comparisonResult = (operand1Value != operand2Value);
+                                };
+                            }
+                            else if (forLoopConditionComparisonStruct.dataType == D_STRING)
+                            {
+                                std::string operand1Value = "";
+                                std::string operand2Value = "";
+                                if (operand1VariableStruct != nullptr)
+                                {
+                                    if (operand1VariableStruct->variableType == "STRING" || operand1VariableStruct->variableType == "CONSTANT STRING")
+                                    {
+                                        operand1Value = operand1VariableStruct->string;
+                                    }
+                                    else
+                                    {
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                }
+                                else
+                                {
+                                    operand1Value = forLoopConditionComparisonStruct.stringOperand1;
+                                };
+                                if (operand2VariableStruct != nullptr)
+                                {
+                                    if (operand2VariableStruct->variableType == "STRING" || operand2VariableStruct->variableType == "CONSTANT STRING")
+                                    {
+                                        operand2Value = operand2VariableStruct->string;
+                                    }
+                                    else
+                                    {
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                }
+                                else
+                                {
+                                    operand2Value = forLoopConditionComparisonStruct.stringOperand2;
+                                };
+                                if (forLoopConditionComparisonStruct.comparisonOperator == EQ)
+                                {
+                                    comparisonResult = (operand1Value == operand2Value);
+                                }
+                                else if (forLoopConditionComparisonStruct.comparisonOperator == NE)
+                                {
+                                    comparisonResult = (operand1Value != operand2Value);
+                                }
+                                else if (forLoopConditionComparisonStruct.comparisonOperator == GT)
+                                {
+                                    comparisonResult = (operand1Value > operand2Value);
+                                }
+                                else if (forLoopConditionComparisonStruct.comparisonOperator == LT)
+                                {
+                                    comparisonResult = (operand1Value < operand2Value);
+                                }
+                                else if (forLoopConditionComparisonStruct.comparisonOperator == GE)
+                                {
+                                    comparisonResult = (operand1Value >= operand2Value);
+                                }
+                                else if (forLoopConditionComparisonStruct.comparisonOperator == LE)
+                                {
+                                    comparisonResult = (operand1Value <= operand2Value);
+                                };
+                            };
+                            currentASTNode->forLoopCompleted = (comparisonResult == true ? false : true);
+                            std::cout << "currentASTNode->forLoopCompleted:" << (currentASTNode->forLoopCompleted == true ? "TRUE" : "FALSE") << std::endl;
+                        }
+                        else
+                        {
+                            newInterpretationSuccess = false;
+                            currentASTNode = nullptr;
+                            break;
+                        };
+                    }
+                    else
+                    {
+                        newInterpretationSuccess = false;
+                        currentASTNode = nullptr;
+                        break;
+                    };
+                }
+                else if (currentASTNode->controlFlowType == END)
+                {
+                    std::cout << "FOR END;" << std::endl;
+                    if (currentASTNode->forLoopCompleted == false)
+                    {
+                        takeControlFlowBranch = true;
+                    };
+                }
+                else
+                {
+                    newInterpretationSuccess = false;
+                    currentASTNode = nullptr;
+                    break;
+                };
+            }
             else
             {
                 newInterpretationSuccess = false;
@@ -1089,6 +1517,7 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
         };
         if (takeControlFlowBranch == false)
         {
+            std::cout << "SEQUENTIAL AST NODE!" << std::endl;
             if (currentASTNode->sequentialASTNode != nullptr)
             {
                 currentASTNode = currentASTNode->sequentialASTNode;

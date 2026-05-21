@@ -1,4 +1,4 @@
-/* UPDATE VERSION [45] */
+/* UPDATE VERSION [46] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -47,6 +47,8 @@ enum Command
     C_ARRAY_STRING,
     C_FOR_LOOP,
     C_WHILE_LOOP,
+    C_FOR_LOOP_INCREMENT,
+    C_FOR_LOOP_DECREMENT,
 };
 
 /*
@@ -86,6 +88,7 @@ enum ControlFlow
     IF,
     ELSE_IF,
     ELSE,
+    FOR,
     END,
 };
 
@@ -170,6 +173,8 @@ struct ASTNode
     std::string arrayVariableNameToExtractDataFrom = "";
     std::string variableNameToGetIntegerIndex = "";
     std::string forLoopIncrementVariableName = "";
+    Command forLoopIncrementOrDecrementVariableCommand = C_FOR_LOOP_INCREMENT;
+    bool forLoopCompleted = false;
     ~ASTNode() = default;
 };
 
@@ -437,13 +442,13 @@ void Parser::parse()
                         std::cout << "[PARSER] Command: CONTROL FLOW" << std::endl;
                         commandType = C_CONTROL_FLOW;
                     }
-                    else if (commandString == "FOR LOOP")
+                    else if (commandString == "FOR LOOP" || commandString == "FOR END;")
                     {
                         commandFound = true;
                         std::cout << "[PARSER] Command: FOR LOOP" << std::endl;
                         commandType = C_FOR_LOOP;
                     }
-                    else if (commandString == "WHILE LOOP")
+                    else if (commandString == "WHILE LOOP" || commandString == "WHILE END;")
                     {
                         commandFound = true;
                         std::cout << "[PARSER] Command: WHILE LOOP" << std::endl;
@@ -1893,58 +1898,437 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
     }
     else if (commandType == C_FOR_LOOP)
     {
-        std::regex re(R"([()])");
-        std::sregex_token_iterator split1Start(codeLine.begin(), codeLine.end(), re, {-1});
-        std::sregex_token_iterator split1End;
-        std::vector<std::string> forLoopTokensVec(split1Start, split1End);
-        for (int index = 0; index < forLoopTokensVec.size(); index++)
+        std::cout << "FOR LOOP!" << std::endl;
+        if (codeLine == "FOR END;")
         {
-            std::cout << "forLoopTokensVec:" << forLoopTokensVec[index] << std::endl;
-        };
-        if (forLoopTokensVec.size() == 3 && forLoopTokensVec[0] == "FOR LOOP" && forLoopTokensVec[2] == "BRANCH;")
+            ASTNodeType = "FOR LOOP CONTROL FLOW AST NODE END";
+            newASTNode->controlFlowType = END;
+        }
+        else
         {
-            std::regex re(R"([;])");
-            std::sregex_token_iterator split2Start(codeLine.begin(), codeLine.end(), re, {-1});
-            std::sregex_token_iterator split2End;
-            std::vector<std::string> conditionTokensVec(split1Start, split2End);
-            for (int index = 0; index < conditionTokensVec.size(); index++)
+            newASTNode->controlFlowType = FOR;
+            std::regex re(R"([()])");
+            std::sregex_token_iterator split1Start(codeLine.begin(), codeLine.end(), re, {-1});
+            std::sregex_token_iterator split1End;
+            std::vector<std::string> forLoopTokensVec(split1Start, split1End);
+            for (int index = 0; index < forLoopTokensVec.size(); index++)
             {
-                conditionTokensVec[index] = this->trimString(conditionTokensVec[index]);
+                forLoopTokensVec[index] = this->trimString(forLoopTokensVec[index]);
+                std::cout << "forLoopTokensVec:" << forLoopTokensVec[index] << std::endl;
             };
-            if (conditionTokensVec.size() == 3)
+            if (forLoopTokensVec.size() == 3 && forLoopTokensVec[0] == "FOR LOOP" && forLoopTokensVec[2] == "BRANCH;")
             {
-                std::string initializationString = conditionTokensVec[0];
-                std::string conditionString = conditionTokensVec[1];
-                std::string incrementString = conditionTokensVec[2];
-                std::vector<std::string> initializationVec = this->splitCodeLine(initializationString);
-
-                if (initializationVec.size() == 4 && initializationVec[0] == "INTEGER" && this->isValidVariableName(initializationVec[1], true) && !this->checkIfVariableNameExists(initializationVec[1]) && initializationVec[2] == "=" && this->isValidVariableAssignment(initializationVec[3] + ";", "INTEGER"))
+                std::cout << "WORKING 11111!" << std::endl;
+                std::regex re(R"([;])");
+                std::sregex_token_iterator split2Start(forLoopTokensVec[1].begin(), forLoopTokensVec[1].end(), re, {-1});
+                std::sregex_token_iterator split2End;
+                std::vector<std::string> conditionTokensVec(split2Start, split2End);
+                for (int index = 0; index < conditionTokensVec.size(); index++)
                 {
-                    newASTNode->forLoopIncrementVariableName = initializationVec[1];
-                    ASTNode* incrementVariableASTNode = new ASTNode;
-                    incrementVariableASTNode->command = C_INTEGER;
-                    this->assignVariableMemoryAddress(incrementVariableASTNode, "INTEGER");
-                    incrementVariableASTNode->variableName = initializationVec[1];
-                    this->createNewTempVariableStruct(incrementVariableASTNode->variableName, "INTEGER");
-                    this->variableNamesVec.push_back(newASTNode->variableName);
-                    incrementVariableASTNode->integer = std::stoi(initializationVec[3]);
-                    std::regex re(R"( (EQ|NE|GT|LT|GE|LE) )");
-                    std::sregex_token_iterator split3Start(conditionString.begin(), conditionString.end(), re, -1);
-                    std::sregex_token_iterator split3End;
-                    std::vector<std::string> operandsVec(split3Start, split3End);
-                    if (operandsVec.size() == 2)
+                    conditionTokensVec[index] = this->trimString(conditionTokensVec[index]);
+                    std::cout << "conditionTokensVec[index]:" << conditionTokensVec[index] << std::endl;
+                };
+                if (conditionTokensVec.size() == 3)
+                {
+                    std::cout << "WORKING 22222!" << std::endl;
+                    std::string initializationString = conditionTokensVec[0];
+                    std::string conditionString = conditionTokensVec[1];
+                    std::string incrementString = conditionTokensVec[2];
+                    std::vector<std::string> initializationVec = this->splitCodeLine(initializationString);
+                    std::cout << "initializationString:" << initializationString << std::endl;
+                    std::cout << "conditionString:" << conditionString << std::endl;
+                    std::cout << "incrementString:" << incrementString << std::endl;
+                    if (initializationVec.size() == 4 && initializationVec[0] == "INTEGER" && this->isValidVariableName(initializationVec[1], true) && !this->checkIfVariableNameExists(initializationVec[1]) && initializationVec[2] == "=" && this->isValidVariableAssignment(initializationVec[3] + ";", "INTEGER"))
                     {
-                        DataType leftOperandDataType = this->checkDataType(operandsVec[0]);
-                        DataType rightOperandDataType = this->checkDataType(operandsVec[1]);
-
-
-
-
-
-
-
-
-                        
+                        std::cout << "WORKING 33333!" << std::endl;
+                        newASTNode->forLoopIncrementVariableName = initializationVec[1];
+                        ASTNode* incrementVariableASTNode = new ASTNode;
+                        incrementVariableASTNode->command = C_INTEGER;
+                        this->assignVariableMemoryAddress(incrementVariableASTNode, "INTEGER");
+                        incrementVariableASTNode->variableName = initializationVec[1];
+                        this->createNewTempVariableStruct(incrementVariableASTNode->variableName, "INTEGER");
+                        this->variableNamesVec.push_back(newASTNode->variableName);
+                        incrementVariableASTNode->integer = std::stoi(initializationVec[3]);
+                        incrementVariableASTNode->sequentialASTNode = newASTNode;
+                        if (currentASTNode == nullptr && this->root == nullptr)
+                        {
+                            this->root = incrementVariableASTNode;
+                            this->currentASTNode = incrementVariableASTNode;
+                        }
+                        else if (currentASTNode != nullptr)
+                        {
+                            this->currentASTNode->sequentialASTNode = incrementVariableASTNode;
+                            this->currentASTNode = incrementVariableASTNode;
+                        };
+                        std::regex re(R"( (EQ|NE|GT|LT|GE|LE) )");
+                        std::sregex_token_iterator split3Start(conditionString.begin(), conditionString.end(), re, -1);
+                        std::sregex_token_iterator split3End;
+                        std::vector<std::string> operandsVec(split3Start, split3End);
+                        for (int index = 0; index < operandsVec.size(); index++)
+                        {
+                            std::cout << "operandsVec[index]:" << operandsVec[index] << std::endl;
+                        };
+                        if (operandsVec.size() == 2)
+                        {
+                            std::cout << "WORKING 44444!" << std::endl;
+                            bool validConditionString = false;
+                            DataType leftOperandDataType = this->checkDataType(operandsVec[0]);
+                            DataType rightOperandDataType = this->checkDataType(operandsVec[1]);
+                            if (leftOperandDataType != D_NULL && rightOperandDataType != D_NULL)
+                            {
+                                std::cout << "WORKING 55555!" << std::endl;
+                                if (leftOperandDataType != D_VARIABLE && rightOperandDataType != D_VARIABLE && leftOperandDataType == rightOperandDataType)
+                                {
+                                    std::cout << "WORKING 66666!" << std::endl;
+                                    ComparisonStruct newComparisonStruct;
+                                    if (leftOperandDataType == D_INTEGER)
+                                    {
+                                        newComparisonStruct.dataType = D_INTEGER;
+                                        newComparisonStruct.integerOperand1 = std::stoi(operandsVec[0]);
+                                        newComparisonStruct.integerOperand2 = std::stoi(operandsVec[1]);
+                                    }
+                                    else if (leftOperandDataType == D_DECIMAL)
+                                    {
+                                        newComparisonStruct.dataType = D_DECIMAL;
+                                        newComparisonStruct.decimalOperand1 = std::stod(operandsVec[0]);
+                                        newComparisonStruct.decimalOperand2 = std::stod(operandsVec[1]);
+                                    }
+                                    else if (leftOperandDataType == D_CHARACTER)
+                                    {
+                                        newComparisonStruct.dataType = D_CHARACTER;
+                                        newComparisonStruct.characterOperand1 = operandsVec[0][1];
+                                        newComparisonStruct.characterOperand2 = operandsVec[1][1];
+                                    }
+                                    else if (leftOperandDataType == D_BOOLEAN)
+                                    {
+                                        newComparisonStruct.dataType = D_BOOLEAN;
+                                        newComparisonStruct.booleanOperand1 = (operandsVec[0] == "TRUE" ? true : false);
+                                        newComparisonStruct.booleanOperand2 = (operandsVec[1] == "TRUE" ? true : false);
+                                    }
+                                    else if (leftOperandDataType == D_STRING)
+                                    {
+                                        newComparisonStruct.dataType = D_STRING;
+                                        newComparisonStruct.stringOperand1 = operandsVec[0].substr(1, operandsVec[0].size() - 2);
+                                        newComparisonStruct.stringOperand2 = operandsVec[1].substr(1, operandsVec[1].size() - 2);
+                                    };
+                                    std::string comparisonOperatorString = this->trimString(conditionString.substr(operandsVec[0].size(), 4));
+                                    if (newComparisonStruct.dataType == D_BOOLEAN)
+                                    {
+                                        if (comparisonOperatorString == "EQ")
+                                        {
+                                            newComparisonStruct.comparisonOperator = EQ;
+                                        }
+                                        else if (comparisonOperatorString == "NE")
+                                        {
+                                            newComparisonStruct.comparisonOperator = NE;
+                                        }
+                                        else
+                                        {
+                                            return false;
+                                        };
+                                    }
+                                    else
+                                    {
+                                        if (comparisonOperatorString == "EQ")
+                                        {
+                                            newComparisonStruct.comparisonOperator = EQ;
+                                        }
+                                        else if (comparisonOperatorString == "NE")
+                                        {
+                                            newComparisonStruct.comparisonOperator = NE;
+                                        }
+                                        else if (comparisonOperatorString == "GT")
+                                        {
+                                            newComparisonStruct.comparisonOperator = GT;
+                                        }
+                                        else if (comparisonOperatorString == "LT")
+                                        {
+                                            newComparisonStruct.comparisonOperator = LT;
+                                        }
+                                        else if (comparisonOperatorString == "GE")
+                                        {
+                                            newComparisonStruct.comparisonOperator = GE;
+                                        }
+                                        else if (comparisonOperatorString == "LE")
+                                        {
+                                            newComparisonStruct.comparisonOperator = LE;
+                                        };
+                                    };
+                                    newASTNode->comparisonStructVec.push_back(newComparisonStruct);
+                                    validConditionString = true;
+                                }
+                                else if (leftOperandDataType != D_VARIABLE && rightOperandDataType != D_VARIABLE && leftOperandDataType != rightOperandDataType)
+                                {
+                                    std::cout << "WORKING 77777!" << std::endl;
+                                    return false;
+                                }
+                                else
+                                {
+                                    std::cout << "WORKING 88888!" << std::endl;
+                                    std::string leftOperandDataTypeString = "";
+                                    std::string rightOperandDataTypeString = "";
+                                    if (leftOperandDataType == D_VARIABLE)
+                                    {
+                                        bool foundLeftOperandVariableName = false;
+                                        for (int index = 0; index < this->tempVariableStructVec.size(); index++)
+                                        {
+                                            if (this->tempVariableStructVec[index].variableName == operandsVec[0])
+                                            {
+                                                leftOperandDataTypeString = this->tempVariableStructVec[index].variableType;
+                                                foundLeftOperandVariableName = true;
+                                                break;
+                                            };
+                                        };
+                                        if (foundLeftOperandVariableName == false)
+                                        {
+                                            return false;
+                                        };
+                                    }
+                                    else
+                                    {
+                                        if (leftOperandDataType == D_INTEGER)
+                                        {
+                                            leftOperandDataTypeString = "INTEGER";
+                                        }
+                                        else if (leftOperandDataType == D_DECIMAL)
+                                        {
+                                            leftOperandDataTypeString = "DECIMAL";
+                                        }
+                                        else if (leftOperandDataType == D_CHARACTER)
+                                        {
+                                            leftOperandDataTypeString = "CHARACTER";
+                                        }
+                                        else if (leftOperandDataType == D_BOOLEAN)
+                                        {
+                                            leftOperandDataTypeString = "BOOLEAN";
+                                        }
+                                        else if (leftOperandDataType == D_STRING)
+                                        {
+                                            leftOperandDataTypeString = "STRING";
+                                        }
+                                        else
+                                        {
+                                            return false;
+                                        };
+                                    };
+                                    if (rightOperandDataType == D_VARIABLE)
+                                    {
+                                        bool foundRightOperandVariableName = false;
+                                        for (int index = 0; index < this->tempVariableStructVec.size(); index++)
+                                        {
+                                            if (this->tempVariableStructVec[index].variableName == operandsVec[1])
+                                            {
+                                                rightOperandDataTypeString = this->tempVariableStructVec[index].variableType;
+                                                foundRightOperandVariableName = true;
+                                                break;
+                                            };
+                                        };
+                                        if (foundRightOperandVariableName == false)
+                                        {
+                                            return false;
+                                        };
+                                    }
+                                    else
+                                    {
+                                        if (rightOperandDataType == D_INTEGER)
+                                        {
+                                            rightOperandDataTypeString = "INTEGER";
+                                        }
+                                        else if (rightOperandDataType == D_DECIMAL)
+                                        {
+                                            rightOperandDataTypeString = "DECIMAL";
+                                        }
+                                        else if (rightOperandDataType == D_CHARACTER)
+                                        {
+                                            rightOperandDataTypeString = "CHARACTER";
+                                        }
+                                        else if (rightOperandDataType == D_BOOLEAN)
+                                        {
+                                            rightOperandDataTypeString = "BOOLEAN";
+                                        }
+                                        else if (rightOperandDataType == D_STRING)
+                                        {
+                                            rightOperandDataTypeString = "STRING";
+                                        }
+                                        else
+                                        {
+                                            return false;
+                                        };
+                                    };
+                                    if (leftOperandDataTypeString == rightOperandDataTypeString)
+                                    {
+                                        ComparisonStruct newComparisonStruct;
+                                        if (leftOperandDataType == D_INTEGER)
+                                        {
+                                            newComparisonStruct.dataType = D_INTEGER;
+                                            newComparisonStruct.integerOperand1 = std::stoi(operandsVec[0]);
+                                        }
+                                        else if (leftOperandDataType == D_DECIMAL)
+                                        {
+                                            newComparisonStruct.dataType = D_DECIMAL;
+                                            newComparisonStruct.decimalOperand1 = std::stod(operandsVec[0]);
+                                        }
+                                        else if (leftOperandDataType == D_CHARACTER)
+                                        {
+                                            newComparisonStruct.dataType = D_CHARACTER;
+                                            newComparisonStruct.characterOperand1 = operandsVec[0][1];
+                                        }
+                                        else if (leftOperandDataType == D_BOOLEAN)
+                                        {
+                                            newComparisonStruct.dataType = D_BOOLEAN;
+                                            newComparisonStruct.booleanOperand1 = (operandsVec[0] == "TRUE" ? true : false);
+                                        }
+                                        else if (leftOperandDataType == D_STRING)
+                                        {
+                                            newComparisonStruct.dataType = D_STRING;
+                                            newComparisonStruct.stringOperand1 = operandsVec[0].substr(1, operandsVec[0].size() - 2);
+                                        }
+                                        else if (leftOperandDataType == D_VARIABLE)
+                                        {
+                                            if (leftOperandDataTypeString == "INTEGER")
+                                            {
+                                                newComparisonStruct.dataType = D_INTEGER;
+                                            }
+                                            else if (leftOperandDataTypeString == "DECIMAL")
+                                            {
+                                                newComparisonStruct.dataType = D_DECIMAL;
+                                            }
+                                            else if (leftOperandDataTypeString == "CHARACTER")
+                                            {
+                                                newComparisonStruct.dataType = D_CHARACTER;
+                                            }
+                                            else if (leftOperandDataTypeString == "BOOLEAN")
+                                            {
+                                                newComparisonStruct.dataType = D_BOOLEAN;
+                                            }
+                                            else if (leftOperandDataTypeString == "STRING")
+                                            {
+                                                newComparisonStruct.dataType = D_STRING;
+                                            };
+                                            newComparisonStruct.operand1VariableName = operandsVec[0];
+                                            newComparisonStruct.operand1IsAVariable = true;
+                                        };
+                                        if (rightOperandDataType == D_INTEGER)
+                                        {
+                                            newComparisonStruct.integerOperand2 = std::stoi(operandsVec[1]);
+                                        }
+                                        else if (rightOperandDataType == D_DECIMAL)
+                                        {
+                                            newComparisonStruct.decimalOperand2 = std::stod(operandsVec[1]);
+                                        }
+                                        else if (rightOperandDataType == D_CHARACTER)
+                                        {
+                                            newComparisonStruct.characterOperand2 = operandsVec[1][1];
+                                        }
+                                        else if (rightOperandDataType == D_BOOLEAN)
+                                        {
+                                            newComparisonStruct.booleanOperand2 = (operandsVec[1] == "TRUE" ? true : false);
+                                        }
+                                        else if (rightOperandDataType == D_STRING)
+                                        {
+                                            newComparisonStruct.stringOperand2 = operandsVec[1].substr(1, operandsVec[1].size() - 2);
+                                        }
+                                        else if (rightOperandDataType == D_VARIABLE)
+                                        {
+                                            newComparisonStruct.operand2VariableName = operandsVec[1];
+                                            newComparisonStruct.operand2IsAVariable = true;
+                                        };
+                                        std::string comparisonOperatorString = this->trimString(conditionString.substr(operandsVec[0].size(), 4));
+                                        if (newComparisonStruct.dataType == D_BOOLEAN)
+                                        {
+                                            if (comparisonOperatorString == "EQ")
+                                            {
+                                                newComparisonStruct.comparisonOperator = EQ;
+                                            }
+                                            else if (comparisonOperatorString == "NE")
+                                            {
+                                                newComparisonStruct.comparisonOperator = NE;
+                                            }
+                                            else
+                                            {
+                                                return false;
+                                            };
+                                        }
+                                        else
+                                        {
+                                            if (comparisonOperatorString == "EQ")
+                                            {
+                                                newComparisonStruct.comparisonOperator = EQ;
+                                            }
+                                            else if (comparisonOperatorString == "NE")
+                                            {
+                                                newComparisonStruct.comparisonOperator = NE;
+                                            }
+                                            else if (comparisonOperatorString == "GT")
+                                            {
+                                                newComparisonStruct.comparisonOperator = GT;
+                                            }
+                                            else if (comparisonOperatorString == "LT")
+                                            {
+                                                newComparisonStruct.comparisonOperator = LT;
+                                            }
+                                            else if (comparisonOperatorString == "GE")
+                                            {
+                                                newComparisonStruct.comparisonOperator = GE;
+                                            }
+                                            else if (comparisonOperatorString == "LE")
+                                            {
+                                                newComparisonStruct.comparisonOperator = LE;
+                                            };
+                                        };
+                                        newASTNode->comparisonStructVec.push_back(newComparisonStruct);
+                                        validConditionString = true;
+                                    }
+                                    else
+                                    {
+                                        return false;
+                                    };
+                                };
+                            }
+                            else
+                            {
+                                return false;
+                            };
+                            if (validConditionString == true)
+                            {
+                                std::cout << "WORKING 99999!" << std::endl;
+                                if (incrementString.size() >= 4)
+                                {
+                                    std::cout << "WORKING 1010101010!" << std::endl;
+                                    std::cout << "incrementString:" << incrementString << std::endl;
+                                    if (incrementString == newASTNode->forLoopIncrementVariableName + "++" || incrementString == newASTNode->forLoopIncrementVariableName + "--" )
+                                    {
+                                        if (incrementString == newASTNode->forLoopIncrementVariableName + "++")
+                                        {
+                                            newASTNode->forLoopIncrementOrDecrementVariableCommand = C_FOR_LOOP_INCREMENT;
+                                            std::cout << "1. newASTNode->forLoopIncrementOrDecrementVariableCommand:" << newASTNode->forLoopIncrementOrDecrementVariableCommand << std::endl;
+                                        }
+                                        else
+                                        {
+                                            newASTNode->forLoopIncrementOrDecrementVariableCommand = C_FOR_LOOP_DECREMENT;
+                                            std::cout << "2. newASTNode->forLoopIncrementOrDecrementVariableCommand:" << newASTNode->forLoopIncrementOrDecrementVariableCommand << std::endl;
+                                        };
+                                        ASTNodeType = "FOR LOOP CONTROL FLOW AST NODE";
+                                    }
+                                    else
+                                    {
+                                        return false;
+                                    };
+                                }
+                                else
+                                {
+                                    return false;
+                                };
+                            }
+                            else
+                            {
+                                return false;
+                            };
+                        };
+                    }
+                    else
+                    {
+                        return false;
                     };
                 }
                 else
@@ -1956,15 +2340,11 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
             {
                 return false;
             };
-        }
-        else
-        {
-            return false;
-        }
+        };
     }
     else if (commandType == C_WHILE_LOOP)
     {
-
+        std::cout << "WHILE LOOP!" << std::endl;
     }
     else
     {
@@ -2002,6 +2382,32 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
         {
             return false;
         };
+    }
+    else if (ASTNodeType == "FOR LOOP CONTROL FLOW AST NODE")
+    {
+        if (currentASTNode == nullptr && this->root == nullptr)
+        {
+            this->root = newASTNode;
+            this->currentASTNode = newASTNode;
+            buildASTSuccessfully = true;
+        }
+        else if (currentASTNode != nullptr)
+        {
+            this->currentASTNode->sequentialASTNode = newASTNode;
+            this->currentASTNode = newASTNode;
+            buildASTSuccessfully = true;
+        };
+        this->controlFlowStack.push(newASTNode);
+    }
+    else if (ASTNodeType == "FOR LOOP CONTROL FLOW AST NODE END")
+    {
+        ASTNode* forLoopControlFlowStackASTNode = this->controlFlowStack.top();
+        forLoopControlFlowStackASTNode->controlFlowASTNode = newASTNode;
+        newASTNode->controlFlowASTNode = forLoopControlFlowStackASTNode;
+        this->connectDanglingBranches(forLoopControlFlowStackASTNode, newASTNode);
+        this->controlFlowStack.pop();
+        this->currentASTNode = newASTNode;
+        buildASTSuccessfully = true;
     }
     else if (ASTNodeType == "CONTROL FLOW AST NODE END")
     {
@@ -2355,7 +2761,7 @@ void Parser::connectDanglingBranches(ASTNode* currentASTNode, ASTNode* connector
             currentASTNode->controlFlowASTNode = connectorASTNode;
         };
     }
-    else
+    else if (currentASTNode->command != C_FOR_LOOP)
     {
         this->connectDanglingBranches(currentASTNode->controlFlowASTNode, connectorASTNode);
     };

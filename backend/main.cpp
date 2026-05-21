@@ -1,4 +1,4 @@
-/* UPDATE VERSION [45] */
+/* UPDATE VERSION [46] */
 
 /*
 ==================================================
@@ -378,8 +378,6 @@ TRIMSTRING
 [ "index" , "index LT intArray2Size" , "index = index + 1"]
 
 
-FOR LOOP (INTEGER index = 0; index LT intArray2Size; index = index + 1;) BRANCH;
-FOR LOOP (INTEGER index = 0; index LT intArray2Size; index = index - 1;) BRANCH;
 FOR LOOP (INTEGER index = 0; index LT intArray2Size; index++;) BRANCH;
 FOR LOOP (INTEGER index = 0; index LT intArray2Size; index--;) BRANCH;
 ...
@@ -401,7 +399,22 @@ CODE HERE
 ...
 WHILE END;
 
-
+output("[SYSTEM MESSAGE] Program Start!");
+ARRAY INTEGER intArray2 = [1,2,3,4,5,6,7,8,9,10];
+INTEGER intArray2Size = size(intArray2);
+output("intArray2:");
+output(intArray2);
+output("intArray2Size:");
+output(intArray2Size);
+INTEGER item;
+FOR LOOP (INTEGER index = 0; index LT intArray2Size; index++;) BRANCH;
+    item = intArray2[index];
+    output("index:");
+    output(index);
+    output("item:");
+    output(item);
+FOR END;
+output("[SYSTEM MESSAGE] Program Terminated...");
 
 
 
