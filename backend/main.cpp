@@ -1,4 +1,4 @@
-/* UPDATE VERSION [46] */
+/* UPDATE VERSION [47] */
 
 /*
 ==================================================
@@ -399,6 +399,7 @@ CODE HERE
 ...
 WHILE END;
 
+
 output("[SYSTEM MESSAGE] Program Start!");
 ARRAY INTEGER intArray2 = [1,2,3,4,5,6,7,8,9,10];
 INTEGER intArray2Size = size(intArray2);
@@ -406,13 +407,24 @@ output("intArray2:");
 output(intArray2);
 output("intArray2Size:");
 output(intArray2Size);
-INTEGER item;
 FOR LOOP (INTEGER index = 0; index LT intArray2Size; index++;) BRANCH;
-    item = intArray2[index];
+    INTEGER item = intArray2[index];
     output("index:");
     output(index);
     output("item:");
     output(item);
+    IF (TRUE EQ TRUE) BRANCH;
+        DECIMAL item2 = 999.999;
+        output("item2:");
+        output(item2);
+        IF (TRUE EQ FALSE) BRANCH;
+            CHARACTER char3 = 'A';
+        ELSE IF (TRUE EQ TRUE) BRANCH;
+            BOOLEAN bool3 = TRUE;
+            output("bool3:");
+            output(bool3);
+        END;
+    END;
 FOR END;
 output("[SYSTEM MESSAGE] Program Terminated...");
 
