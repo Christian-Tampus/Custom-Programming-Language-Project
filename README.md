@@ -1,4 +1,4 @@
-# UPDATE VERSION [47]
+# UPDATE VERSION [48]
 # Custom Programming Language Project Title
 ## Custom Programming Language Project Description
 ### To Do List
@@ -19,6 +19,6 @@
 ### 5. [COMPLETED] Basic Arithmetic (Assignment Operator, Addition, Subtraction, Multiplication, Division)
 ### 6. [COMPLETED] Control Flow (If, Else If, Else)
 ### 7. [COMPLETED] Arrays (Integer, Decimal, Character, Boolean, String)
-### 8. [IN-PROGRESS] Loops (For, While)
-### 9. [_] Functions (Void, Integer, Decimal, Character, Boolean, String)
+### 8. [COMPLETED] Loops (For, While)
+### 9. [IN_PROGRESS] Functions (Void, Integer, Decimal, Character, Boolean, String)
 ### 10. [_] Load Sample Code & Sample Inputs Button

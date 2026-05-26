@@ -1,4 +1,4 @@
-/* UPDATE VERSION [47] */
+/* UPDATE VERSION [48] */
 
 /*
 ==================================================
@@ -426,6 +426,76 @@ FOR LOOP (INTEGER index = 0; index LT intArray2Size; index++;) BRANCH;
         END;
     END;
 FOR END;
+output("[SYSTEM MESSAGE] Program Terminated...");
+
+WHILE LOOP (controlFlowInt1 EQ controlFlowInt2) AND (controlFlowInt2 NE controlFlowInt3) OR (controlFlowInt1 NE controlFlowInt3) BRANCH;
+
+output("[SYSTEM MESSAGE] Program Start!");
+ARRAY INTEGER intArray = [1,2,3,4,5,6,7,8,9,10];
+CONSTANT INTEGER intArraySize = size(intArray);
+INTEGER index = 0;
+output("intArray:");
+output(intArray);
+output("intArraySize:");
+output(intArraySize);
+WHILE LOOP (TRUE EQ TRUE) AND ('A' NE 'Z') AND (2.2 LE 2.2) AND (100 GE 100) AND (200 LT 201) AND (3.3 GT 3.2) AND ("SAMPLE STRING 1" EQ "SAMPLE STRING 2") OR (index LT intArraySize) BRANCH;
+    INTEGER item = intArray[index];
+    output("index:");
+    output(index);
+    output("item:");
+    output(item);
+    index = index + 1;
+WHILE END;
+output("[SYSTEM MESSAGE] Program Terminated...");
+
+
+
+output("[SYSTEM MESSAGE] Program Start!");
+ARRAY CHARACTER charArray = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+CONSTANT INTEGER charArraySize = size(charArray);
+output("charArraySize:");
+output(charArraySize);
+output("=====");
+INTEGER index;
+index = charArraySize - 1;
+output("index:");
+output(index);
+output("=====");
+output("LOOP START!");
+output("=====");
+INTEGER loop = 1;
+WHILE LOOP (TRUE EQ TRUE) AND ('A' NE 'Z') AND (2.2 LE 2.2) AND (100 GE 100) AND (200 LT 201) AND (3.3 GT 3.2) AND ("SAMPLE STRING 1" EQ "SAMPLE STRING 2") OR (index GE 0) BRANCH;
+    CHARACTER item = charArray[index];
+    output("index:");
+    output(index);
+    output("item:");
+    output(item);
+    index = index - 1;
+    FOR LOOP (INTEGER index2 = 0; index2 LT 10; index2++;) BRANCH;
+        output("FOR LOOP! index2:");
+        output(index2);
+        IF (index2 EQ 0) BRANCH;
+            output("INDEX 2 IS ZERO!");
+        ELSE IF (index2 EQ 10) BRANCH;
+            output("INDEX 2 IS TEN!");
+        ELSE BRANCH;
+            output("INDEX2 IS NOT ZERO OR TEN!");
+            IF (TRUE NE FALSE) BRANCH;
+                output("=====");
+                output("THIS IS THE INNER MOST SCOPE!");
+                output("=====");
+            END;
+        END;
+    FOR END;
+    IF (TRUE EQ TRUE) BRANCH;
+        output("END OF LOOP NUMBER:");
+        output(loop);
+    END;
+    loop = loop + 1;
+WHILE END;
+output("=====");
+output("LOOP END!");
+output("=====");
 output("[SYSTEM MESSAGE] Program Terminated...");
 
 
