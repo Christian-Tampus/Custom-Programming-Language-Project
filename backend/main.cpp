@@ -1,4 +1,4 @@
-/* UPDATE VERSION [48] */
+/* UPDATE VERSION [49] */
 
 /*
 ==================================================
@@ -496,6 +496,79 @@ WHILE END;
 output("=====");
 output("LOOP END!");
 output("=====");
+
+
+
+
+VOID FUNCTION void_function1(INTEGER int1, DECIMAL dec1, CHARACTER char1, BOOLEAN bool1, STRING str1) BRANCH;
+    output("VOID FUNCTION 1!");
+    output("int1:");
+    output(int1);
+    output("dec1:");
+    output(dec1);
+    output("char1:");
+    output(char1);
+    output("bool1:");
+    output(bool1);
+    output("str1:");
+    output(str1);
+    VOID FUNCTION void_function2() BRANCH;
+        output("VOID FUNCTION 2!");
+        RETURN VOID;
+    FUNCTION END;
+    INTEGER FUNCTION int_function(INTEGER int2) BRANCH;
+        output("int2:");
+        output(int2);
+        RETURN int2;
+    FUNCTION END;
+    DECIMAL FUNCTION dec_function(DECIMAL dec2) BRANCH;
+        output("dec2:");
+        output(dec2);
+        RETURN dec2;
+    FUNCTION END;
+    CHARACTER FUNCTION char_function(CHARACTER char2) BRANCH;
+        output("char2:");
+        output(char2);
+        RETURN char2;
+    FUNCTION END;
+    BOOLEAN FUNCTION bool_function(BOOLEAN bool2) BRANCH;
+        output("bool2:");
+        output(bool2);
+        RETURN bool2;
+    FUNCTION END;
+    STRING FUNCTION str_function(STRING str2) BRANCH;
+        output("str2:");
+        output(str2);
+        RETURN str2;
+    FUNCTION END;
+    INTEGER int3;
+    DECIMAL dec3;
+    CHARACTER char3;
+    BOOLEAN bool3;
+    STRING str3;
+    int3 = int_function(int1);
+    dec3 = dec_function(dec2);
+    char3 = char_function(char1);
+    bool3 = bool_function(bool2);
+    str3 = str_function(str2);
+    output("int3");
+    output(int3);
+    output("dec3");
+    output(dec3);
+    output("char3");
+    output(char3);
+    output("bool3");
+    output(bool3);
+    output("str3");
+    output(str3);
+    RETURN VOID;
+FUNCTION END;
+void_function1(1,1.1,'A',TRUE,"STRING 1");
+
+
+
+
+
 output("[SYSTEM MESSAGE] Program Terminated...");
 
 

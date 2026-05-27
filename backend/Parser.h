@@ -1,4 +1,4 @@
-/* UPDATE VERSION [48] */
+/* UPDATE VERSION [49] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -15,6 +15,21 @@ Dependencies
 #include <regex>
 #include <stack>
 using namespace std;
+
+/*
+==================================================
+Return Type
+==================================================
+*/
+enum ReturnType
+{
+    R_VOID,
+    R_INTEGER,
+    R_DECIMAL,
+    R_CHARACTER,
+    R_BOOLEAN,
+    R_STRING,
+};
 
 /*
 ==================================================
@@ -49,6 +64,7 @@ enum Command
     C_WHILE_LOOP,
     C_FOR_LOOP_INCREMENT,
     C_FOR_LOOP_DECREMENT,
+    C_FUNCTION,
 };
 
 /*
@@ -136,6 +152,17 @@ struct ComparisonStruct
 
 /*
 ==================================================
+Function Variable Struct
+==================================================
+*/
+struct FunctionVariable
+{
+    std::string variableName = "";
+    std::string variableDataType = "";
+};
+
+/*
+==================================================
 Abstract Syntax Tree (AST) Node Struct
 ==================================================
 */
@@ -143,6 +170,8 @@ struct ASTNode
 {
     Command command = C_NONE;
     ControlFlow controlFlowType = IF;
+    ASTNode* root;
+    ASTNode* currentASTNode;
     ASTNode* sequentialASTNode = nullptr;
     ASTNode* controlFlowASTNode = nullptr;
     std::string comment = "";
@@ -177,6 +206,16 @@ struct ASTNode
     Command forLoopIncrementOrDecrementVariableCommand = C_FOR_LOOP_INCREMENT;
     bool forLoopCompleted = false;
     bool whileLoopCompleted = false;
+    std::string functionASTNodeType = "";
+    std::string functionName = "";
+    ReturnType functionReturnType = R_VOID;
+    std::string functionReturnVariableName = "";
+    int functionReturnInteger = 0;
+    double functionReturnDecimal = 0.0;
+    char functionReturnCharacter = ' ';
+    bool functionReturnBoolean = false;
+    std::string functionReturnString = "";
+    std::vector<FunctionVariable> functionInputVariablesVec;
     ~ASTNode() = default;
 };
 
@@ -202,6 +241,9 @@ class Parser
         int variableMemoryAddressCounter;
         ASTNode* root;
         ASTNode* currentASTNode;
+        ASTNode* mainBranchASTNode;
+        std::vector<ASTNode*> functionsVec;
+        std::stack<ASTNode*> functionsStack;
         std::vector<ASTNode*> ASTNodesVec;
         std::vector<std::string> tokensVec;
         std::vector<std::string> variableNamesVec;
@@ -444,6 +486,12 @@ void Parser::parse()
                         std::cout << "[PARSER] Command: CONTROL FLOW" << std::endl;
                         commandType = C_CONTROL_FLOW;
                     }
+                    else if (commandString == "VOID FUNCTION" || commandString == "INTEGER FUNCTION" || commandString == "DECIMAL FUNCTION" || commandString == "CHARACTER FUNCTION" || commandString == "BOOLEAN FUNCTION" || commandString == "STRING FUNCTION" || commandString == "FUNCTION END;" || commandString == "RETURN")
+                    {
+                        commandFound = true;
+                        std::cout << "[PARSER] Command: FUNCTION" << std::endl;
+                        commandType = C_FUNCTION;
+                    }
                     else if (commandString == "FOR LOOP" || commandString == "FOR END;")
                     {
                         commandFound = true;
@@ -575,6 +623,8 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
     std::cout << "[PARSER] Attempting To Building AST Node..." << std::endl;
     std::cout << "[PARSER] codeLine:" << codeLine << std::endl;
     bool buildASTSuccessfully = false;
+    bool functionASTNode = false;
+    std::string functionASTNodeType = "";
     ASTNode* newASTNode = new ASTNode;
     this->ASTNodesVec.push_back(newASTNode);
     std::string ASTNodeType = "SEQUENTIAL AST NODE";
@@ -2721,35 +2771,272 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
             return false;
         };
     }
+    else if (commandType == C_FUNCTION)
+    {
+        if (codeLine == "FUNCTION END;")
+        {
+            std::cout << "FUNCTION END!" << std::endl;
+            functionASTNode = true;
+            newASTNode->functionASTNodeType = "FUNCTION END";
+            functionASTNodeType = newASTNode->functionASTNodeType;
+        }
+        else if (codeLine.substr(0,6) == "RETURN ")
+        {
+            std::cout << "FUNCTION RETURN!" << std::endl;
+            std::string returnString = codeLine.substr(8);
+            returnString = this->trimString(returnString);
+            std::cout << "returnString:" << returnString << std::endl;
+            if (this->isValidVariableName(returnString, true))
+            {
+                ASTNode* currentFunctionASTNode = this->functionsStack.top();
+                currentFunctionASTNode->functionReturnVariableName = returnString;
+                newASTNode->functionASTNodeType = "FUNCTION RETURN";
+            }
+            else
+            {
+                ASTNode* currentFunctionASTNode = this->functionsStack.top();
+                if (this->isValidVariableAssignment(returnString, "INTEGER"))
+                {
+                    currentFunctionASTNode->integer = std::stoi(returnString);
+                }
+                else if (this->isValidVariableAssignment(returnString, "DECIMAL"))
+                {
+                    currentFunctionASTNode->decimal = std::stod(returnString);
+                }
+                else if (this->isValidVariableAssignment(returnString, "CHARACTER"))
+                {
+                    currentFunctionASTNode->character = returnString[1];
+                }
+                else if (this->isValidVariableAssignment(returnString, "BOOLEAN"))
+                {
+                    currentFunctionASTNode->boolean = (returnString == "TRUE" ? true : false);
+                }
+                else if (this->isValidVariableAssignment(returnString, "STRING"))
+                {
+                    currentFunctionASTNode->string = returnString;
+                }
+                else
+                {
+                    return false;
+                };
+                newASTNode->functionASTNodeType = "FUNCTION RETURN";
+            };
+        }
+        else
+        {
+            //VOID FUNCTION void_function1(INTEGER int1, DECIMAL dec1, CHARACTER char1, BOOLEAN bool1, STRING str1) BRANCH;
+            //VOID FUNCTION void_function1|INTEGER int1, DECIMAL dec1, CHARACTER char1, BOOLEAN bool1, STRING str1| BRANCH;
+            std::regex regex1(R"([()])");
+            std::sregex_token_iterator regexStart1(codeLine.begin(), codeLine.end(), regex1, {-1});
+            std::sregex_token_iterator regexEnd1;
+            std::vector<std::string> functionTokensVec(regexStart1, regexEnd1);
+            for (int index = 0; index < functionTokensVec.size(); index++)
+            {
+                functionTokensVec[index] = this->trimString(functionTokensVec[index]);
+                std::cout << "functionTokensVec[" << index << "]:" << functionTokensVec[index] << std::endl;
+            };
+            std::regex regex2(R"(\s+)");
+            std::sregex_token_iterator regexStart2(functionTokensVec[0].begin(), functionTokensVec[0].end(), regex2, -1);
+            std::sregex_token_iterator regexdEnd2;
+            std::vector<std::string> functionTypeVec(regexStart2, regexdEnd2);
+            if (functionTypeVec.size() == 3 && functionTypeVec[1] == "FUNCTION" && this->isValidVariableName(functionTypeVec[2], true) && functionTokensVec.size() == 3 && functionTokensVec[2] == "BRANCH;")
+            {
+                if (functionTypeVec[0] == "VOID" || functionTypeVec[0] == "INTEGER" || functionTypeVec[0] == "DECIMAL" || functionTypeVec[0] == "CHARACTER" || functionTypeVec[0] == "BOOLEAN" || functionTypeVec[0] == "STRING")
+                {
+                    std::string functionInputVariablesString = functionTokensVec[1];
+                    //INTEGER int1, DECIMAL dec1, CHARACTER char1, BOOLEAN bool1, STRING str1
+                    //INTEGER int1| DECIMAL dec1| CHARACTER char1| BOOLEAN bool1| STRING str1
+                    //INTEGER int1|DECIMAL dec1|CHARACTER char1|BOOLEAN bool1|STRING str1
+                    std::regex regex3(R"(,)");
+                    std::sregex_token_iterator regexStart3(functionInputVariablesString.begin(), functionInputVariablesString.end(), regex3, -1);
+                    std::sregex_token_iterator regexdEnd3;
+                    std::vector<std::string> functionInputVariablesRegexVec1(regexStart3, regexdEnd3);      
+                    for (int index = 0; index < functionInputVariablesRegexVec1.size(); index++)
+                    {
+                        functionInputVariablesRegexVec1[index] = this->trimString(functionInputVariablesRegexVec1[index]);
+                        std::cout << "functionInputVariablesRegexVec1[" << index << "]:" << functionInputVariablesRegexVec1[index] << std::endl;
+                        std::regex regex4(R"(\s+)");
+                        std::sregex_token_iterator regexStart4(functionInputVariablesRegexVec1[index].begin(), functionInputVariablesRegexVec1[index].end(), regex4, -1);
+                        std::sregex_token_iterator regexdEnd4;
+                        std::vector<std::string> functionInputVariablesRegexVec2(regexStart4, regexdEnd4);
+                        if (functionInputVariablesRegexVec2.size() == 2 && this->isValidVariableName(functionInputVariablesRegexVec2[1], true))
+                        {
+                            if (functionInputVariablesRegexVec2[0] == "INTEGER" || functionInputVariablesRegexVec2[0] == "DECIMAL" || functionInputVariablesRegexVec2[0] == "CHARACTER" || functionInputVariablesRegexVec2[0] == "BOOLEAN" || functionInputVariablesRegexVec2[0] == "STRING")
+                            {
+                                FunctionVariable newFunctionVariable;
+                                newFunctionVariable.variableName = functionInputVariablesRegexVec2[1];
+                                newFunctionVariable.variableDataType = functionInputVariablesRegexVec2[0];
+                                newASTNode->functionInputVariablesVec.push_back(newFunctionVariable);
+                            }
+                            else
+                            {
+                                return false;
+                            };
+                        }
+                        else
+                        {
+                            return false;
+                        };
+                    };
+                    newASTNode->functionName = functionTypeVec[2];
+                    if (functionTypeVec[0] == "VOID")
+                    {
+                        newASTNode->functionReturnType = R_VOID;
+                    }
+                    else if (functionTypeVec[0] == "INTEGER")
+                    {
+                        newASTNode->functionReturnType = R_INTEGER;
+                    }
+                    else if (functionTypeVec[0] == "DECIMAL")
+                    {
+                        newASTNode->functionReturnType = R_DECIMAL;
+                    }
+                    else if (functionTypeVec[0] == "CHARACTER")
+                    {
+                        newASTNode->functionReturnType = R_CHARACTER;
+                    }
+                    else if (functionTypeVec[0] == "BOOLEAN")
+                    {
+                        newASTNode->functionReturnType = R_BOOLEAN;
+                    }
+                    else if (functionTypeVec[0] == "STRING")
+                    {
+                        newASTNode->functionReturnType = R_STRING;
+                    };
+                    functionASTNode = true;
+                    newASTNode->functionASTNodeType = "FUNCTION START";
+                    functionASTNodeType = newASTNode->functionASTNodeType;
+                }
+                else
+                {
+                    return false;
+                };
+            }
+            else
+            {
+                return false;
+            };
+        };
+    }
     else
     {
         return false;
     };
-    if (ASTNodeType == "SEQUENTIAL AST NODE")
+    if (functionASTNode == true)
     {
-        if (currentASTNode == nullptr && this->root == nullptr)
+        if (functionASTNodeType == "FUNCTION START")
         {
+            if (this->functionsStack.size() == 0)
+            {
+                this->currentASTNode->root = this->root;
+                this->currentASTNode->currentASTNode = this->currentASTNode;
+                this->mainBranchASTNode = this->currentASTNode;
+            };
+            newASTNode->root = this->root;
+            newASTNode->currentASTNode = this->currentASTNode;
             this->root = newASTNode;
             this->currentASTNode = newASTNode;
+            this->functionsVec.push_back(newASTNode);
+            this->functionsStack.push(newASTNode);
             buildASTSuccessfully = true;
         }
-        else if (currentASTNode != nullptr)
+        else if (functionASTNodeType == "FUNCTION END")
         {
+            ASTNode* functionASTNode = this->functionsStack.top();
+            this->functionsStack.pop();
             this->currentASTNode->sequentialASTNode = newASTNode;
             this->currentASTNode = newASTNode;
             buildASTSuccessfully = true;
+            if (this->functionsStack.size() == 0)
+            {
+                this->root = this->mainBranchASTNode->root;
+                this->currentASTNode = this->mainBranchASTNode->currentASTNode;
+            }
+            else
+            {
+                this->root = functionASTNode->root;
+                this->currentASTNode = functionASTNode->currentASTNode;
+            };
+        }
+        else
+        {
+            return false;
         };
     }
-    else if (ASTNodeType == "CONTROL FLOW AST NODE")
+    else
     {
-        ASTNode* controlFlowStackASTNode = this->controlFlowStack.top();
-        while (controlFlowStackASTNode != nullptr && controlFlowStackASTNode->controlFlowASTNode != nullptr)
+        if (ASTNodeType == "SEQUENTIAL AST NODE")
         {
-            controlFlowStackASTNode = controlFlowStackASTNode->controlFlowASTNode;
-        };
-        if (controlFlowStackASTNode->controlFlowASTNode == nullptr)
+            if (currentASTNode == nullptr && this->root == nullptr)
+            {
+                this->root = newASTNode;
+                this->currentASTNode = newASTNode;
+                buildASTSuccessfully = true;
+            }
+            else if (currentASTNode != nullptr)
+            {
+                this->currentASTNode->sequentialASTNode = newASTNode;
+                this->currentASTNode = newASTNode;
+                buildASTSuccessfully = true;
+            }
+            else
+            {
+                return false;
+            };
+        }
+        else if (ASTNodeType == "CONTROL FLOW AST NODE")
         {
-            controlFlowStackASTNode->controlFlowASTNode = newASTNode;
+            ASTNode* controlFlowStackASTNode = this->controlFlowStack.top();
+            while (controlFlowStackASTNode != nullptr && controlFlowStackASTNode->controlFlowASTNode != nullptr)
+            {
+                controlFlowStackASTNode = controlFlowStackASTNode->controlFlowASTNode;
+            };
+            if (controlFlowStackASTNode->controlFlowASTNode == nullptr)
+            {
+                controlFlowStackASTNode->controlFlowASTNode = newASTNode;
+                this->currentASTNode = newASTNode;
+                buildASTSuccessfully = true;
+            }
+            else
+            {
+                return false;
+            };
+        }
+        else if (ASTNodeType == "FOR LOOP CONTROL FLOW AST NODE" || ASTNodeType == "WHILE LOOP CONTROL FLOW AST NODE")
+        {
+            if (currentASTNode == nullptr && this->root == nullptr)
+            {
+                this->root = newASTNode;
+                this->currentASTNode = newASTNode;
+                buildASTSuccessfully = true;
+            }
+            else if (currentASTNode != nullptr)
+            {
+                this->currentASTNode->sequentialASTNode = newASTNode;
+                this->currentASTNode = newASTNode;
+                buildASTSuccessfully = true;
+            }
+            else
+            {
+                return false;
+            };
+            this->controlFlowStack.push(newASTNode);
+        }
+        else if (ASTNodeType == "FOR LOOP CONTROL FLOW AST NODE END" || ASTNodeType == "WHILE LOOP CONTROL FLOW AST NODE END")
+        {
+            ASTNode* loopControlFlowStackASTNode = this->controlFlowStack.top();
+            loopControlFlowStackASTNode->controlFlowASTNode = newASTNode;
+            newASTNode->controlFlowASTNode = loopControlFlowStackASTNode;
+            this->connectDanglingBranches(loopControlFlowStackASTNode, newASTNode);
+            this->controlFlowStack.pop();
+            this->currentASTNode = newASTNode;
+            buildASTSuccessfully = true;
+        }
+        else if (ASTNodeType == "CONTROL FLOW AST NODE END")
+        {
+            ASTNode* controlFlowStackASTNode = this->controlFlowStack.top();
+            this->connectDanglingBranches(controlFlowStackASTNode, newASTNode);
+            this->controlFlowStack.pop();
             this->currentASTNode = newASTNode;
             buildASTSuccessfully = true;
         }
@@ -2757,45 +3044,7 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
         {
             return false;
         };
-    }
-    else if (ASTNodeType == "FOR LOOP CONTROL FLOW AST NODE" || ASTNodeType == "WHILE LOOP CONTROL FLOW AST NODE")
-    {
-        if (currentASTNode == nullptr && this->root == nullptr)
-        {
-            this->root = newASTNode;
-            this->currentASTNode = newASTNode;
-            buildASTSuccessfully = true;
-        }
-        else if (currentASTNode != nullptr)
-        {
-            this->currentASTNode->sequentialASTNode = newASTNode;
-            this->currentASTNode = newASTNode;
-            buildASTSuccessfully = true;
-        };
-        this->controlFlowStack.push(newASTNode);
-    }
-    else if (ASTNodeType == "FOR LOOP CONTROL FLOW AST NODE END" || ASTNodeType == "WHILE LOOP CONTROL FLOW AST NODE END")
-    {
-        ASTNode* loopControlFlowStackASTNode = this->controlFlowStack.top();
-        loopControlFlowStackASTNode->controlFlowASTNode = newASTNode;
-        newASTNode->controlFlowASTNode = loopControlFlowStackASTNode;
-        this->connectDanglingBranches(loopControlFlowStackASTNode, newASTNode);
-        this->controlFlowStack.pop();
-        this->currentASTNode = newASTNode;
-        buildASTSuccessfully = true;
-    }
-    else if (ASTNodeType == "CONTROL FLOW AST NODE END")
-    {
-        ASTNode* controlFlowStackASTNode = this->controlFlowStack.top();
-        this->connectDanglingBranches(controlFlowStackASTNode, newASTNode);
-        this->controlFlowStack.pop();
-        this->currentASTNode = newASTNode;
-        buildASTSuccessfully = true;
-    }
-    else
-    {
-        return false;
-    }
+    };
     std::cout << "[PARSER] Built AST Node Successfully!" << std::endl;
     return buildASTSuccessfully;
 };
