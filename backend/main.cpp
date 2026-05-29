@@ -1,4 +1,4 @@
-/* UPDATE VERSION [49] */
+/* UPDATE VERSION [50] */
 
 /*
 ==================================================
@@ -498,10 +498,9 @@ output("LOOP END!");
 output("=====");
 
 
-
-
+output("[SYSTEM MESSAGE] Program Start!");
 VOID FUNCTION void_function1(INTEGER int1, DECIMAL dec1, CHARACTER char1, BOOLEAN bool1, STRING str1) BRANCH;
-    output("VOID FUNCTION 1!");
+    output("void_function1():");
     output("int1:");
     output(int1);
     output("dec1:");
@@ -513,30 +512,35 @@ VOID FUNCTION void_function1(INTEGER int1, DECIMAL dec1, CHARACTER char1, BOOLEA
     output("str1:");
     output(str1);
     VOID FUNCTION void_function2() BRANCH;
-        output("VOID FUNCTION 2!");
+        output("void_function2():");
         RETURN VOID;
     FUNCTION END;
     INTEGER FUNCTION int_function(INTEGER int2) BRANCH;
+        output("int_function():");
         output("int2:");
         output(int2);
         RETURN int2;
     FUNCTION END;
     DECIMAL FUNCTION dec_function(DECIMAL dec2) BRANCH;
+        output("dec_function():");
         output("dec2:");
         output(dec2);
         RETURN dec2;
     FUNCTION END;
     CHARACTER FUNCTION char_function(CHARACTER char2) BRANCH;
+        output("char_function():");
         output("char2:");
         output(char2);
         RETURN char2;
     FUNCTION END;
     BOOLEAN FUNCTION bool_function(BOOLEAN bool2) BRANCH;
+        output("bool_function():");
         output("bool2:");
         output(bool2);
         RETURN bool2;
     FUNCTION END;
     STRING FUNCTION str_function(STRING str2) BRANCH;
+        output("str_function():");
         output("str2:");
         output(str2);
         RETURN str2;
@@ -564,11 +568,6 @@ VOID FUNCTION void_function1(INTEGER int1, DECIMAL dec1, CHARACTER char1, BOOLEA
     RETURN VOID;
 FUNCTION END;
 void_function1(1,1.1,'A',TRUE,"STRING 1");
-
-
-
-
-
 output("[SYSTEM MESSAGE] Program Terminated...");
 
 

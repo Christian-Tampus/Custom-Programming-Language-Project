@@ -1,4 +1,4 @@
-/* UPDATE VERSION [49] */
+/* UPDATE VERSION [50] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -1905,6 +1905,10 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                     currentASTNode = nullptr;
                     break;
                 };
+            }
+            else if (currentASTNode->command == C_FUNCTION)
+            {
+                
             }
             else
             {
