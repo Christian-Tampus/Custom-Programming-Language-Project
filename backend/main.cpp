@@ -1,4 +1,4 @@
-/* UPDATE VERSION [50] */
+/* UPDATE VERSION [51] */
 
 /*
 ==================================================
@@ -511,6 +511,7 @@ VOID FUNCTION void_function1(INTEGER int1, DECIMAL dec1, CHARACTER char1, BOOLEA
     output(bool1);
     output("str1:");
     output(str1);
+    output("=====");
     VOID FUNCTION void_function2() BRANCH;
         output("void_function2():");
         RETURN VOID;
@@ -545,16 +546,23 @@ VOID FUNCTION void_function1(INTEGER int1, DECIMAL dec1, CHARACTER char1, BOOLEA
         output(str2);
         RETURN str2;
     FUNCTION END;
+    void_function2();
+    output("=====");
     INTEGER int3;
     DECIMAL dec3;
     CHARACTER char3;
     BOOLEAN bool3;
     STRING str3;
     int3 = int_function(int1);
-    dec3 = dec_function(dec2);
+    output("=====");
+    dec3 = dec_function(dec1);
+    output("=====");
     char3 = char_function(char1);
-    bool3 = bool_function(bool2);
-    str3 = str_function(str2);
+    output("=====");
+    bool3 = bool_function(bool1);
+    output("=====");
+    str3 = str_function(str1);
+    output("=====");
     output("int3");
     output(int3);
     output("dec3");
@@ -565,6 +573,7 @@ VOID FUNCTION void_function1(INTEGER int1, DECIMAL dec1, CHARACTER char1, BOOLEA
     output(bool3);
     output("str3");
     output(str3);
+    output("=====");
     RETURN VOID;
 FUNCTION END;
 void_function1(1,1.1,'A',TRUE,"STRING 1");
@@ -710,6 +719,8 @@ int main()
             {
                 std::cout << "[SERVER] Now Interpreting The Code..." << std::endl;
                 Interpreter interpreter;
+                interpreter.setFunctionsVec(parser.getFunctionsVec());
+                interpreter.setVariableMemoryAddressCounter(parser.getVariableMemoryAddressCounter());
                 if (interpreter.interpret(parser.getASTNodeRoot(), requestBody["clientInput"]))
                 {
                     std::cout << "[SERVER] Interpreter Successfully Interpreted The Code!" << std::endl;

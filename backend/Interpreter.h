@@ -1,4 +1,4 @@
-/* UPDATE VERSION [50] */
+/* UPDATE VERSION [51] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -62,6 +62,7 @@ Class Declaration
 class Interpreter
 {
     private:
+        int variableMemoryAddressCounter = -1;
         int currentScope = 0;
         const int STANDARD_PRECISION = 10;
         int inputBufferIndex = 0;
@@ -70,15 +71,19 @@ class Interpreter
         std::map<int, VariableStruct*> variableStructMap;
         std::map<std::string, int> variablesMap;
         std::vector<std::string> inputBufferVec;
+        std::vector<ASTNode*> functionsVec;
         bool performArithmetic(ArithmeticStruct*& arithmeticStruct, std::vector<std::string> arithmeticVec, std::string variableType);
         VariableStruct* createNewVariableStruct(ASTNode* currentASTNode);
         bool extractAndAssignDataFromArray(std::string arrayVariableString, VariableStruct* variableStructToUpdate);
         void clearOutOfScopeVariables();
+        void assignVariableMemoryAddress(ASTNode* currentASTNode);
     public:
         Interpreter();
         ~Interpreter();
         bool interpret(ASTNode* root, std::string standardInput);
         std::vector<std::string> getTerminalOutputVec();
+        void setFunctionsVec(std::vector<ASTNode*> newFunctionsVec);
+        void setVariableMemoryAddressCounter(int newVariableMemoryAddressCounter);
 };
 
 /*
@@ -138,6 +143,8 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
     while (currentASTNode != nullptr)
     {
         bool takeControlFlowBranch = false;
+        bool calledAFunction = false;
+        bool returningFromAFunction = false;
         if (currentASTNode->command != C_COMMENT && currentASTNode->command != C_NONE)
         {
             if (currentASTNode->command == C_OUTPUT)
@@ -370,132 +377,55 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
             }
             else if (currentASTNode->command == C_ASSIGNMENT_OPERATOR)
             {
-                if (this->variablesMap.find(currentASTNode->variableName) != this->variablesMap.end())
+                std::cout << "ASSIGNMENT OPERATOR!" << std::endl;
+                if (currentASTNode->functionASTNodeType.length() > 0 && currentASTNode->functionASTNodeType == "ASSIGNMENT FUNCTION CALL")
                 {
-                    VariableStruct* variableStructToUpdate = this->variableStructMap[this->variablesMap[currentASTNode->variableName]];
-                    std::string targetString = "CONSTANT";
-                    int position = currentASTNode->variableName.find(targetString);
-                    if (position != std::string::npos && position == 0)
+                    std::cout << "C_ASSIGNMENT_OPERATOR FUNCTION CALL AST NODE!" << std::endl;
+                    bool functionCallSuccess = false;
+                    for (int index1 = 0; index1 < this->functionsVec.size(); index1++)
                     {
-                        std::cout << "[INTERPRETER] Error, Cannot Assign A Value To A [" << variableStructToUpdate->variableType << "]!" << std::endl; 
-                        this->terminalOutputVec.push_back("[SYSTEM ERROR] Error, Cannot Assign A Value To A [" + variableStructToUpdate->variableType + "]!");
-                        newInterpretationSuccess = false;
-                        currentASTNode = nullptr;
-                        break;
-                    }; 
-                    if (this->extractAndAssignDataFromArray(currentASTNode->assignmentOperatorValue, variableStructToUpdate) == false)
-                    {
-                        if (this->variablesMap.find(currentASTNode->assignmentOperatorValue) != this->variablesMap.end())
+                        if (this->functionsVec[index1]->functionName == currentASTNode->functionToCall)
                         {
-                            VariableStruct* variableStructToUpdateWith = this->variableStructMap[this->variablesMap[currentASTNode->assignmentOperatorValue]];
-                            if (variableStructToUpdate->variableType == variableStructToUpdateWith->variableType || "CONSTANT " + variableStructToUpdate->variableType == variableStructToUpdateWith->variableType)
+                            functionCallSuccess = true;
+                            std::cout << "CALL FUNCTION: " << currentASTNode->functionToCall << std::endl;
+                            if (this->functionsVec[index1]->functionVariablesVec.size() == currentASTNode->functionInputVariableVec.size())
                             {
-                                if (variableStructToUpdate->variableType == "INTEGER")
+                                for (int index2 = 0; index2 < this->functionsVec[index1]->functionVariablesVec.size(); index2++)
                                 {
-                                    variableStructToUpdate->integer = variableStructToUpdateWith->integer;
-                                }
-                                else if (variableStructToUpdate->variableType == "DECIMAL")
+                                    if (currentASTNode->functionInputVariableVec[index2].variableDataType == "VARIABLE")
+                                    {
+                                        if (this->variablesMap.find(currentASTNode->functionInputVariableVec[index2].variableName) != this->variablesMap.end())
+                                        {
+                                            VariableStruct* variableStruct = this->variableStructMap[this->variablesMap[currentASTNode->functionInputVariableVec[index2].variableName]];
+                                            currentASTNode->functionInputVariableVec[index2].variableDataType = variableStruct->variableType;
+                                        }
+                                        else
+                                        {
+                                            newInterpretationSuccess = false;
+                                            currentASTNode = nullptr;
+                                            break;
+                                        };
+                                    };
+                                    if (this->functionsVec[index1]->functionVariablesVec[index2].variableDataType == currentASTNode->functionInputVariableVec[index2].variableDataType)
+                                    {
+                                        this->functionsVec[index1]->functionInputVariableVec.push_back(currentASTNode->functionInputVariableVec[index2]);
+                                    }
+                                    else
+                                    {
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                };
+                                if (this->functionsVec[index1]->functionInputVariableVec.size() == currentASTNode->functionInputVariableVec.size())
                                 {
-                                    variableStructToUpdate->decimal = variableStructToUpdateWith->decimal;
-                                }
-                                else if (variableStructToUpdate->variableType == "CHARACTER")
-                                {
-                                    variableStructToUpdate->character = variableStructToUpdateWith->character;
-                                }
-                                else if (variableStructToUpdate->variableType == "BOOLEAN")
-                                {
-                                    variableStructToUpdate->boolean = variableStructToUpdateWith->boolean;
-                                }
-                                else if (variableStructToUpdate->variableType == "STRING")
-                                {
-                                    variableStructToUpdate->string = variableStructToUpdateWith->string;
+                                    this->functionsVec[index1]->functionCallReturnASTNode = currentASTNode;
+                                    currentASTNode = this->functionsVec[index1];
+                                    functionCallSuccess = true;
+                                    break;
                                 }
                                 else
                                 {
-                                    newInterpretationSuccess = false;
-                                    currentASTNode = nullptr;
-                                    break;
-                                };
-                            }
-                            else
-                            {
-                                newInterpretationSuccess = false;
-                                currentASTNode = nullptr;
-                                break;
-                            };
-                        }
-                        else
-                        {
-                            if (variableStructToUpdate->variableType == "INTEGER")
-                            {
-                                try
-                                {
-                                    variableStructToUpdate->integer = std::stoi(currentASTNode->assignmentOperatorValue);
-                                }
-                                catch (...)
-                                {
-                                    std::cout << "[INTERPRETER] Cannot Assign A Non Integer As A Integer For Variable: " << currentASTNode->variableName << "!" << std::endl;
-                                    this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non Integer As A Integer For Variable: " + currentASTNode->variableName + "]!");
-                                    newInterpretationSuccess = false;
-                                    currentASTNode = nullptr;
-                                    break;
-                                };
-                            }
-                            else if (variableStructToUpdate->variableType == "DECIMAL")
-                            {
-                                try
-                                {
-                                    variableStructToUpdate->decimal = std::stod(currentASTNode->assignmentOperatorValue);
-                                }
-                                catch (...)
-                                {
-                                    std::cout << "[INTERPRETER] Cannot Assign A Non Decimal As A Decimal For Variable: " << currentASTNode->variableName << "!" << std::endl;
-                                    this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non Decimal As A Decimal For Variable: " + currentASTNode->variableName + "]!");
-                                    newInterpretationSuccess = false;
-                                    currentASTNode = nullptr;
-                                    break;
-                                };
-                            }
-                            else if (variableStructToUpdate->variableType == "CHARACTER")
-                            {
-                                if (currentASTNode->assignmentOperatorValue.size() == 3 && currentASTNode->assignmentOperatorValue[0] == '\'' && currentASTNode->assignmentOperatorValue[2] == '\'')
-                                {
-                                    variableStructToUpdate->character = currentASTNode->assignmentOperatorValue[1];
-                                }
-                                else
-                                {
-                                    std::cout << "[INTERPRETER] Cannot Assign A Non Character As A Character For Variable: " << currentASTNode->variableName << "!" << std::endl;
-                                    this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non Character As A Character For Variable: " + currentASTNode->variableName + "]!");
-                                    newInterpretationSuccess = false;
-                                    currentASTNode = nullptr;
-                                    break;
-                                };
-                            }
-                            else if (variableStructToUpdate->variableType == "BOOLEAN")
-                            {
-                                if (currentASTNode->assignmentOperatorValue == "TRUE" || currentASTNode->assignmentOperatorValue == "FALSE")
-                                {
-                                    variableStructToUpdate->boolean = (currentASTNode->assignmentOperatorValue == "TRUE" ? true : false);
-                                }
-                                else
-                                {
-                                    std::cout << "[INTERPRETER] Cannot Assign A Non Boolean As A Boolean For Variable: " << currentASTNode->variableName << "!" << std::endl;
-                                    this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non Boolean As A Boolean For Variable: " + currentASTNode->variableName + "]!");
-                                    newInterpretationSuccess = false;
-                                    currentASTNode = nullptr;
-                                    break;
-                                };
-                            }
-                            else if (variableStructToUpdate->variableType == "STRING")
-                            {
-                                if (currentASTNode->assignmentOperatorValue[0] == '\"' && currentASTNode->assignmentOperatorValue[currentASTNode->assignmentOperatorValue.length() - 1] == '\"')
-                                {
-                                    variableStructToUpdate->string = currentASTNode->assignmentOperatorValue.substr(1, currentASTNode->assignmentOperatorValue.length() - 2);
-                                }
-                                else
-                                {
-                                    std::cout << "[INTERPRETER] Cannot Assign A Non String As A String For Variable: " << currentASTNode->variableName << "!" << std::endl;
-                                    this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non String As A String For Variable: " + currentASTNode->variableName + "]!");
                                     newInterpretationSuccess = false;
                                     currentASTNode = nullptr;
                                     break;
@@ -509,12 +439,165 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                             };
                         };
                     };
+                    if (functionCallSuccess == false)
+                    {
+                        newInterpretationSuccess = false;
+                        currentASTNode = nullptr;
+                        break;
+                    }
+                    else
+                    {
+                        calledAFunction = true;
+                    };
                 }
                 else
                 {
-                    newInterpretationSuccess = false;
-                    currentASTNode = nullptr;
-                    break;
+                    if (this->variablesMap.find(currentASTNode->variableName) != this->variablesMap.end())
+                    {
+                        VariableStruct* variableStructToUpdate = this->variableStructMap[this->variablesMap[currentASTNode->variableName]];
+                        std::string targetString = "CONSTANT";
+                        int position = currentASTNode->variableName.find(targetString);
+                        if (position != std::string::npos && position == 0)
+                        {
+                            std::cout << "[INTERPRETER] Error, Cannot Assign A Value To A [" << variableStructToUpdate->variableType << "]!" << std::endl; 
+                            this->terminalOutputVec.push_back("[SYSTEM ERROR] Error, Cannot Assign A Value To A [" + variableStructToUpdate->variableType + "]!");
+                            newInterpretationSuccess = false;
+                            currentASTNode = nullptr;
+                            break;
+                        }; 
+                        if (this->extractAndAssignDataFromArray(currentASTNode->assignmentOperatorValue, variableStructToUpdate) == false)
+                        {
+                            if (this->variablesMap.find(currentASTNode->assignmentOperatorValue) != this->variablesMap.end())
+                            {
+                                VariableStruct* variableStructToUpdateWith = this->variableStructMap[this->variablesMap[currentASTNode->assignmentOperatorValue]];
+                                if (variableStructToUpdate->variableType == variableStructToUpdateWith->variableType || "CONSTANT " + variableStructToUpdate->variableType == variableStructToUpdateWith->variableType)
+                                {
+                                    if (variableStructToUpdate->variableType == "INTEGER")
+                                    {
+                                        variableStructToUpdate->integer = variableStructToUpdateWith->integer;
+                                    }
+                                    else if (variableStructToUpdate->variableType == "DECIMAL")
+                                    {
+                                        variableStructToUpdate->decimal = variableStructToUpdateWith->decimal;
+                                    }
+                                    else if (variableStructToUpdate->variableType == "CHARACTER")
+                                    {
+                                        variableStructToUpdate->character = variableStructToUpdateWith->character;
+                                    }
+                                    else if (variableStructToUpdate->variableType == "BOOLEAN")
+                                    {
+                                        variableStructToUpdate->boolean = variableStructToUpdateWith->boolean;
+                                    }
+                                    else if (variableStructToUpdate->variableType == "STRING")
+                                    {
+                                        variableStructToUpdate->string = variableStructToUpdateWith->string;
+                                    }
+                                    else
+                                    {
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                }
+                                else
+                                {
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            }
+                            else
+                            {
+                                if (variableStructToUpdate->variableType == "INTEGER")
+                                {
+                                    try
+                                    {
+                                        variableStructToUpdate->integer = std::stoi(currentASTNode->assignmentOperatorValue);
+                                    }
+                                    catch (...)
+                                    {
+                                        std::cout << "[INTERPRETER] Cannot Assign A Non Integer As A Integer For Variable: " << currentASTNode->variableName << "!" << std::endl;
+                                        this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non Integer As A Integer For Variable: " + currentASTNode->variableName + "]!");
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                }
+                                else if (variableStructToUpdate->variableType == "DECIMAL")
+                                {
+                                    try
+                                    {
+                                        variableStructToUpdate->decimal = std::stod(currentASTNode->assignmentOperatorValue);
+                                    }
+                                    catch (...)
+                                    {
+                                        std::cout << "[INTERPRETER] Cannot Assign A Non Decimal As A Decimal For Variable: " << currentASTNode->variableName << "!" << std::endl;
+                                        this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non Decimal As A Decimal For Variable: " + currentASTNode->variableName + "]!");
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                }
+                                else if (variableStructToUpdate->variableType == "CHARACTER")
+                                {
+                                    if (currentASTNode->assignmentOperatorValue.size() == 3 && currentASTNode->assignmentOperatorValue[0] == '\'' && currentASTNode->assignmentOperatorValue[2] == '\'')
+                                    {
+                                        variableStructToUpdate->character = currentASTNode->assignmentOperatorValue[1];
+                                    }
+                                    else
+                                    {
+                                        std::cout << "[INTERPRETER] Cannot Assign A Non Character As A Character For Variable: " << currentASTNode->variableName << "!" << std::endl;
+                                        this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non Character As A Character For Variable: " + currentASTNode->variableName + "]!");
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                }
+                                else if (variableStructToUpdate->variableType == "BOOLEAN")
+                                {
+                                    if (currentASTNode->assignmentOperatorValue == "TRUE" || currentASTNode->assignmentOperatorValue == "FALSE")
+                                    {
+                                        variableStructToUpdate->boolean = (currentASTNode->assignmentOperatorValue == "TRUE" ? true : false);
+                                    }
+                                    else
+                                    {
+                                        std::cout << "[INTERPRETER] Cannot Assign A Non Boolean As A Boolean For Variable: " << currentASTNode->variableName << "!" << std::endl;
+                                        this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non Boolean As A Boolean For Variable: " + currentASTNode->variableName + "]!");
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                }
+                                else if (variableStructToUpdate->variableType == "STRING")
+                                {
+                                    if (currentASTNode->assignmentOperatorValue[0] == '\"' && currentASTNode->assignmentOperatorValue[currentASTNode->assignmentOperatorValue.length() - 1] == '\"')
+                                    {
+                                        variableStructToUpdate->string = currentASTNode->assignmentOperatorValue.substr(1, currentASTNode->assignmentOperatorValue.length() - 2);
+                                    }
+                                    else
+                                    {
+                                        std::cout << "[INTERPRETER] Cannot Assign A Non String As A String For Variable: " << currentASTNode->variableName << "!" << std::endl;
+                                        this->terminalOutputVec.push_back("[SYSTEM ERROR] Cannot Assign A Non String As A String For Variable: " + currentASTNode->variableName + "]!");
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                }
+                                else
+                                {
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            };
+                        };
+                    }
+                    else
+                    {
+                        newInterpretationSuccess = false;
+                        currentASTNode = nullptr;
+                        break;
+                    };
                 };
             }
             else if (currentASTNode->command == C_ARITHMETIC)
@@ -1908,7 +1991,400 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
             }
             else if (currentASTNode->command == C_FUNCTION)
             {
-                
+                std::cout << "FUNCTION!!!!!" << std::endl;
+                std::cout << "currentASTNode->functionASTNodeType:" << currentASTNode->functionASTNodeType << std::endl;
+                if (currentASTNode->functionASTNodeType == "FUNCTION START")
+                {
+                    std::cout << "FUNCTION START AST NODE!" << std::endl;
+                    if (currentASTNode->functionVariablesVec.size() > 0 && currentASTNode->functionVariablesVec.size() == currentASTNode->functionInputVariableVec.size())
+                    {
+                        for (int index = 0; index < currentASTNode->functionVariablesVec.size(); index++)
+                        {
+                            ASTNode* newASTNodeInputVariable = new ASTNode;
+                            newASTNodeInputVariable->variableName = currentASTNode->functionVariablesVec[index].variableName;
+                            newASTNodeInputVariable->variableType = currentASTNode->functionVariablesVec[index].variableDataType;
+                            newASTNodeInputVariable->integer = currentASTNode->functionInputVariableVec[index].integer;
+                            newASTNodeInputVariable->decimal = currentASTNode->functionInputVariableVec[index].decimal;
+                            newASTNodeInputVariable->character = currentASTNode->functionInputVariableVec[index].character;
+                            newASTNodeInputVariable->boolean = currentASTNode->functionInputVariableVec[index].boolean;
+                            newASTNodeInputVariable->string = currentASTNode->functionInputVariableVec[index].string;
+                            this->assignVariableMemoryAddress(newASTNodeInputVariable);
+                            if (currentASTNode->functionInputVariableVec[index].variableName.length() > 0)
+                            {
+                                if (this->variablesMap.find(currentASTNode->functionInputVariableVec[index].variableName) != this->variablesMap.end())
+                                {
+                                    std::cout << "INPUT VARIABLE IS A DECLARED VARIABLE!:" << currentASTNode->functionVariablesVec[index].variableName << std::endl;
+                                    VariableStruct* inputVariableStruct = this->variableStructMap[this->variablesMap[currentASTNode->functionInputVariableVec[index].variableName]];
+                                    newASTNodeInputVariable->integer = inputVariableStruct->integer;
+                                    newASTNodeInputVariable->decimal = inputVariableStruct->decimal;
+                                    newASTNodeInputVariable->character = inputVariableStruct->character;
+                                    newASTNodeInputVariable->boolean = inputVariableStruct->boolean;
+                                    newASTNodeInputVariable->string = inputVariableStruct->string;
+                                    if (inputVariableStruct->variableType == currentASTNode->functionVariablesVec[index].variableDataType)
+                                    {
+                                        if (this->variablesMap.find(currentASTNode->functionVariablesVec[index].variableName) == this->variablesMap.end())
+                                        {
+                                            VariableStruct* newVariableStruct = this->createNewVariableStruct(newASTNodeInputVariable);
+                                            if (newVariableStruct->successfullyCreatedVariableStruct == false)
+                                            {
+                                                newInterpretationSuccess = false;
+                                                currentASTNode = nullptr;
+                                                break;
+                                            };
+                                            this->variableStructMap[newVariableStruct->variableMemoryAddress] = newVariableStruct;
+                                            if (this->variablesMap.find(newVariableStruct->variableName) == this->variablesMap.end())
+                                            {
+                                                this->variablesMap[newVariableStruct->variableName] = newVariableStruct->variableMemoryAddress;
+                                            }
+                                            else
+                                            {
+                                                newInterpretationSuccess = false;
+                                                currentASTNode = nullptr;
+                                                break;
+                                            };
+                                            std::cout << "CREATED INPUT VARIABLE FOR A FUNCTION! INPUT VARIABLE NAME:" << newVariableStruct->variableName << std::endl;
+                                        }
+                                        else
+                                        {
+                                            newInterpretationSuccess = false;
+                                            currentASTNode = nullptr;
+                                            break;
+                                        };
+                                    }
+                                    else
+                                    {
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                }
+                                else
+                                {
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            }
+                            else
+                            {
+                                if (this->variablesMap.find(currentASTNode->functionVariablesVec[index].variableName) == this->variablesMap.end())
+                                {
+                                    VariableStruct* newVariableStruct = this->createNewVariableStruct(newASTNodeInputVariable);
+                                    if (newVariableStruct->successfullyCreatedVariableStruct == false)
+                                    {
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                    this->variableStructMap[newVariableStruct->variableMemoryAddress] = newVariableStruct;
+                                    if (this->variablesMap.find(newVariableStruct->variableName) == this->variablesMap.end())
+                                    {
+                                        this->variablesMap[newVariableStruct->variableName] = newVariableStruct->variableMemoryAddress;
+                                    }
+                                    else
+                                    {
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                    std::cout << "CREATED INPUT VARIABLE FOR A FUNCTION! INPUT VARIABLE NAME:" << currentASTNode->functionVariablesVec[index].variableName << " IS A LITERAL!" << std::endl;
+                                }
+                                else
+                                {
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            };
+                        };
+                    }
+                    else if (currentASTNode->functionVariablesVec.size() == 0 && currentASTNode->functionInputVariableVec.size() == 0)
+                    {
+                        std::cout << "FUNCTION HAS NO INPUT VARIABLES" << std::endl;
+                    }
+                    else
+                    {
+                        std::cout << "FUNCTION DOES NOT HAVE ENOUGH OR TOO MANY INPUT VARIABLES!" << std::endl;
+                        newInterpretationSuccess = false;
+                        currentASTNode = nullptr;
+                        break;
+                    };
+                }
+                else if (currentASTNode->functionASTNodeType == "FUNCTION CALL")
+                {
+                    std::cout << "FUNCTION CALL AST NODE!" << std::endl;
+                    bool functionCallSuccess = false;
+                    for (int index1 = 0; index1 < this->functionsVec.size(); index1++)
+                    {
+                        if (this->functionsVec[index1]->functionName == currentASTNode->functionToCall)
+                        {
+                            functionCallSuccess = true;
+                            std::cout << "CALL FUNCTION: " << currentASTNode->functionToCall << std::endl;
+                            if (this->functionsVec[index1]->functionVariablesVec.size() == currentASTNode->functionInputVariableVec.size())
+                            {
+                                for (int index2 = 0; index2 < this->functionsVec[index1]->functionVariablesVec.size(); index2++)
+                                {
+                                    if (currentASTNode->functionInputVariableVec[index2].variableDataType == "VARIABLE")
+                                    {
+                                        if (this->variablesMap.find(currentASTNode->functionInputVariableVec[index2].variableName) != this->variablesMap.end())
+                                        {
+                                            VariableStruct* variableStruct = this->variableStructMap[this->variablesMap[currentASTNode->functionInputVariableVec[index2].variableName]];
+                                            currentASTNode->functionInputVariableVec[index2].variableDataType = variableStruct->variableType;
+                                        }
+                                        else
+                                        {
+                                            newInterpretationSuccess = false;
+                                            currentASTNode = nullptr;
+                                            break;
+                                        };
+                                    };
+                                    if (this->functionsVec[index1]->functionVariablesVec[index2].variableDataType == currentASTNode->functionInputVariableVec[index2].variableDataType)
+                                    {
+                                        this->functionsVec[index1]->functionInputVariableVec.push_back(currentASTNode->functionInputVariableVec[index2]);
+                                    }
+                                    else
+                                    {
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                };
+                                if (this->functionsVec[index1]->functionInputVariableVec.size() == currentASTNode->functionInputVariableVec.size())
+                                {
+                                    this->functionsVec[index1]->functionCallReturnASTNode = currentASTNode;
+                                    currentASTNode = this->functionsVec[index1];
+                                    functionCallSuccess = true;
+                                    break;
+                                }
+                                else
+                                {
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            }
+                            else
+                            {
+                                newInterpretationSuccess = false;
+                                currentASTNode = nullptr;
+                                break;
+                            };
+                        };
+                    };
+                    if (functionCallSuccess == false)
+                    {
+                        newInterpretationSuccess = false;
+                        currentASTNode = nullptr;
+                        break;
+                    }
+                    else
+                    {
+                        calledAFunction = true;
+                    };
+                }
+                else if (currentASTNode->functionASTNodeType == "FUNCTION RETURN")
+                {
+                    std::cout << "FUNCTION RETURN!" << std::endl;
+                    std::cout << "currentASTNode->functionReturnType:" << currentASTNode->functionReturnType << std::endl;
+                    std::cout << "currentASTNode->functionReturnsVoid:" << currentASTNode->functionReturnsVoid << std::endl;
+                    std::cout << "currentASTNode->functionReturnVariableName.length():" << currentASTNode->functionReturnVariableName.length() << std::endl;
+                    if (currentASTNode->functionReturnType == R_VOID && currentASTNode->functionReturnsVoid == true && currentASTNode->functionReturnVariableName.length() == 0)
+                    {
+                        std::cout << "FUNCTION RETURNS VOID!" << std::endl;
+                        ASTNode* functionASTNode = nullptr;
+                        bool returnFunctionFound = false;
+                        for (int index = 0; index < this->functionsVec.size(); index++)
+                        {
+                            if (this->functionsVec[index]->functionName == currentASTNode->functionName)
+                            {
+                                returnFunctionFound = true;
+                                functionASTNode = this->functionsVec[index];
+                                break;
+                            };
+                        };
+                        if (returnFunctionFound == false)
+                        {
+                            newInterpretationSuccess = false;
+                            currentASTNode = nullptr;
+                            break;
+                        }
+                        else if (returnFunctionFound == true && functionASTNode != nullptr)
+                        {
+                            if (functionASTNode->command == C_FUNCTION && functionASTNode->functionCallReturnASTNode->functionASTNodeType == "FUNCTION CALL")
+                            {
+                                currentASTNode = functionASTNode->functionCallReturnASTNode->sequentialASTNode;
+                                returningFromAFunction = true;
+                            }
+                            else
+                            {
+                                std::cout << "THIS IS AN ERROR, RETURNS VOID TO A STANDARD VARIABLE, THIS WAS NOT A STANDARD FUNCTION CALL!" << std::endl;
+                                newInterpretationSuccess = false;
+                                currentASTNode = nullptr;
+                                break;
+                            };
+                        };
+                    }
+                    else if (currentASTNode->functionReturnType == R_INTEGER || currentASTNode->functionReturnType == R_DECIMAL || currentASTNode->functionReturnType == R_CHARACTER || currentASTNode->functionReturnType == R_BOOLEAN | currentASTNode->functionReturnType == R_STRING)
+                    {
+                        if (currentASTNode->functionReturnsVoid == false)
+                        {
+                            ASTNode* functionASTNode = nullptr;
+                            bool returnFunctionFound = false;
+                            for (int index = 0; index < this->functionsVec.size(); index++)
+                            {
+                                if (this->functionsVec[index]->functionName == currentASTNode->functionName)
+                                {
+                                    returnFunctionFound = true;
+                                    functionASTNode = this->functionsVec[index];
+                                    break;
+                                };
+                            };
+                            if (returnFunctionFound == true && functionASTNode != nullptr)
+                            {
+                                if (currentASTNode->functionReturnVariableName.length() == 0)
+                                {
+                                    if (currentASTNode->functionReturnType == R_INTEGER)
+                                    {
+                                        functionASTNode->integer = currentASTNode->functionReturnInteger;
+                                    }
+                                    else if (currentASTNode->functionReturnType == R_DECIMAL)
+                                    {
+                                        functionASTNode->decimal = currentASTNode->functionReturnDecimal;
+                                    }
+                                    else if (currentASTNode->functionReturnType == R_CHARACTER)
+                                    {
+                                        functionASTNode->character = currentASTNode->functionReturnCharacter;
+                                    }
+                                    else if (currentASTNode->functionReturnType == R_BOOLEAN)
+                                    {
+                                        functionASTNode->boolean = currentASTNode->functionReturnBoolean;
+                                    }
+                                    else if (currentASTNode->functionReturnType == R_STRING)
+                                    {
+                                        functionASTNode->string = currentASTNode->functionReturnString;
+                                    };
+                                }
+                                else
+                                {
+                                    if (this->variablesMap.find(currentASTNode->functionReturnVariableName) != this->variablesMap.end())
+                                    {
+                                        VariableStruct* variableStruct = this->variableStructMap[this->variablesMap[currentASTNode->functionReturnVariableName]];
+                                        if (currentASTNode->functionReturnType == R_INTEGER)
+                                        {
+                                            functionASTNode->integer = variableStruct->integer;
+                                        }
+                                        else if (currentASTNode->functionReturnType == R_DECIMAL)
+                                        {
+                                            functionASTNode->decimal = variableStruct->decimal;
+                                        }
+                                        else if (currentASTNode->functionReturnType == R_CHARACTER)
+                                        {
+                                            functionASTNode->character = variableStruct->character;
+                                        }
+                                        else if (currentASTNode->functionReturnType == R_BOOLEAN)
+                                        {
+                                            functionASTNode->boolean = variableStruct->boolean;
+                                        }
+                                        else if (currentASTNode->functionReturnType == R_STRING)
+                                        {
+                                            functionASTNode->string = variableStruct->string;
+                                        };
+                                    }
+                                    else
+                                    {
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                };
+                                if (functionASTNode->functionCallReturnASTNode->command == C_FUNCTION)
+                                {
+                                    currentASTNode = functionASTNode->functionCallReturnASTNode;
+                                }
+                                else if (functionASTNode->functionCallReturnASTNode->command = C_ASSIGNMENT_OPERATOR)
+                                {
+                                    std::cout << "22222. C_ASSIGNMENT_OPERATOR RETURN!" << std::endl;
+                                    currentASTNode = functionASTNode->functionCallReturnASTNode;
+                                    functionASTNode->functionCallReturnASTNode->integer = functionASTNode->integer;
+                                    functionASTNode->functionCallReturnASTNode->decimal = functionASTNode->decimal;
+                                    functionASTNode->functionCallReturnASTNode->character = functionASTNode->character;
+                                    functionASTNode->functionCallReturnASTNode->boolean = functionASTNode->boolean;
+                                    functionASTNode->functionCallReturnASTNode->string = functionASTNode->string;
+                                    if (this->variablesMap.find(functionASTNode->functionCallReturnASTNode->variableName) != this->variablesMap.end())
+                                    {
+                                        VariableStruct* variableStructToUpdate = this->variableStructMap[this->variablesMap[functionASTNode->functionCallReturnASTNode->variableName]];
+                                        if (variableStructToUpdate->variableType == "INTEGER")
+                                        {
+                                            variableStructToUpdate->integer = functionASTNode->functionCallReturnASTNode->integer;
+                                        }
+                                        else if (variableStructToUpdate->variableType == "DECIMAL")
+                                        {
+                                            variableStructToUpdate->decimal = functionASTNode->functionCallReturnASTNode->decimal;
+                                        }
+                                        else if (variableStructToUpdate->variableType == "CHARACTER")
+                                        {
+                                            variableStructToUpdate->character = functionASTNode->functionCallReturnASTNode->character;
+                                        }
+                                        else if (variableStructToUpdate->variableType == "BOOLEAN")
+                                        {
+                                            variableStructToUpdate->boolean = functionASTNode->functionCallReturnASTNode->boolean;
+                                        }
+                                        else if (variableStructToUpdate->variableType == "STRING")
+                                        {
+                                            variableStructToUpdate->string = functionASTNode->functionCallReturnASTNode->string;
+                                        }
+                                        else
+                                        {
+                                            newInterpretationSuccess = false;
+                                            currentASTNode = nullptr;
+                                            break;
+                                        };
+                                    }
+                                    else
+                                    {
+                                        newInterpretationSuccess = false;
+                                        currentASTNode = nullptr;
+                                        break;
+                                    };
+                                }
+                                else
+                                {
+                                    newInterpretationSuccess = false;
+                                    currentASTNode = nullptr;
+                                    break;
+                                };
+                            }
+                            else
+                            {
+                                newInterpretationSuccess = false;
+                                currentASTNode = nullptr;
+                                break;
+                            };
+                        }
+                        else
+                        {
+                            newInterpretationSuccess = false;
+                            currentASTNode = nullptr;
+                            break;
+                        };
+                    }
+                    else
+                    {
+                        newInterpretationSuccess = false;
+                        currentASTNode = nullptr;
+                        break;
+                    };
+                }
+                else if (currentASTNode->functionASTNodeType == "FUNCTION END")
+                {
+                    std::cout << "THIS IS FUNCTION END, THIS SHOULD NEVER BE CALLED!" << std::endl;
+                }
+                else
+                {
+                    newInterpretationSuccess = false;
+                    currentASTNode = nullptr;
+                    break;
+                };
             }
             else
             {
@@ -1917,59 +2393,76 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                 break;
             };
         };
-        if (takeControlFlowBranch == false)
+        if (returningFromAFunction == false)
         {
-            std::cout << "[INTERPRETER] SEQUENTIAL AST NODE!" << std::endl;
-            if (currentASTNode->sequentialASTNode != nullptr)
+            if (calledAFunction == false)
             {
-                if (currentASTNode->command == C_CONTROL_FLOW || currentASTNode->command == C_FOR_LOOP || currentASTNode->command == C_WHILE_LOOP)
+                if (takeControlFlowBranch == false)
                 {
-                    if (currentASTNode->controlFlowType == IF || currentASTNode->controlFlowType == ELSE_IF || currentASTNode->controlFlowType == ELSE || currentASTNode->controlFlowType == FOR || currentASTNode->controlFlowType == WHILE)
+                    std::cout << "[INTERPRETER] SEQUENTIAL AST NODE!" << std::endl;
+                    if (currentASTNode->sequentialASTNode != nullptr)
                     {
-                        this->currentScope++;
+                        if (currentASTNode->command == C_CONTROL_FLOW || currentASTNode->command == C_FOR_LOOP || currentASTNode->command == C_WHILE_LOOP)
+                        {
+                            if (currentASTNode->controlFlowType == IF || currentASTNode->controlFlowType == ELSE_IF || currentASTNode->controlFlowType == ELSE || currentASTNode->controlFlowType == FOR || currentASTNode->controlFlowType == WHILE)
+                            {
+                                this->currentScope++;
+                            }
+                            else if (currentASTNode->controlFlowType == END)
+                            {
+                                this->currentScope--;
+                                this->clearOutOfScopeVariables();
+                            };
+                        };
+                        currentASTNode = currentASTNode->sequentialASTNode;
+                        std::cout << "[INTERPRETER] currentScope:" << this->currentScope << std::endl;
                     }
-                    else if (currentASTNode->controlFlowType == END)
+                    else
                     {
-                        this->currentScope--;
-                        this->clearOutOfScopeVariables();
+                        currentASTNode = nullptr;
+                        break;
+                    };
+                }
+                else if (takeControlFlowBranch == true)
+                {
+                    std::cout << "[INTERPRETER] CONTROL FLOW AST NODE!" << std::endl;
+                    if (currentASTNode->controlFlowASTNode != nullptr)
+                    {
+                        if (currentASTNode->command == C_FOR_LOOP || currentASTNode->command == C_WHILE_LOOP)
+                        {
+                            if (currentASTNode->controlFlowType == FOR || currentASTNode->controlFlowType == WHILE)
+                            {
+                                this->currentScope++;
+                            }
+                            else if (currentASTNode->controlFlowType == END)
+                            {
+                                this->currentScope--;
+                                this->clearOutOfScopeVariables();
+                            };
+                        };
+                        currentASTNode = currentASTNode->controlFlowASTNode;
+                        std::cout << "[INTERPRETER] currentScope:" << this->currentScope << std::endl;
+                    }
+                    else
+                    {
+                        std::cout << "[INTERPRETER] ERROR, NEEDED TO TAKE CONTROL FLOW BRANCH BUT currentASTNode->controlFlowASTNode IS NULLPTR!" << std::endl;
+                        newInterpretationSuccess = false;
+                        currentASTNode = nullptr;
+                        break;
                     };
                 };
-                currentASTNode = currentASTNode->sequentialASTNode;
-                std::cout << "[INTERPRETER] currentScope:" << this->currentScope << std::endl;
             }
             else
             {
-                currentASTNode = nullptr;
-                break;
+                this->currentScope++;
+                std::cout << "CALLED A FUNCTION, INCREMENT SCOPE!" << std::endl;
             };
         }
-        else if (takeControlFlowBranch == true)
+        else
         {
-            std::cout << "[INTERPRETER] CONTROL FLOW AST NODE!" << std::endl;
-            if (currentASTNode->controlFlowASTNode != nullptr)
-            {
-                if (currentASTNode->command == C_FOR_LOOP || currentASTNode->command == C_WHILE_LOOP)
-                {
-                    if (currentASTNode->controlFlowType == FOR || currentASTNode->controlFlowType == WHILE)
-                    {
-                        this->currentScope++;
-                    }
-                    else if (currentASTNode->controlFlowType == END)
-                    {
-                        this->currentScope--;
-                        this->clearOutOfScopeVariables();
-                    };
-                };
-                currentASTNode = currentASTNode->controlFlowASTNode;
-                std::cout << "[INTERPRETER] currentScope:" << this->currentScope << std::endl;
-            }
-            else
-            {
-                std::cout << "[INTERPRETER] ERROR, NEEDED TO TAKE CONTROL FLOW BRANCH BUT currentASTNode->controlFlowASTNode IS NULLPTR!" << std::endl;
-                newInterpretationSuccess = false;
-                currentASTNode = nullptr;
-                break;
-            };
+            this->currentScope--;
+            this->clearOutOfScopeVariables();
+            std::cout << "RETURNING FROM A FUNCTION CALL, DECREMENT SCOPE!" << std::endl;
         };
     };
     this->interpretationSuccess = newInterpretationSuccess;
@@ -2678,6 +3171,40 @@ void Interpreter::clearOutOfScopeVariables()
             ++iterator;
         }
     };
+    return;
+};
+
+/*
+==================================================
+Sets The Functions Vector
+==================================================
+*/
+void Interpreter::setFunctionsVec(std::vector<ASTNode*> newFunctionsVec)
+{
+    this->functionsVec = newFunctionsVec;
+    return;
+}
+
+/*
+==================================================
+Sets The Variable Memory Address Counter
+==================================================
+*/
+void Interpreter::assignVariableMemoryAddress(ASTNode* currentASTNode)
+{
+    currentASTNode->variableMemoryAddress = this->variableMemoryAddressCounter;
+    this->variableMemoryAddressCounter++;
+    return;
+};
+
+/*
+==================================================
+Sets The Variable Memory Address Counter
+==================================================
+*/
+void Interpreter::setVariableMemoryAddressCounter(int newVariableMemoryAddressCounter)
+{
+    this->variableMemoryAddressCounter = newVariableMemoryAddressCounter;
     return;
 };
 

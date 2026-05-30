@@ -1,4 +1,4 @@
-/* UPDATE VERSION [50] */
+/* UPDATE VERSION [51] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -168,12 +168,13 @@ Function Input Variable Struct
 */
 struct FunctionInputVariable
 {
-    std::string variableName;
-    int integer;
-    double decimal;
-    char character;
-    bool boolean;
-    std::string string;
+    std::string variableName = "";
+    std::string variableDataType = "";
+    int integer = 0;
+    double decimal = 0.0;
+    char character = ' ';
+    bool boolean = false;
+    std::string string = "";
 };
 
 
@@ -190,6 +191,7 @@ struct ASTNode
     ASTNode* currentASTNode = nullptr;
     ASTNode* sequentialASTNode = nullptr;
     ASTNode* controlFlowASTNode = nullptr;
+    ASTNode* functionCallReturnASTNode = nullptr;
     std::string comment = "";
     std::string output = "";
     std::string outputVariable = "";
@@ -293,6 +295,8 @@ class Parser
         std::string getErrorString();
         bool isParsedAndASTBuiltSuccessfully();
         ASTNode* getASTNodeRoot();
+        std::vector<ASTNode*> getFunctionsVec();
+        int getVariableMemoryAddressCounter();
 };
 
 /*
@@ -1279,6 +1283,7 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
         std::vector<std::string> assignmentOperatorTokensVector = this->splitCodeLine(codeLine);
         if (assignmentOperatorTokensVector.size() == 3 && this->isValidVariableName(assignmentOperatorTokensVector[0], true) && assignmentOperatorTokensVector[1] == "=")
         {
+            newASTNode->variableName = assignmentOperatorTokensVector[0];
             std::regex regex1(R"([()])");
             std::sregex_token_iterator regexStart1(codeLine.begin(), codeLine.end(), regex1, {-1});
             std::sregex_token_iterator regexEnd1;
@@ -1288,7 +1293,17 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                 functionTokensVec[index] = this->trimString(functionTokensVec[index]);
                 std::cout << "ASSIGNMENT OPERATOR functionTokensVec[" << index << "]:" << functionTokensVec[index] << std::endl;
             };
-            if (functionTokensVec.size() == 3 && this->isAFunctionCall(functionTokensVec[0]) && functionTokensVec[2] == ";")
+            std::vector<std::string> functionTokensVec2 = this->splitCodeLine(functionTokensVec[0]);
+            for (int index = 0; index < functionTokensVec2.size(); index++)
+            {
+                functionTokensVec2[index] = this->trimString(functionTokensVec2[index]);
+                std::cout << "functionTokensVec2[" << index << "]:" << functionTokensVec2[index] << std::endl;
+            };
+            if (functionTokensVec2.size() != 3 || functionTokensVec2[1] != "=")
+            {
+                return false;
+            };
+            if (functionTokensVec.size() == 3 && this->isAFunctionCall(functionTokensVec2[2]) && functionTokensVec[2] == ";")
             {
                 //1,1.1,'A',TRUE,"STRING 1"
                 //1|1.1|'A'|TRUE|"STRING 1"|
@@ -1304,45 +1319,49 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                     if (this->isValidVariableName(functionInputVariablesRegexVec2[index], true))
                     {
                         newFunctionInputVariable.variableName = functionInputVariablesRegexVec2[index];
+                        newFunctionInputVariable.variableDataType = "VARIABLE";
                     }
                     else if (this->isValidVariableAssignment(functionInputVariablesRegexVec2[index] + ";", "INTEGER"))
                     {
                         newFunctionInputVariable.integer = std::stoi(functionInputVariablesRegexVec2[index]);
+                        newFunctionInputVariable.variableDataType = "INTEGER";
                     }
                     else if (this->isValidVariableAssignment(functionInputVariablesRegexVec2[index] + ";", "DECIMAL"))
                     {
                         newFunctionInputVariable.decimal = std::stod(functionInputVariablesRegexVec2[index]);
+                        newFunctionInputVariable.variableDataType = "DECIMAL";
                     }
                     else if (this->isValidVariableAssignment(functionInputVariablesRegexVec2[index] + ";", "CHARACTER"))
                     {
                         newFunctionInputVariable.character = functionInputVariablesRegexVec2[index][1];
+                        newFunctionInputVariable.variableDataType = "CHARACTER";
                     }
                     else if (this->isValidVariableAssignment(functionInputVariablesRegexVec2[index] + ";", "BOOLEAN"))
                     {
                         newFunctionInputVariable.boolean = (functionInputVariablesRegexVec2[index] == "TRUE" ? true : false);
+                        newFunctionInputVariable.variableDataType = "BOOLEAN";
                     }
                     else if (this->isValidVariableAssignment(functionInputVariablesRegexVec2[index] + ";", "STRING"))
                     {
                         newFunctionInputVariable.string = functionInputVariablesRegexVec2[index];
+                        newFunctionInputVariable.variableDataType = "STRING";
                     }
                     else
                     {
                         return false;
                     };
                     newASTNode->functionInputVariableVec.push_back(newFunctionInputVariable);
-                    newASTNode->functionToCall = functionTokensVec[0];
+                    newASTNode->functionToCall = functionTokensVec2[2];
                     newASTNode->functionASTNodeType = "ASSIGNMENT FUNCTION CALL";
                     functionASTNodeType = newASTNode->functionASTNodeType;
                 };
             };
             if (this->isValidArrayDataExtraction(assignmentOperatorTokensVector[2], "", nullptr))
             {
-                newASTNode->variableName = assignmentOperatorTokensVector[0];
                 newASTNode->assignmentOperatorValue = assignmentOperatorTokensVector[2];
             }
             else if (assignmentOperatorTokensVector.size() >= 3)
             {
-                newASTNode->variableName = assignmentOperatorTokensVector[0];
                 std::string assignmentOperatorString = assignmentOperatorTokensVector[2];
                 for (int index = 3; index< assignmentOperatorTokensVector.size(); index++)
                 {
@@ -2885,10 +2904,13 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
             returnString = returnString.substr(0, returnString.size() - 1);
             ReturnType functionReturnType = R_VOID;
             ASTNode* currentFunctionASTNode = this->functionsStack.top();
+            newASTNode->functionName = currentFunctionASTNode->functionName;
             if (returnString == "VOID")
             {
                 functionReturnType = R_VOID;
                 currentFunctionASTNode->functionReturnsVoid = true;
+                newASTNode->functionReturnsVoid = true;
+                newASTNode->functionASTNodeType = "FUNCTION RETURN";
             }
             else if (this->isValidVariableName(returnString, true))
             {
@@ -2960,6 +2982,10 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                 if (foundVariable == true && functionReturnType != currentFunctionASTNode->functionReturnType || foundVariable == false)
                 {
                     return false;
+                }
+                else
+                {
+                    newASTNode->functionReturnType = functionReturnType;
                 };
             }
             else
@@ -2997,6 +3023,10 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                 if (functionReturnType != currentFunctionASTNode->functionReturnType)
                 {
                     return false;
+                }
+                else
+                {
+                    newASTNode->functionReturnType = functionReturnType;
                 };
             };
         }
@@ -3019,47 +3049,64 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
             {
                 //1,1.1,'A',TRUE,"STRING 1"
                 //1|1.1|'A'|TRUE|"STRING 1"|
-                std::regex regex4(R"(,)");
-                std::sregex_token_iterator regexStart4(functionTokensVec[1].begin(), functionTokensVec[1].end(), regex4, -1);
-                std::sregex_token_iterator regexdEnd4;
-                std::vector<std::string> functionInputVariablesRegexVec3(regexStart4, regexStart4);
-                for (int index = 0; index < functionInputVariablesRegexVec3.size(); index++)
+                if (functionTokensVec[1].length() > 0)
                 {
-                    functionInputVariablesRegexVec3[index] = this->trimString(functionInputVariablesRegexVec3[index]);
-                    std::cout << "functionInputVariablesRegexVec3[index]:" << functionInputVariablesRegexVec3[index] << std::endl;
-                    FunctionInputVariable newFunctionInputVariable;
-                    if (this->isValidVariableName(functionInputVariablesRegexVec3[index], true))
+                    std::regex regex4(R"(,)");
+                    std::sregex_token_iterator regexStart4(functionTokensVec[1].begin(), functionTokensVec[1].end(), regex4, -1);
+                    std::sregex_token_iterator regexdEnd4;
+                    std::vector<std::string> functionInputVariablesRegexVec3(regexStart4, regexdEnd4);
+                    for (int index = 0; index < functionInputVariablesRegexVec3.size(); index++)
                     {
-                        newFunctionInputVariable.variableName = functionInputVariablesRegexVec3[index];
-                    }
-                    else if (this->isValidVariableAssignment(functionInputVariablesRegexVec3[index] + ";", "INTEGER"))
-                    {
-                        newFunctionInputVariable.integer = std::stoi(functionInputVariablesRegexVec3[index]);
-                    }
-                    else if (this->isValidVariableAssignment(functionInputVariablesRegexVec3[index] + ";", "DECIMAL"))
-                    {
-                        newFunctionInputVariable.decimal = std::stod(functionInputVariablesRegexVec3[index]);
-                    }
-                    else if (this->isValidVariableAssignment(functionInputVariablesRegexVec3[index] + ";", "CHARACTER"))
-                    {
-                        newFunctionInputVariable.character = functionInputVariablesRegexVec3[index][1];
-                    }
-                    else if (this->isValidVariableAssignment(functionInputVariablesRegexVec3[index] + ";", "BOOLEAN"))
-                    {
-                        newFunctionInputVariable.boolean = (functionInputVariablesRegexVec3[index] == "TRUE" ? true : false);
-                    }
-                    else if (this->isValidVariableAssignment(functionInputVariablesRegexVec3[index] + ";", "STRING"))
-                    {
-                        newFunctionInputVariable.string = functionInputVariablesRegexVec3[index];
-                    }
-                    else
-                    {
-                        return false;
+                        functionInputVariablesRegexVec3[index] = this->trimString(functionInputVariablesRegexVec3[index]);
+                        std::cout << "functionInputVariablesRegexVec3[index]:" << functionInputVariablesRegexVec3[index] << std::endl;
+                        FunctionInputVariable newFunctionInputVariable;
+                        if (this->isValidVariableName(functionInputVariablesRegexVec3[index], true))
+                        {
+                            newFunctionInputVariable.variableName = functionInputVariablesRegexVec3[index];
+                            newFunctionInputVariable.variableDataType = "VARIABLE";
+                        }
+                        else if (this->isValidVariableAssignment(functionInputVariablesRegexVec3[index] + ";", "INTEGER"))
+                        {
+                            newFunctionInputVariable.integer = std::stoi(functionInputVariablesRegexVec3[index]);
+                            newFunctionInputVariable.variableDataType = "INTEGER";
+                        }
+                        else if (this->isValidVariableAssignment(functionInputVariablesRegexVec3[index] + ";", "DECIMAL"))
+                        {
+                            newFunctionInputVariable.decimal = std::stod(functionInputVariablesRegexVec3[index]);
+                            newFunctionInputVariable.variableDataType = "DECIMAL";
+                        }
+                        else if (this->isValidVariableAssignment(functionInputVariablesRegexVec3[index] + ";", "CHARACTER"))
+                        {
+                            newFunctionInputVariable.character = functionInputVariablesRegexVec3[index][1];
+                            newFunctionInputVariable.variableDataType = "CHARACTER";
+                        }
+                        else if (this->isValidVariableAssignment(functionInputVariablesRegexVec3[index] + ";", "BOOLEAN"))
+                        {
+                            newFunctionInputVariable.boolean = (functionInputVariablesRegexVec3[index] == "TRUE" ? true : false);
+                            newFunctionInputVariable.variableDataType = "BOOLEAN";
+                        }
+                        else if (this->isValidVariableAssignment(functionInputVariablesRegexVec3[index] + ";", "STRING"))
+                        {
+                            newFunctionInputVariable.string = functionInputVariablesRegexVec3[index];
+                            newFunctionInputVariable.variableDataType = "STRING";
+                        }
+                        else
+                        {
+                            return false;
+                        };
+                        newASTNode->functionInputVariableVec.push_back(newFunctionInputVariable);
+                        newASTNode->functionToCall = functionTokensVec[0];
+                        newASTNode->functionASTNodeType = "FUNCTION CALL";
+                        functionASTNodeType = newASTNode->functionASTNodeType;
+                        std::cout << "(WITH INPUTS) FUNCTION CALL HERE IN PARSER FOR FUNCTION NAME:" << newASTNode->functionToCall << std::endl;
                     };
-                    newASTNode->functionInputVariableVec.push_back(newFunctionInputVariable);
+                }
+                else
+                {
                     newASTNode->functionToCall = functionTokensVec[0];
                     newASTNode->functionASTNodeType = "FUNCTION CALL";
                     functionASTNodeType = newASTNode->functionASTNodeType;
+                    std::cout << "(NO INPUTS) FUNCTION CALL HERE IN PARSER FOR FUNCTION NAME:" << newASTNode->functionToCall << std::endl;
                 };
             }
             else
@@ -3836,6 +3883,26 @@ bool Parser::isAFunctionCall(std::string commandString)
         };
     };
     return false;
+};
+
+/*
+==================================================
+Get Functions Vector
+==================================================
+*/
+std::vector<ASTNode*> Parser::getFunctionsVec()
+{
+    return this->functionsVec;
+};
+
+/*
+==================================================
+Gets Variable Memory Address Counter
+==================================================
+*/
+int Parser::getVariableMemoryAddressCounter()
+{
+    return this->variableMemoryAddressCounter;
 };
 
 #endif
