@@ -1,4 +1,4 @@
-/* UPDATE VERSION [51] */
+/* UPDATE VERSION [52] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -1281,7 +1281,7 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
     else if (commandType == C_ASSIGNMENT_OPERATOR)
     {
         std::vector<std::string> assignmentOperatorTokensVector = this->splitCodeLine(codeLine);
-        if (assignmentOperatorTokensVector.size() == 3 && this->isValidVariableName(assignmentOperatorTokensVector[0], true) && assignmentOperatorTokensVector[1] == "=")
+        if (this->isValidVariableName(assignmentOperatorTokensVector[0], true) && assignmentOperatorTokensVector[1] == "=")
         {
             newASTNode->variableName = assignmentOperatorTokensVector[0];
             std::regex regex1(R"([()])");
@@ -1293,86 +1293,97 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                 functionTokensVec[index] = this->trimString(functionTokensVec[index]);
                 std::cout << "ASSIGNMENT OPERATOR functionTokensVec[" << index << "]:" << functionTokensVec[index] << std::endl;
             };
-            std::vector<std::string> functionTokensVec2 = this->splitCodeLine(functionTokensVec[0]);
-            for (int index = 0; index < functionTokensVec2.size(); index++)
+            if (functionTokensVec.size() == 3)
             {
-                functionTokensVec2[index] = this->trimString(functionTokensVec2[index]);
-                std::cout << "functionTokensVec2[" << index << "]:" << functionTokensVec2[index] << std::endl;
-            };
-            if (functionTokensVec2.size() != 3 || functionTokensVec2[1] != "=")
-            {
-                return false;
-            };
-            if (functionTokensVec.size() == 3 && this->isAFunctionCall(functionTokensVec2[2]) && functionTokensVec[2] == ";")
-            {
-                //1,1.1,'A',TRUE,"STRING 1"
-                //1|1.1|'A'|TRUE|"STRING 1"|
-                std::regex regex2(R"(,)");
-                std::sregex_token_iterator regexStart2(functionTokensVec[1].begin(), functionTokensVec[1].end(), regex2, -1);
-                std::sregex_token_iterator regexdEnd2;
-                std::vector<std::string> functionInputVariablesRegexVec2(regexStart2, regexdEnd2);
-                for (int index = 0; index < functionInputVariablesRegexVec2.size(); index++)
+                std::vector<std::string> functionTokensVec2 = this->splitCodeLine(functionTokensVec[0]);
+                for (int index = 0; index < functionTokensVec2.size(); index++)
                 {
-                    functionInputVariablesRegexVec2[index] = this->trimString(functionInputVariablesRegexVec2[index]);
-                    std::cout << "functionInputVariablesRegexVec2[index]:" << functionInputVariablesRegexVec2[index] << std::endl;
-                    FunctionInputVariable newFunctionInputVariable;
-                    if (this->isValidVariableName(functionInputVariablesRegexVec2[index], true))
+                    functionTokensVec2[index] = this->trimString(functionTokensVec2[index]);
+                    std::cout << "functionTokensVec2[" << index << "]:" << functionTokensVec2[index] << std::endl;
+                };
+                if (functionTokensVec2.size() != 3 || functionTokensVec2[1] != "=")
+                {
+                    return false;
+                };
+                if (functionTokensVec.size() == 3 && this->isAFunctionCall(functionTokensVec2[2]) && functionTokensVec[2] == ";")
+                {
+                    //1,1.1,'A',TRUE,"STRING 1"
+                    //1|1.1|'A'|TRUE|"STRING 1"|
+                    std::regex regex2(R"(,)");
+                    std::sregex_token_iterator regexStart2(functionTokensVec[1].begin(), functionTokensVec[1].end(), regex2, -1);
+                    std::sregex_token_iterator regexdEnd2;
+                    std::vector<std::string> functionInputVariablesRegexVec2(regexStart2, regexdEnd2);
+                    for (int index = 0; index < functionInputVariablesRegexVec2.size(); index++)
                     {
-                        newFunctionInputVariable.variableName = functionInputVariablesRegexVec2[index];
-                        newFunctionInputVariable.variableDataType = "VARIABLE";
-                    }
-                    else if (this->isValidVariableAssignment(functionInputVariablesRegexVec2[index] + ";", "INTEGER"))
-                    {
-                        newFunctionInputVariable.integer = std::stoi(functionInputVariablesRegexVec2[index]);
-                        newFunctionInputVariable.variableDataType = "INTEGER";
-                    }
-                    else if (this->isValidVariableAssignment(functionInputVariablesRegexVec2[index] + ";", "DECIMAL"))
-                    {
-                        newFunctionInputVariable.decimal = std::stod(functionInputVariablesRegexVec2[index]);
-                        newFunctionInputVariable.variableDataType = "DECIMAL";
-                    }
-                    else if (this->isValidVariableAssignment(functionInputVariablesRegexVec2[index] + ";", "CHARACTER"))
-                    {
-                        newFunctionInputVariable.character = functionInputVariablesRegexVec2[index][1];
-                        newFunctionInputVariable.variableDataType = "CHARACTER";
-                    }
-                    else if (this->isValidVariableAssignment(functionInputVariablesRegexVec2[index] + ";", "BOOLEAN"))
-                    {
-                        newFunctionInputVariable.boolean = (functionInputVariablesRegexVec2[index] == "TRUE" ? true : false);
-                        newFunctionInputVariable.variableDataType = "BOOLEAN";
-                    }
-                    else if (this->isValidVariableAssignment(functionInputVariablesRegexVec2[index] + ";", "STRING"))
-                    {
-                        newFunctionInputVariable.string = functionInputVariablesRegexVec2[index];
-                        newFunctionInputVariable.variableDataType = "STRING";
-                    }
-                    else
-                    {
-                        return false;
+                        functionInputVariablesRegexVec2[index] = this->trimString(functionInputVariablesRegexVec2[index]);
+                        std::cout << "functionInputVariablesRegexVec2[index]:" << functionInputVariablesRegexVec2[index] << std::endl;
+                        FunctionInputVariable newFunctionInputVariable;
+                        if (this->isValidVariableName(functionInputVariablesRegexVec2[index], true))
+                        {
+                            newFunctionInputVariable.variableName = functionInputVariablesRegexVec2[index];
+                            newFunctionInputVariable.variableDataType = "VARIABLE";
+                        }
+                        else if (this->isValidVariableAssignment(functionInputVariablesRegexVec2[index] + ";", "INTEGER"))
+                        {
+                            newFunctionInputVariable.integer = std::stoi(functionInputVariablesRegexVec2[index]);
+                            newFunctionInputVariable.variableDataType = "INTEGER";
+                        }
+                        else if (this->isValidVariableAssignment(functionInputVariablesRegexVec2[index] + ";", "DECIMAL"))
+                        {
+                            newFunctionInputVariable.decimal = std::stod(functionInputVariablesRegexVec2[index]);
+                            newFunctionInputVariable.variableDataType = "DECIMAL";
+                        }
+                        else if (this->isValidVariableAssignment(functionInputVariablesRegexVec2[index] + ";", "CHARACTER"))
+                        {
+                            newFunctionInputVariable.character = functionInputVariablesRegexVec2[index][1];
+                            newFunctionInputVariable.variableDataType = "CHARACTER";
+                        }
+                        else if (this->isValidVariableAssignment(functionInputVariablesRegexVec2[index] + ";", "BOOLEAN"))
+                        {
+                            newFunctionInputVariable.boolean = (functionInputVariablesRegexVec2[index] == "TRUE" ? true : false);
+                            newFunctionInputVariable.variableDataType = "BOOLEAN";
+                        }
+                        else if (this->isValidVariableAssignment(functionInputVariablesRegexVec2[index] + ";", "STRING"))
+                        {
+                            newFunctionInputVariable.string = functionInputVariablesRegexVec2[index];
+                            newFunctionInputVariable.variableDataType = "STRING";
+                        }
+                        else
+                        {
+                            return false;
+                        };
+                        newASTNode->functionInputVariableVec.push_back(newFunctionInputVariable);
                     };
-                    newASTNode->functionInputVariableVec.push_back(newFunctionInputVariable);
                     newASTNode->functionToCall = functionTokensVec2[2];
                     newASTNode->functionASTNodeType = "ASSIGNMENT FUNCTION CALL";
+                    newASTNode->functionReturnVariableName = functionTokensVec2[0];
                     functionASTNodeType = newASTNode->functionASTNodeType;
                 };
-            };
-            if (this->isValidArrayDataExtraction(assignmentOperatorTokensVector[2], "", nullptr))
-            {
-                newASTNode->assignmentOperatorValue = assignmentOperatorTokensVector[2];
-            }
-            else if (assignmentOperatorTokensVector.size() >= 3)
-            {
-                std::string assignmentOperatorString = assignmentOperatorTokensVector[2];
-                for (int index = 3; index< assignmentOperatorTokensVector.size(); index++)
-                {
-                    assignmentOperatorString += " " + assignmentOperatorTokensVector[index];
-                };
-                newASTNode->assignmentOperatorValue = assignmentOperatorString.substr(0, assignmentOperatorString.length() - 1);
             }
             else
             {
-                return false;
+                if (this->isValidArrayDataExtraction(assignmentOperatorTokensVector[2], "", nullptr))
+                {
+                    newASTNode->assignmentOperatorValue = assignmentOperatorTokensVector[2];
+                }
+                else if (assignmentOperatorTokensVector.size() >= 3)
+                {
+                    std::string assignmentOperatorString = assignmentOperatorTokensVector[2];
+                    for (int index = 3; index< assignmentOperatorTokensVector.size(); index++)
+                    {
+                        assignmentOperatorString += " " + assignmentOperatorTokensVector[index];
+                    };
+                    newASTNode->assignmentOperatorValue = assignmentOperatorString.substr(0, assignmentOperatorString.length() - 1);
+                }
+                else
+                {
+                    return false;
+                };
             };
+        }
+        else
+        {
+            return false;
         };
     }
     else if (commandType == C_ARITHMETIC)
@@ -2986,6 +2997,7 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                 else
                 {
                     newASTNode->functionReturnType = functionReturnType;
+                    newASTNode->functionReturnVariableName = returnString;
                 };
             }
             else
@@ -3027,6 +3039,7 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                 else
                 {
                     newASTNode->functionReturnType = functionReturnType;
+                    newASTNode->functionReturnVariableName = returnString;
                 };
             };
         }

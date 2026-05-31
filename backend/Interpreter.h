@@ -1,4 +1,4 @@
-/* UPDATE VERSION [51] */
+/* UPDATE VERSION [52] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -377,7 +377,6 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
             }
             else if (currentASTNode->command == C_ASSIGNMENT_OPERATOR)
             {
-                std::cout << "ASSIGNMENT OPERATOR!" << std::endl;
                 if (currentASTNode->functionASTNodeType.length() > 0 && currentASTNode->functionASTNodeType == "ASSIGNMENT FUNCTION CALL")
                 {
                     std::cout << "C_ASSIGNMENT_OPERATOR FUNCTION CALL AST NODE!" << std::endl;
@@ -1991,8 +1990,6 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
             }
             else if (currentASTNode->command == C_FUNCTION)
             {
-                std::cout << "FUNCTION!!!!!" << std::endl;
-                std::cout << "currentASTNode->functionASTNodeType:" << currentASTNode->functionASTNodeType << std::endl;
                 if (currentASTNode->functionASTNodeType == "FUNCTION START")
                 {
                     std::cout << "FUNCTION START AST NODE!" << std::endl;
@@ -2185,9 +2182,6 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                 else if (currentASTNode->functionASTNodeType == "FUNCTION RETURN")
                 {
                     std::cout << "FUNCTION RETURN!" << std::endl;
-                    std::cout << "currentASTNode->functionReturnType:" << currentASTNode->functionReturnType << std::endl;
-                    std::cout << "currentASTNode->functionReturnsVoid:" << currentASTNode->functionReturnsVoid << std::endl;
-                    std::cout << "currentASTNode->functionReturnVariableName.length():" << currentASTNode->functionReturnVariableName.length() << std::endl;
                     if (currentASTNode->functionReturnType == R_VOID && currentASTNode->functionReturnsVoid == true && currentASTNode->functionReturnVariableName.length() == 0)
                     {
                         std::cout << "FUNCTION RETURNS VOID!" << std::endl;
@@ -2303,7 +2297,6 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                                 }
                                 else if (functionASTNode->functionCallReturnASTNode->command = C_ASSIGNMENT_OPERATOR)
                                 {
-                                    std::cout << "22222. C_ASSIGNMENT_OPERATOR RETURN!" << std::endl;
                                     currentASTNode = functionASTNode->functionCallReturnASTNode;
                                     functionASTNode->functionCallReturnASTNode->integer = functionASTNode->integer;
                                     functionASTNode->functionCallReturnASTNode->decimal = functionASTNode->decimal;
@@ -2312,26 +2305,26 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                                     functionASTNode->functionCallReturnASTNode->string = functionASTNode->string;
                                     if (this->variablesMap.find(functionASTNode->functionCallReturnASTNode->variableName) != this->variablesMap.end())
                                     {
-                                        VariableStruct* variableStructToUpdate = this->variableStructMap[this->variablesMap[functionASTNode->functionCallReturnASTNode->variableName]];
-                                        if (variableStructToUpdate->variableType == "INTEGER")
+                                        VariableStruct* variableStructToReturn = this->variableStructMap[this->variablesMap[functionASTNode->functionCallReturnASTNode->variableName]];
+                                        if (variableStructToReturn->variableType == "INTEGER")
                                         {
-                                            variableStructToUpdate->integer = functionASTNode->functionCallReturnASTNode->integer;
+                                            variableStructToReturn->integer = functionASTNode->functionCallReturnASTNode->integer;
                                         }
-                                        else if (variableStructToUpdate->variableType == "DECIMAL")
+                                        else if (variableStructToReturn->variableType == "DECIMAL")
                                         {
-                                            variableStructToUpdate->decimal = functionASTNode->functionCallReturnASTNode->decimal;
+                                            variableStructToReturn->decimal = functionASTNode->functionCallReturnASTNode->decimal;
                                         }
-                                        else if (variableStructToUpdate->variableType == "CHARACTER")
+                                        else if (variableStructToReturn->variableType == "CHARACTER")
                                         {
-                                            variableStructToUpdate->character = functionASTNode->functionCallReturnASTNode->character;
+                                            variableStructToReturn->character = functionASTNode->functionCallReturnASTNode->character;
                                         }
-                                        else if (variableStructToUpdate->variableType == "BOOLEAN")
+                                        else if (variableStructToReturn->variableType == "BOOLEAN")
                                         {
-                                            variableStructToUpdate->boolean = functionASTNode->functionCallReturnASTNode->boolean;
+                                            variableStructToReturn->boolean = functionASTNode->functionCallReturnASTNode->boolean;
                                         }
-                                        else if (variableStructToUpdate->variableType == "STRING")
+                                        else if (variableStructToReturn->variableType == "STRING")
                                         {
-                                            variableStructToUpdate->string = functionASTNode->functionCallReturnASTNode->string;
+                                            variableStructToReturn->string = functionASTNode->functionCallReturnASTNode->string;
                                         }
                                         else
                                         {
@@ -2378,6 +2371,9 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                 else if (currentASTNode->functionASTNodeType == "FUNCTION END")
                 {
                     std::cout << "THIS IS FUNCTION END, THIS SHOULD NEVER BE CALLED!" << std::endl;
+                    newInterpretationSuccess = false;
+                    currentASTNode = nullptr;
+                    break;
                 }
                 else
                 {
@@ -2455,14 +2451,12 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
             else
             {
                 this->currentScope++;
-                std::cout << "CALLED A FUNCTION, INCREMENT SCOPE!" << std::endl;
             };
         }
         else
         {
             this->currentScope--;
             this->clearOutOfScopeVariables();
-            std::cout << "RETURNING FROM A FUNCTION CALL, DECREMENT SCOPE!" << std::endl;
         };
     };
     this->interpretationSuccess = newInterpretationSuccess;
@@ -3054,6 +3048,7 @@ Extracts Data From Array And Assigns It To Variable
 */
 bool Interpreter::extractAndAssignDataFromArray(std::string arrayVariableString, VariableStruct* variableStructToUpdate)
 {
+    std::cout << "arrayVariableString:" << arrayVariableString << std::endl;
     std::regex re(R"([\[\]])");
     std::sregex_token_iterator it(arrayVariableString.begin(), arrayVariableString.end(), re, -1);
     std::sregex_token_iterator end;
@@ -3121,7 +3116,15 @@ bool Interpreter::extractAndAssignDataFromArray(std::string arrayVariableString,
             {
                 return false;
             };
+        }
+        else
+        {
+            return false;
         };
+    }
+    else
+    {
+        return false;
     };
     return true;
 };

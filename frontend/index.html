@@ -1,4 +1,4 @@
-<!-- UPDATE VERSION [51] -->
+<!-- UPDATE VERSION [52] -->
 
 <!DOCTYPE html>
 <html lang = "en">
@@ -21,10 +21,348 @@
         </div>
         <div id = "text-editor-div" title = "Code Editor">
             <div id = "line-numbers" title = "Code Editor"></div>
-            <textarea id = "text-editor" type = "text" placeholder = "" title = "Code Editor"></textarea>
+            <textarea id = "text-editor" type = "text" placeholder = "" title = "Code Editor">
+!This Is A Single-Line Comment Example
+
+!Below Is An Example Of Standard Output
+output("[SYSTEM MESSAGE] Program Start!");
+
+!Below Is An Example Of Variables
+INTEGER integer1 = 1234567890;
+DECIMAL decimal1 = 12345.67890;
+CHARACTER character1 = '$';
+BOOLEAN boolean1 = TRUE;
+STRING string1 = "Sample String 1";
+
+output("");
+output("=====");
+output("integer1:");
+output(integer1);
+output("decimal1:");
+output(decimal1);
+output("character1:");
+output(character1);
+output("boolean1:");
+output(boolean1);
+output("string1:");
+output(string1);
+
+!Below Is An Example Of Constants
+CONSTANT INTEGER DAYS_IN_A_WEEK = 7;
+CONSTANT DECIMAL PI = 3.14159;
+CONSTANT CHARACTER PERCENTAGE_CHARACTER = '%';
+CONSTANT BOOLEAN MUST_AUTHENTICATE_USER = TRUE;
+CONSTANT STRING HELLO_WORLD_STRING = "Hello, World!";
+
+output("");
+output("=====");
+output("DAYS_IN_A_WEEK:");
+output(DAYS_IN_A_WEEK);
+output("PI:");
+output(PI);
+output("PERCENTAGE_CHARACTER:");
+output(PERCENTAGE_CHARACTER);
+output("MUST_AUTHENTICATE_USER:");
+output(MUST_AUTHENTICATE_USER);
+output("HELLO_WORLD_STRING:");
+output(HELLO_WORLD_STRING);
+
+!Below Is An Example Of Using Standard Input
+INTEGER age;
+DECIMAL weight;
+CHARACTER sex;
+BOOLEAN isMarried;
+STRING name;
+
+output("");
+output("=====");
+output("Please Enter Age:");
+input(age);
+output("Please Enter Weight:");
+input(weight);
+output("Please Enter Sex:");
+input(sex);
+output("Please Enter isMarried:");
+input(isMarried);
+output("Please Enter Name:");
+input(name);
+
+!Below Is An Example Of Assignment Operator
+INTEGER assignment_int1;
+DECIMAL assignment_dec1;
+CHARACTER assignment_char1;
+BOOLEAN assignment_bool1;
+STRING assignment_str1;
+
+output("");
+output("=====");
+output("assignment_int1:");
+output(assignment_int1);
+output("assignment_dec1:");
+output(assignment_dec1);
+output("assignment_char1:");
+output(assignment_char1);
+output("assignment_bool1:");
+output(assignment_bool1);
+output("assignment_str1:");
+output(assignment_str1);
+
+assignment_int1 = 100;
+assignment_dec1 = 987.654;
+assignment_char1 = '&';
+assignment_bool1 = TRUE;
+assignment_str1 = "ASSIGNMENT STRING 1";
+
+output("");
+output("=====");
+output("assignment_int1:");
+output(assignment_int1);
+output("assignment_dec1:");
+output(assignment_dec1);
+output("assignment_char1:");
+output(assignment_char1);
+output("assignment_bool1:");
+output(assignment_bool1);
+output("assignment_str1:");
+output(assignment_str1);
+
+!Below Is An Example Of Basic Arithmetic
+INTEGER arithmetic_int1;
+DECIMAL arithmetic_dec1;
+STRING arithmetic_str1;
+
+arithmetic_int1 = 100;
+arithmetic_dec1 = 12345.67890;
+arithmetic_str1 = "Sample String 1";
+
+output("");
+output("=====");
+output("arithmetic_int1:");
+output(arithmetic_int1);
+output("arithmetic_dec1:");
+output(arithmetic_dec1);
+output("arithmetic_str1:");
+output(arithmetic_str1);
+
+arithmetic_int1 = arithmetic_int1 + 900 * 10 / 5;
+arithmetic_dec1 = arithmetic_dec1 + 123 - 456 * 789 / 10;
+arithmetic_str1 = arithmetic_str1 + " Sample String 2" + " Sample String 3!";
+
+output("");
+output("=====");
+output("arithmetic_int1:");
+output(arithmetic_int1);
+output("arithmetic_dec1:");
+output(arithmetic_dec1);
+output("arithmetic_str1:");
+output(arithmetic_str1);
+
+output("");
+output("=====");
+!Below Is An Example Of Control Flow
+IF (TRUE EQ TRUE) AND ("STRING 1" NE "STRING 2") AND (100 GT 99) AND (123.456 LT 456.789) AND (100 GE 100) AND (123.456 LE 123.456) BRANCH;
+    output("BRANCH 1!");
+    IF (TRUE EQ FALSE) BRANCH;
+        output("BRANCH 4!");
+    ELSE IF (TRUE EQ TRUE) AND ("STRING 1" NE "STRING 2") AND (100 GT 99) AND (123.456 LT 456.789) AND (100 GE 100) AND (123.456 LE 123.456) BRANCH;
+        output("BRANCH 5!");
+        IF (TRUE EQ FALSE) BRANCH;
+            output("BRANCH 7!");
+        ELSE IF (TRUE EQ FALSE) BRANCH;
+            output("BRANCH 8!");
+        ELSE BRANCH;
+            output("BRANCH 9!");
+        END;
+    ELSE BRANCH;
+        output("BRANCH 6!");
+    END;
+ELSE IF (TRUE EQ FALSE) BRANCH;
+    output("BRANCH 2!");
+ELSE BRANCH;
+    output("BRANCH 3!");
+END;
+
+output("");
+output("=====");
+
+INTEGER arraySize = 10;
+ARRAY INTEGER int_arr1 = [1,2,3,4,5,6,7,8,9,10];
+ARRAY DECIMAL dec_arr1 = [1.1,2.2,3.3,4.4,5.5,6.6,7.7,8.8,9.9,10.10];
+ARRAY CHARACTER char_arr1 = ['A','B','C','D','E','F','G','H','I','J'];
+ARRAY BOOLEAN bool_arr1 = [TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE];
+ARRAY STRING str_arr1 = ["STRING 1","STRING 2","STRING 3","STRING 4","STRING 5","STRING 6","STRING 7","STRING 8","STRING 9","STRING 10"];
+
+output("int_arr1:");
+output(int_arr1);
+output("dec_arr1:");
+output(dec_arr1);
+output("char_arr1:");
+output(char_arr1);
+output("bool_arr1:");
+output(bool_arr1);
+output("str_arr1:");
+output(str_arr1);
+
+output("");
+output("=====");
+
+FOR LOOP (INTEGER index = 0; index LT arraySize; index++) BRANCH;
+    output("index:");
+    output(index);
+    INTEGER int_item;
+    DECIMAL dec_item;
+    CHARACTER char_item;
+    BOOLEAN bool_item;
+    STRING str_item;
+    int_item = int_arr1[index];
+    dec_item = dec_arr1[index];
+    char_item = char_arr1[index];
+    bool_item = bool_arr1[index];
+    str_item = str_arr1[index];
+    output("int_item:");
+    output(int_item);
+    output("dec_item:");
+    output(dec_item);
+    output("char_item:");
+    output(char_item);
+    output("bool_item:");
+    output(bool_item);
+    output("str_item:");
+    output(str_item);
+FOR END;
+
+output("");
+output("=====");
+
+INTEGER index2 = arraySize;
+
+WHILE LOOP (index2 GT 0) BRANCH;
+    index2 = index2 - 1;
+    output("index2:");
+    output(index2);
+    INTEGER int_item2;
+    DECIMAL dec_item2;
+    CHARACTER char_item2;
+    BOOLEAN bool_item2;
+    STRING str_item2;
+    int_item2 = int_arr1[index2];
+    dec_item2 = dec_arr1[index2];
+    char_item2 = char_arr1[index2];
+    bool_item2 = bool_arr1[index2];
+    str_item2 = str_arr1[index2];
+    output("int_item2:");
+    output(int_item2);
+    output("dec_item2:");
+    output(dec_item2);
+    output("char_item2:");
+    output(char_item2);
+    output("bool_item2:");
+    output(bool_item2);
+    output("str_item2:");
+    output(str_item2);
+WHILE END;
+
+output("");
+output("=====");
+
+VOID FUNCTION voidFunction() BRANCH;
+    output("VOID FUNCTION!");
+    RETURN VOID;
+FUNCTION END;
+voidFunction();
+
+INTEGER FUNCTION intFunction(INTEGER int1) BRANCH;
+    output("INTEGER FUNCTION!");
+    output("int1:");
+    output(int1);
+    RETURN int1;
+FUNCTION END;
+
+DECIMAL FUNCTION decFunction(DECIMAL dec1) BRANCH;
+    output("DECIMAL FUNCTION!");
+    output("dec1:");
+    output(dec1);
+    RETURN dec1;
+FUNCTION END;
+
+CHARACTER FUNCTION charFunction(CHARACTER char1) BRANCH;
+    output("CHARACTER FUNCTION!");
+    output("char1:");
+    output(char1);
+    RETURN char1;
+FUNCTION END;
+
+BOOLEAN FUNCTION boolFunction(BOOLEAN bool1) BRANCH;
+    output("BOOLEAN FUNCTION!");
+    output("bool1:");
+    output(bool1);
+    RETURN bool1;
+FUNCTION END;
+
+STRING FUNCTION stringFunction(STRING str1) BRANCH;
+    output("STRING FUNCTION!");
+    output("str1:");
+    output(str1);
+    RETURN str1;
+FUNCTION END;
+
+INTEGER returnFromIntegerFunction;
+DECIMAL returnFromDecimalFunction;
+CHARACTER returnFromCharacterFunction;
+BOOLEAN returnFromBooleanFunction;
+STRING returnFromStringFunction;
+
+output("");
+output("=====");
+
+output("returnFromIntegerFunction:");
+output(returnFromIntegerFunction);
+returnFromIntegerFunction = intFunction(999);
+output("returnFromIntegerFunction:");
+output(returnFromIntegerFunction);
+
+output("");
+output("=====");
+
+output("returnFromDecimalFunction:");
+output(returnFromDecimalFunction);
+returnFromDecimalFunction = decFunction(123.456);
+output("returnFromDecimalFunction:");
+output(returnFromDecimalFunction);
+
+output("");
+output("=====");
+
+output("returnFromCharacterFunction:");
+output(returnFromCharacterFunction);
+returnFromCharacterFunction = charFunction('@');
+output("returnFromCharacterFunction:");
+output(returnFromCharacterFunction);
+
+output("");
+output("=====");
+
+output("returnFromBooleanFunction:");
+output(returnFromBooleanFunction);
+returnFromBooleanFunction = boolFunction(TRUE);
+output("returnFromBooleanFunction:");
+output(returnFromBooleanFunction);
+
+output("");
+output("=====");
+
+output("returnFromStringFunction:");
+output(returnFromStringFunction);
+returnFromStringFunction = stringFunction("SAMPLE STRING 999");
+output("returnFromStringFunction:");
+output(returnFromStringFunction);
+
+output("");
+
+output("[SYSTEM MESSAGE] Program Terminated...");</textarea>
         </div>
         <div id = "terminal-div" title = "Standard Output Terminal">
-            <textarea id = "terminal" class = "div-container-css" placeholder="" title = "Standard Output Terminal"></textarea> <!--readonly-->
+            <textarea id = "terminal" class = "div-container-css" placeholder="" title = "Standard Output Terminal" readonly></textarea>
         </div>
         <div id = "terminal-input-div" title = "Standard Input Terminal">
             <input id = "terminal-input" class = "div-container-css" type = "text" name = "terminal-input" placeholder = "" title = "Standard Input Terminal"/>

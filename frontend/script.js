@@ -1,4 +1,4 @@
-/* UPDATE VERSION [51] */
+/* UPDATE VERSION [52] */
 
 /*
 ==================================================
@@ -200,9 +200,11 @@ Initializers
 textEditor.placeholder = textEditorPlaceholder;
 terminal.placeholder = terminalPlaceholder;
 terminalInput.placeholder = terminalInputPlaceholder;
+terminalInput.value = "27 , 155.5 , M , FALSE , CHRISTIAN TAMPUS";
 documentation.placeholder = codeDocumentation();
 documentation.value = codeDocumentation();
 updateLineNumbers();
+
 
 /*
 ==================================================
