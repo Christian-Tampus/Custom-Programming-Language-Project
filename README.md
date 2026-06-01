@@ -1,4 +1,4 @@
-# UPDATE VERSION [53]
+# UPDATE VERSION [54]
 # Custom Programming Language Project Title
 ## Custom Programming Language Project Description
 ### To Do List
@@ -7,7 +7,7 @@
 ### 3. [COMPLETED] Use An Input Buffer For User Inputs
 ### 4. [COMPLETED] Build The Custom Programming Language
 ### 5. [COMPLETED] Integrate The Front-End (Client) & Back-End (Server) To Be Production Ready Code For Heroku Deployment
-### 6. [IN_PROGRESS] Deploy The Project On Heroku
+### 6. [IN_PROGRESS] Deploy The Project On A Web Service Platform
 ### 7. [_] Complete Source Code Documentation
 ### 8. [_] Complete README.md Documentation
 

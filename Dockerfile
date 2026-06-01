@@ -4,8 +4,8 @@ WORKDIR /app
 
 COPY . .
 
-RUN g++ -std=c++17 backend/main.cpp -o backend/main -lws2_32
+RUN g++ -std=c++17 backend/main.cpp -o backend/main
 
 EXPOSE 8080
 
-CMD ["backend/main"]
+CMD ["./backend/main"]
