@@ -1,4 +1,4 @@
-/* UPDATE VERSION [52] */
+/* UPDATE VERSION [53] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -145,7 +145,7 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
         bool takeControlFlowBranch = false;
         bool calledAFunction = false;
         bool returningFromAFunction = false;
-        if (currentASTNode->command != C_COMMENT && currentASTNode->command != C_NONE)
+        if (currentASTNode->command != C_COMMENT && currentASTNode->command != COMMAND_NONE)
         {
             if (currentASTNode->command == C_OUTPUT)
             {

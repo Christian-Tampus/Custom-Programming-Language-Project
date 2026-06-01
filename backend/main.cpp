@@ -1,4 +1,4 @@
-/* UPDATE VERSION [52] */
+/* UPDATE VERSION [53] */
 
 /*
 ==================================================
@@ -11,6 +11,7 @@ Dependencies
 #include "Parser.h"
 #include "Interpreter.h"
 #include <iostream>
+#include <cstdlib>
 using namespace std;
 using json = nlohmann::json;
 
@@ -21,9 +22,11 @@ Main() Function
 */
 int main()
 {
-    const int PORT = 8080;
+    const char* port_env = getenv("PORT");
+    int PORT = port_env ? std::stoi(port_env) : 8080;
     std::cout << "[SERVER] main.cpp Program Start!" << std::endl;
     httplib::Server server;
+    server.set_mount_point("/","./frontend");
     server.Options("/execute", [](const httplib::Request&, httplib::Response& response) {
         response.set_header("Access-Control-Allow-Origin", "*");
         response.set_header("Access-Control-Allow-Methods", "POST, OPTIONS");

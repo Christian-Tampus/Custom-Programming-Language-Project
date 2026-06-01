@@ -1,4 +1,4 @@
-/* UPDATE VERSION [52] */
+/* UPDATE VERSION [53] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -38,7 +38,7 @@ Command Enums
 */
 enum Command
 {
-    C_NONE,
+    COMMAND_NONE,
     C_COMMENT,
     C_OUTPUT,
     C_INPUT,
@@ -185,7 +185,7 @@ Abstract Syntax Tree (AST) Node Struct
 */
 struct ASTNode
 {
-    Command command = C_NONE;
+    Command command = COMMAND_NONE;
     ControlFlow controlFlowType = IF;
     ASTNode* root = nullptr;
     ASTNode* currentASTNode = nullptr;
@@ -418,7 +418,7 @@ void Parser::parse()
         int syntaxErrorLine = 0;
         if (currentCodeLine.length() > 0)
         {
-            Command commandType = C_NONE;
+            Command commandType = COMMAND_NONE;
             if (currentCodeLine[0] == '!')
             {
                 std::cout << "[PARSER] Command: COMMENT" << std::endl;
@@ -3358,7 +3358,7 @@ buildASTHelper function
 */
 void Parser::buildASTHelper(std::string currentCodeLine, Command commandType, ASTNode* currentASTNode, bool& hasInvalidSyntax, int& syntaxErrorLine, int index)
 {
-    if (commandType != C_NONE)
+    if (commandType != COMMAND_NONE)
     {
         bool buildASTSuccessfully = this->buildAST(currentCodeLine, commandType, this->currentASTNode);
         if (buildASTSuccessfully)

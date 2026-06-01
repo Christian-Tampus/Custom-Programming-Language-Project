@@ -1,4 +1,4 @@
-/* UPDATE VERSION [52] */
+/* UPDATE VERSION [53] */
 
 /*
 ==================================================
@@ -12,7 +12,6 @@ console.log("[CLIENT] script.js Program Start!");
 Global Constants
 ==================================================
 */
-const PORT = 8080;
 const textEditorPlaceholder = "Your Code Here [LATER ADD BOILER PLATE TEST CODE]";
 const terminalPlaceholder = "[SYSTEM MESSAGE] Standard Output!";
 const terminalInputPlaceholder = "[SYSTEM MESSAGE] Standard Input!";
@@ -69,7 +68,7 @@ function addTabToTextEditor(event) {
         //Insert The Tab Character
         this.value = this.value.substring(0, selectionStart) + tabSpace + this.value.substring(selectionEnd);
         //Move Cursor After Tab
-        this.selectionEnd = start + 1;
+        this.selectionEnd = selectionStart + tabSpace.length;
         this.selectionStart = this.selectionEnd;
     };
 };
@@ -160,7 +159,7 @@ async function executeCode() {
     let clientInput = terminalInput.value;
     console.log("[CLIENT] Execute Code! code:\n", clientCode);
     try {
-        const result = await fetch("http://localhost:" + PORT.toString() + "/execute", {
+        const result = await fetch("/execute", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
