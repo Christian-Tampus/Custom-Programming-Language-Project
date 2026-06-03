@@ -343,32 +343,29 @@ Destructor
 */
 Parser::~Parser()
 {
-        this->variableMemoryAddressCounter = -1;
-        if (this->root != nullptr)
-        {
-            delete this->root;
-        };
-        this->currentASTNode = nullptr;
-        this->mainBranchASTNode = nullptr;
-        for (int index = 0; index < this->ASTNodesVec.size(); index++)
-        {
-            delete this->ASTNodesVec[index];
-        };
-        this->ASTNodesVec.clear();
-        this->functionsVec.clear();
-        this->tokensVec.clear();
-        this->variableNamesVec.clear();
-        this->tempVariableStructVec.clear();
-        while (!this->functionsStack.empty())
-        {
-            functionsStack.pop();
-        };
-        while (!this->controlFlowStack.empty())
-        {
-            controlFlowStack.pop();
-        };
-        this->parsedSuccessfully = false;
-        this->errorString = "";
+    this->variableMemoryAddressCounter = -1;
+    if (this->root != nullptr)
+    {
+        delete this->root;
+    };
+    this->root = nullptr;
+    this->currentASTNode = nullptr;
+    this->mainBranchASTNode = nullptr;
+    this->ASTNodesVec.clear();
+    this->functionsVec.clear();
+    this->tokensVec.clear();
+    this->variableNamesVec.clear();
+    this->tempVariableStructVec.clear();
+    while (!this->functionsStack.empty())
+    {
+        functionsStack.pop();
+    };
+    while (!this->controlFlowStack.empty())
+    {
+        controlFlowStack.pop();
+    };
+    this->parsedSuccessfully = false;
+    this->errorString = "";
 };
 
 /*
@@ -1310,7 +1307,6 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                 for (int index = 0; index < functionTokensVec2.size(); index++)
                 {
                     functionTokensVec2[index] = this->trimString(functionTokensVec2[index]);
-                    std::cout << "functionTokensVec2[" << index << "]:" << functionTokensVec2[index] << std::endl;
                 };
                 if (functionTokensVec2.size() != 3 || functionTokensVec2[1] != "=")
                 {
@@ -1318,8 +1314,6 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                 };
                 if (functionTokensVec.size() == 3 && this->isAFunctionCall(functionTokensVec2[2]) && functionTokensVec[2] == ";")
                 {
-                    //1,1.1,'A',TRUE,"STRING 1"
-                    //1|1.1|'A'|TRUE|"STRING 1"|
                     std::regex regex2(R"(,)");
                     std::sregex_token_iterator regexStart2(functionTokensVec[1].begin(), functionTokensVec[1].end(), regex2, -1);
                     std::sregex_token_iterator regexdEnd2;
@@ -1327,7 +1321,6 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                     for (int index = 0; index < functionInputVariablesRegexVec2.size(); index++)
                     {
                         functionInputVariablesRegexVec2[index] = this->trimString(functionInputVariablesRegexVec2[index]);
-                        std::cout << "functionInputVariablesRegexVec2[index]:" << functionInputVariablesRegexVec2[index] << std::endl;
                         FunctionInputVariable newFunctionInputVariable;
                         if (this->isValidVariableName(functionInputVariablesRegexVec2[index], true))
                         {
@@ -2109,7 +2102,6 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
             for (int index = 0; index < forLoopTokensVec.size(); index++)
             {
                 forLoopTokensVec[index] = this->trimString(forLoopTokensVec[index]);
-                std::cout << "forLoopTokensVec:" << forLoopTokensVec[index] << std::endl;
             };
             if (forLoopTokensVec.size() == 3 && forLoopTokensVec[0] == "FOR LOOP" && forLoopTokensVec[2] == "BRANCH;")
             {
@@ -3576,7 +3568,6 @@ Checks if the code are arithmetic operations
 */
 bool Parser::checkIfArithmeticOperations(std::string inputString)
 {
-    std::cout << "checkIfArithmeticOperations:" << inputString << std::endl;
     std::regex re(R"( \+ | \- | \* | \/ )");
     std::sregex_token_iterator it(inputString.begin(), inputString.end(), re, {-1});
     std::sregex_token_iterator end;
