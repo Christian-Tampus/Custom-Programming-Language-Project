@@ -1,4 +1,4 @@
-/* UPDATE VERSION [FINAL] */
+/* UPDATE VERSION [UPDATE FINAL] */
 
 #ifndef H_PARSER
 #define H_PARSER
@@ -18,7 +18,7 @@ using namespace std;
 
 /*
 ==================================================
-Return Type
+Return Type Enum
 ==================================================
 */
 enum ReturnType
@@ -33,7 +33,7 @@ enum ReturnType
 
 /*
 ==================================================
-Command Enums
+Command Enum
 ==================================================
 */
 enum Command
@@ -69,7 +69,7 @@ enum Command
 
 /*
 ==================================================
-Comparison Operators Enums
+Comparison Operator Enum
 ==================================================
 */
 enum ComparisonOperator
@@ -84,7 +84,7 @@ enum ComparisonOperator
 
 /*
 ==================================================
-Logical Operators Enums
+Logical Operator Enum
 ==================================================
 */
 enum LogicalOperator
@@ -96,7 +96,7 @@ enum LogicalOperator
 
 /*
 ==================================================
-Control Flow Enums
+Control Flow Enum
 ==================================================
 */
 enum ControlFlow
@@ -111,7 +111,7 @@ enum ControlFlow
 
 /*
 ==================================================
-Data Type Enums
+Data Type Enum
 ==================================================
 */
 enum DataType
@@ -242,7 +242,7 @@ struct ASTNode
 
 /*
 ==================================================
-TempVariableStruct
+Temporary Variable Struct
 ==================================================
 */
 struct TempVariableStruct
@@ -260,9 +260,9 @@ class Parser
 {
     private:
         int variableMemoryAddressCounter;
-        ASTNode* root = nullptr;
-        ASTNode* currentASTNode = nullptr;
-        ASTNode* mainBranchASTNode = nullptr;
+        ASTNode* root;
+        ASTNode* currentASTNode;
+        ASTNode* mainBranchASTNode;
         std::vector<ASTNode*> functionsVec;
         std::stack<ASTNode*> functionsStack;
         std::vector<ASTNode*> ASTNodesVec;
@@ -313,13 +313,9 @@ Default Constructor
 Parser::Parser()
 {
     this->variableMemoryAddressCounter = 0;
-    this->currentASTNode = nullptr;
     this->root = nullptr;
-    for (int index = 0; index < this->ASTNodesVec.size(); index++)
-    {
-        delete this->ASTNodesVec[index];
-    };
-    this->ASTNodesVec.clear();
+    this->currentASTNode = nullptr;
+    this->mainBranchASTNode = nullptr;
     this->parsedSuccessfully = false;
     this->errorString = "";
 };
@@ -334,9 +330,10 @@ Parser::Parser(std::vector<std::string> tokensVec)
     this->variableMemoryAddressCounter = 0;
     this->root = nullptr;
     this->currentASTNode = nullptr;
-    this->tokensVec = tokensVec;
+    this->mainBranchASTNode = nullptr;
     this->parsedSuccessfully = false;
     this->errorString = "";
+    this->tokensVec = tokensVec;
 };
 
 /*
@@ -346,17 +343,32 @@ Destructor
 */
 Parser::~Parser()
 {
-    this->variableMemoryAddressCounter = -1;
-    if (this->root != nullptr)
-    {
-        delete this->root;
-    };
-    this->root = nullptr;
-    this->currentASTNode = nullptr;
-    this->tokensVec.clear();
-    this->variableNamesVec.clear();
-    this->parsedSuccessfully = false;
-    this->errorString = "";
+        this->variableMemoryAddressCounter = -1;
+        if (this->root != nullptr)
+        {
+            delete this->root;
+        };
+        this->currentASTNode = nullptr;
+        this->mainBranchASTNode = nullptr;
+        for (int index = 0; index < this->ASTNodesVec.size(); index++)
+        {
+            delete this->ASTNodesVec[index];
+        };
+        this->ASTNodesVec.clear();
+        this->functionsVec.clear();
+        this->tokensVec.clear();
+        this->variableNamesVec.clear();
+        this->tempVariableStructVec.clear();
+        while (!this->functionsStack.empty())
+        {
+            functionsStack.pop();
+        };
+        while (!this->controlFlowStack.empty())
+        {
+            controlFlowStack.pop();
+        };
+        this->parsedSuccessfully = false;
+        this->errorString = "";
 };
 
 /*
@@ -1291,7 +1303,6 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
             for (int index = 0; index < functionTokensVec.size(); index++)
             {
                 functionTokensVec[index] = this->trimString(functionTokensVec[index]);
-                std::cout << "ASSIGNMENT OPERATOR functionTokensVec[" << index << "]:" << functionTokensVec[index] << std::endl;
             };
             if (functionTokensVec.size() == 3)
             {
@@ -2141,10 +2152,6 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                         std::sregex_token_iterator split3Start(conditionString.begin(), conditionString.end(), re, -1);
                         std::sregex_token_iterator split3End;
                         std::vector<std::string> operandsVec(split3Start, split3End);
-                        for (int index = 0; index < operandsVec.size(); index++)
-                        {
-                            std::cout << "operandsVec[index]:" << operandsVec[index] << std::endl;
-                        };
                         if (operandsVec.size() == 2)
                         {
                             bool validConditionString = false;
@@ -3045,10 +3052,6 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
         }
         else
         {
-            //void_function1(1,1.1,'A',TRUE,"STRING 1");
-            //void_function1|1,1.1,'A',TRUE,"STRING 1"|;
-            //VOID FUNCTION void_function1(INTEGER int1, DECIMAL dec1, CHARACTER char1, BOOLEAN bool1, STRING str1) BRANCH;
-            //VOID FUNCTION void_function1|INTEGER int1, DECIMAL dec1, CHARACTER char1, BOOLEAN bool1, STRING str1| BRANCH;
             std::regex regex1(R"([()])");
             std::sregex_token_iterator regexStart1(codeLine.begin(), codeLine.end(), regex1, {-1});
             std::sregex_token_iterator regexEnd1;
@@ -3056,12 +3059,9 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
             for (int index = 0; index < functionTokensVec.size(); index++)
             {
                 functionTokensVec[index] = this->trimString(functionTokensVec[index]);
-                std::cout << "functionTokensVec[" << index << "]:" << functionTokensVec[index] << std::endl;
             };
             if (functionTokensVec.size() == 3 && this->isAFunctionCall(functionTokensVec[0]) && functionTokensVec[2] == ";")
             {
-                //1,1.1,'A',TRUE,"STRING 1"
-                //1|1.1|'A'|TRUE|"STRING 1"|
                 if (functionTokensVec[1].length() > 0)
                 {
                     std::regex regex4(R"(,)");
@@ -3071,7 +3071,6 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                     for (int index = 0; index < functionInputVariablesRegexVec3.size(); index++)
                     {
                         functionInputVariablesRegexVec3[index] = this->trimString(functionInputVariablesRegexVec3[index]);
-                        std::cout << "functionInputVariablesRegexVec3[index]:" << functionInputVariablesRegexVec3[index] << std::endl;
                         FunctionInputVariable newFunctionInputVariable;
                         if (this->isValidVariableName(functionInputVariablesRegexVec3[index], true))
                         {
@@ -3111,7 +3110,6 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                         newASTNode->functionToCall = functionTokensVec[0];
                         newASTNode->functionASTNodeType = "FUNCTION CALL";
                         functionASTNodeType = newASTNode->functionASTNodeType;
-                        std::cout << "(WITH INPUTS) FUNCTION CALL HERE IN PARSER FOR FUNCTION NAME:" << newASTNode->functionToCall << std::endl;
                     };
                 }
                 else
@@ -3119,7 +3117,6 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                     newASTNode->functionToCall = functionTokensVec[0];
                     newASTNode->functionASTNodeType = "FUNCTION CALL";
                     functionASTNodeType = newASTNode->functionASTNodeType;
-                    std::cout << "(NO INPUTS) FUNCTION CALL HERE IN PARSER FOR FUNCTION NAME:" << newASTNode->functionToCall << std::endl;
                 };
             }
             else
@@ -3135,9 +3132,6 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                         if (functionTokensVec.size() == 3 && functionTokensVec[1] != "")
                         {
                             std::string functionInputVariablesString = functionTokensVec[1];
-                            //INTEGER int1, DECIMAL dec1, CHARACTER char1, BOOLEAN bool1, STRING str1
-                            //INTEGER int1| DECIMAL dec1| CHARACTER char1| BOOLEAN bool1| STRING str1
-                            //INTEGER int1|DECIMAL dec1|CHARACTER char1|BOOLEAN bool1|STRING str1
                             std::regex regex3(R"(,)");
                             std::sregex_token_iterator regexStart3(functionInputVariablesString.begin(), functionInputVariablesString.end(), regex3, -1);
                             std::sregex_token_iterator regexdEnd3;
@@ -3145,7 +3139,6 @@ bool Parser::buildAST(std::string codeLine, Command commandType, ASTNode* curren
                             for (int index = 0; index < functionInputVariablesRegexVec1.size(); index++)
                             {
                                 functionInputVariablesRegexVec1[index] = this->trimString(functionInputVariablesRegexVec1[index]);
-                                std::cout << "functionInputVariablesRegexVec1[" << index << "]:" << functionInputVariablesRegexVec1[index] << std::endl;
                                 std::regex regex4(R"(\s+)");
                                 std::sregex_token_iterator regexStart4(functionInputVariablesRegexVec1[index].begin(), functionInputVariablesRegexVec1[index].end(), regex4, -1);
                                 std::sregex_token_iterator regexdEnd4;
