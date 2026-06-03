@@ -1,4 +1,4 @@
-/* UPDATE VERSION [FINAL] */
+/* UPDATE VERSION [UPDATE FINAL] */
 
 /*
 ==================================================
