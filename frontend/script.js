@@ -291,7 +291,7 @@ function codeDocumentation() {
         "   output(\"int1:\");",
         "   output(int1);",
         "   RETURN int1;",
-        "   FUNCTION END;"
+        "FUNCTION END;"
     ];
     let documentationText = "";
     for (let index = 0; index < codeDocumentationArray.length; index++) {
