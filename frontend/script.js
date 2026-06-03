@@ -40,6 +40,12 @@ const standardPlaceholderOpacityVariable = "--standard-placeholder-opacity";
 Functions
 ==================================================
 */
+
+/*
+==================================================
+Updates Line Numbers
+==================================================
+*/
 function updateLineNumbers() {
     let lines = textEditor.value.split("\n").length;
     let lineNumbersNewInnerText = "";
@@ -48,9 +54,21 @@ function updateLineNumbers() {
     };
     lineNumbers.innerText = lineNumbersNewInnerText;
 };
+
+/*
+==================================================
+Syncs Scroll Bar
+==================================================
+*/
 function syncScroll() {
     lineNumbers.scrollTop = textEditor.scrollTop;
 };
+
+/*
+==================================================
+Adds Tab To The Code Text Editor Upon Pressing The Tab Key
+==================================================
+*/
 function addTabToTextEditor(event) {
     if (event.key == "Tab") {
         event.preventDefault(); //JS Method To Stop Browser's Default Behavior
@@ -72,6 +90,12 @@ function addTabToTextEditor(event) {
         this.selectionStart = this.selectionEnd;
     };
 };
+
+/*
+==================================================
+Changes Editor, Terminal, Input Terminal & Code Documentation Theme To Light
+==================================================
+*/
 function lightTheme() {
     html.style.backgroundColor = lightThemeColor2;
     textEditorDiv.style.border = "3px solid " + lightThemeColor1;
@@ -109,6 +133,12 @@ function lightTheme() {
     documentation.style.border = "1px solid " + lightThemeColor1;
     documentation.style.color = lightThemeColor1;
 };
+
+/*
+==================================================
+Changes Editor, Terminal, Input Terminal & Code Documentation Theme To Dark
+==================================================
+*/
 function darkTheme() {
     html.style.backgroundColor = darkThemeColor2;
     textEditorDiv.style.border = "3px solid " + darkThemeColor1;
@@ -146,14 +176,138 @@ function darkTheme() {
     documentation.style.border = "1px solid " + darkThemeColor1;
     documentation.style.color = darkThemeColor1;
 };
+
+/*
+==================================================
+Updates The Code Documentation Text Value Content
+==================================================
+*/
 function codeDocumentation() {
-    let maxLines = 20;
+    let codeDocumentationArray = [
+        "Custom Programming Language Documentation",
+        "Developed By: Christian Tampus",
+        "",
+        "==================================================",
+        "",
+        "1. Comments: The Language Supports Only Single Line Comments, All Single Line Comments Must Start With '!'.",
+        "Single Line Comments Example:",
+        "!This Is A Single Line Comment",
+        "",
+        "==================================================",
+        "",
+        "2. Variables: The Language Supports Only 5 Variable Types: INTEGER, DECIMAL, CHARACTER, BOOLEAN, STRING. Variable Names Must Contain Only Alphanumerical [A-Z,a-z,0-9] Or Underscores '_'. Variable Names Must Start With Either Alphabetical Characters Or Underscores.",
+        "Variable Example:",
+        "VARIABLE_TYPE VARIABLE_NAME; => INTEGER _int1; OR DECIMAL dec1;",
+        "VARIABLE_TYPE VARIABLE_NAME = VALID_DATA_TYPE; => CHARACTER _char1 = 'A'; OR BOOLEAN bool1 = TRUE; OR STRING _str1 = \"HELLO WORLD\";",
+        "",
+        "==================================================",
+        "",
+        "3. Constants: Similar To Variables Only That They Cannot Be Overwritten And Must Be Declared & Assigned At The Same Time And Must Contain The 'CONSTANT' Keyword.",
+        "Constant Example:",
+        "CONSTANT VARIABLE_TYPE VARIABLE_NAME = VALID_DATA_TYPE; => CONSTANT INTEGER _INT1 = 100;",
+        "",
+        "==================================================",
+        "",
+        "4. Standard I/O: The Language Supports Standard Input & Output. Requires An Input Buffer To Pre-Fill For Any Expected Input Function Calls In The Program.",
+        "Standard I/O Example:",
+        "INTEGER age;",
+        "output(\"Please Enter Your Age\");",
+        "input(age);",
+        "output(\"Your Age Is:\");",
+        "output(age);",
+        "",
+        "==================================================",
+        "",
+        "5. Basic Arithmetic: The Language Supports Basic Arithmetic That Is Calculated From Left To Right Without Precedence & Supports Only Addition, Subtraction, Multiplication & Division. Basic Arithmetic Only Works For The Following Data Types: INTEGER, DECIMAL & STRING.",
+        "Basic Arithmetic Example:",
+        "INTEGER int_sum = 100;",
+        "int_sum = int_sum + 123 - 456 * 789 / 10;",
+        "DECIMAL dec_sum = 123.456;",
+        "dec_sum = dec_sum + 10.20 - 30.40 * 50.60 / 70.80;",
+        "STRING string_concat = \"STRING 1\";",
+        "string_concat = string_concat + \"STRING 2\" + \"STRING 3\";",
+        "",
+        "==================================================",
+        "",
+        "6. Control Flow: The Language Supports Control Flow Statements Which Are IF, ELSE IF & ELSE. It Also Supports N-Nested Control Flow Statements. Statements Can Handle Both Variables & Literals.",
+        "Control Flow Example:",
+        "Logical Operators: AND, OR, NOT",
+        "Relational Operators: EQ (EQUALS), NE (NOT EQUAL), GT (GREATER THAN), LT (LESS THAN), GE (LESS THAN OR EQUAL TO), LE (GREATER THAN OR EQUAL TO)",
+        "INTEGER int1 = 10;",
+        "INTEGER int2 = 20;",
+        "IF (1 EQ 1) OR (1 NE 2) OR (TRUE EQ TRUE) AND (TRUE NE FALSE) BRANCH;",
+        "   output(\"BRANCH 1\");",
+        "ELSE IF (int1 LT int2) AND (int2 GT int1) AND (0 GT 1) AND (1 LE 0) BRANCH;",
+        "   output(\"BRANCH 2\");",
+        "ELSE BRANCH;",
+        "   output(\"BRANCH 3\");",
+        "END;",
+        "",
+        "==================================================",
+        "",
+        "7. Arrays: The Language Supports Arrays Where The Arrays Must Be Declared & Assigned At The Same Time. The Supported Data Types Are The 5 Basic Variable Types. The 'ARRAY' Keyword Must Come Before The Data Type.",
+        "Arrays Example:",
+        "ARRAY INTEGER int_arr1 = [1,2,3,4,5];",
+        "ARRAY DECIMAL dec_arr1 = [1.1,2.2,3.3,4.4,5.5];",
+        "ARRAY CHARACTER char_arr1 = ['A','B','C','D','E'];",
+        "ARRAY BOOLEAN bool_arr1 = [TRUE,FALSE,TRUE,FALSE,TRUE];",
+        "ARRAY STRING str_arr1 = [\"STRING 1\",\"STRING 2\",\"STRING 3\",\"STRING 4\",\"STRING 5\"];",
+        "",
+        "==================================================",
+        "",
+        "8. Loops: The Language Supports For & While Loops.",
+        "Loops Example:",
+        "ARRAY INTEGER int_arr1 = [1,2,3,4,5];",
+        "INTEGER arraySize = size(int_arr1);",
+        "FOR LOOP (INTEGER index = 0; index LT arraySize; index++) BRANCH;",
+        "   output(\"index\");",
+        "   output(index);",
+        "   INTEGER item;",
+        "   item = int_arr1[index];",
+        "   output(\"item:\");",
+        "   output(item);",
+        "FOR END;",
+        "",
+        "==================================================",
+        "",
+        "9. Functions: The Language Supports Functions Without Recursion Of The Same Function Call, But Can Support Nested Functions As Long As They Have Unique Varible Name Types Inside The Function Definition. Functions Have 6 Return Types Which Are VOID, INTEGER, DECIMAL, CHARACTER, BOOLEAN, STRING. Functions Can Support 0 Or Any Number Of Input Variables.",
+        "Functions Example:",
+        "RETURN_DATA_TYPE FUNCTION FUNCTION_NAME(INPUT PARAMETERS) BRANCH;",
+        "...",
+        "...",
+        "...",
+        "Code",
+        "...",
+        "...",
+        "...",
+        "FUNCTION END;",
+        "VOID FUNCTION voidFunction() BRANCH;",
+        "   output(\"VOID FUNCTION!\");",
+        "   RETURN VOID;",
+        "FUNCTION END;",
+        "voidFunction();",
+        "INTEGER FUNCTION intFunction(INTEGER int1) BRANCH;",
+        "   output(\"INTEGER FUNCTION!\");",
+        "   output(\"int1:\");",
+        "   output(int1);",
+        "   RETURN int1;",
+        "   FUNCTION END;"
+    ];
     let documentationText = "";
-    for (let line = 0; line < maxLines; line++) {
-        documentationText += (line + 1 >= maxLines ? "[CODE DOCUMENTATION]" : "[CODE DOCUMENTATION]\n");
+    for (let index = 0; index < codeDocumentationArray.length; index++) {
+        documentationText += codeDocumentationArray[index];
+        if (index + 1 < codeDocumentationArray.length) {
+            documentationText += "\n";
+        };
     };
     return documentationText;
 };
+
+/*
+==================================================
+The Execute Code Async Function Used To Send & Recieve Data To And From The Server
+==================================================
+*/
 async function executeCode() {
     let clientCode = textEditor.value;
     let clientInput = terminalInput.value;
