@@ -1,4 +1,4 @@
-/* UPDATE VERSION [FINAL] */
+/* UPDATE VERSION [UPDATE FINAL] */
 
 #ifndef H_INTERPRETER
 #define H_INTERPRETER
@@ -62,10 +62,10 @@ Class Declaration
 class Interpreter
 {
     private:
-        int variableMemoryAddressCounter = -1;
-        int currentScope = 0;
+        int variableMemoryAddressCounter;
+        int currentScope;
         const int STANDARD_PRECISION = 10;
-        int inputBufferIndex = 0;
+        int inputBufferIndex;
         bool interpretationSuccess;
         std::vector<std::string> terminalOutputVec;
         std::map<int, VariableStruct*> variableStructMap;
@@ -99,6 +99,9 @@ Default Constructor
 */
 Interpreter::Interpreter()
 {
+    this->variableMemoryAddressCounter = -1;
+    this->currentScope = 0;
+    this->inputBufferIndex = 0;
     this->interpretationSuccess = false;
 };
 
@@ -109,12 +112,19 @@ Destructor
 */
 Interpreter::~Interpreter()
 {
-    this->interpretationSuccess = false;
+    this->variableMemoryAddressCounter = -1;
+    this->currentScope = 0;
     this->inputBufferIndex = 0;
+    this->interpretationSuccess = false;
     this->terminalOutputVec.clear();
     this->variableStructMap.clear();
     this->variablesMap.clear();
     this->inputBufferVec.clear();
+    for (int index = 0; index < this->functionsVec.size(); index++)
+    {
+        delete this->functionsVec[index];
+    };
+    this->functionsVec.clear();
 };
 
 /*
@@ -379,14 +389,12 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
             {
                 if (currentASTNode->functionASTNodeType.length() > 0 && currentASTNode->functionASTNodeType == "ASSIGNMENT FUNCTION CALL")
                 {
-                    std::cout << "C_ASSIGNMENT_OPERATOR FUNCTION CALL AST NODE!" << std::endl;
                     bool functionCallSuccess = false;
                     for (int index1 = 0; index1 < this->functionsVec.size(); index1++)
                     {
                         if (this->functionsVec[index1]->functionName == currentASTNode->functionToCall)
                         {
                             functionCallSuccess = true;
-                            std::cout << "CALL FUNCTION: " << currentASTNode->functionToCall << std::endl;
                             if (this->functionsVec[index1]->functionVariablesVec.size() == currentASTNode->functionInputVariableVec.size())
                             {
                                 for (int index2 = 0; index2 < this->functionsVec[index1]->functionVariablesVec.size(); index2++)
@@ -1148,14 +1156,6 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                         };
                     };
                 }
-                else if (currentASTNode->controlFlowType == ELSE)
-                {
-                    std::cout << "[INTERPRETER] ELSE BRANCH!" << std::endl;
-                }
-                else if (currentASTNode->controlFlowType == END)
-                {
-                    std::cout << "[INTERPRETER] END CONTROL FLOW!" << std::endl;
-                }
                 else
                 {
                     newInterpretationSuccess = false;
@@ -1167,7 +1167,6 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
             {
                 if (currentASTNode->controlFlowType == FOR)
                 {
-                    std::cout << "[INTERPRETER] FOR LOOP!" << std::endl;
                     if (currentASTNode->comparisonStructVec.size() == 1)
                     {
                         bool comparisonResult = false;
@@ -1514,7 +1513,6 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                 }
                 else if (currentASTNode->controlFlowType == END)
                 {
-                    std::cout << "[INTERPRETER] FOR END!" << std::endl;
                     ASTNode* previousASTNode = currentASTNode;
                     currentASTNode = currentASTNode->controlFlowASTNode;
                     if (currentASTNode->forLoopCompleted == false)
@@ -1542,7 +1540,6 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                                         currentASTNode = nullptr;
                                         break;
                                     };
-                                    std::cout << "variableToIncrementOrDecrement->integer:" << variableToIncrementOrDecrement->integer << std::endl;
                                 }
                                 else
                                 {
@@ -1582,7 +1579,6 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
             {
                 if (currentASTNode->controlFlowType == WHILE)
                 {
-                    std::cout << "[INTERPRETER] WHILE LOOP!" << std::endl;
                     std::vector<bool> comparisonResultsVec;
                     for (int index = 0; index < currentASTNode->comparisonStructVec.size(); index++)
                     {
@@ -1972,7 +1968,6 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                 }
                 else if (currentASTNode->controlFlowType == END)
                 {
-                    std::cout << "[INTERPRETER] WHILE END!" << std::endl;
                     ASTNode* previousASTNode = currentASTNode;
                     currentASTNode = currentASTNode->controlFlowASTNode;
                     if (currentASTNode->whileLoopCompleted == false)
@@ -1992,7 +1987,6 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
             {
                 if (currentASTNode->functionASTNodeType == "FUNCTION START")
                 {
-                    std::cout << "FUNCTION START AST NODE!" << std::endl;
                     if (currentASTNode->functionVariablesVec.size() > 0 && currentASTNode->functionVariablesVec.size() == currentASTNode->functionInputVariableVec.size())
                     {
                         for (int index = 0; index < currentASTNode->functionVariablesVec.size(); index++)
@@ -2010,7 +2004,6 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                             {
                                 if (this->variablesMap.find(currentASTNode->functionInputVariableVec[index].variableName) != this->variablesMap.end())
                                 {
-                                    std::cout << "INPUT VARIABLE IS A DECLARED VARIABLE!:" << currentASTNode->functionVariablesVec[index].variableName << std::endl;
                                     VariableStruct* inputVariableStruct = this->variableStructMap[this->variablesMap[currentASTNode->functionInputVariableVec[index].variableName]];
                                     newASTNodeInputVariable->integer = inputVariableStruct->integer;
                                     newASTNodeInputVariable->decimal = inputVariableStruct->decimal;
@@ -2039,7 +2032,6 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                                                 currentASTNode = nullptr;
                                                 break;
                                             };
-                                            std::cout << "CREATED INPUT VARIABLE FOR A FUNCTION! INPUT VARIABLE NAME:" << newVariableStruct->variableName << std::endl;
                                         }
                                         else
                                         {
@@ -2084,7 +2076,6 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                                         currentASTNode = nullptr;
                                         break;
                                     };
-                                    std::cout << "CREATED INPUT VARIABLE FOR A FUNCTION! INPUT VARIABLE NAME:" << currentASTNode->functionVariablesVec[index].variableName << " IS A LITERAL!" << std::endl;
                                 }
                                 else
                                 {
@@ -2097,11 +2088,10 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                     }
                     else if (currentASTNode->functionVariablesVec.size() == 0 && currentASTNode->functionInputVariableVec.size() == 0)
                     {
-                        std::cout << "FUNCTION HAS NO INPUT VARIABLES" << std::endl;
+                        std::cout << "[INTERPRETER ] This Function Has No Input Variables!" << std::endl;
                     }
                     else
                     {
-                        std::cout << "FUNCTION DOES NOT HAVE ENOUGH OR TOO MANY INPUT VARIABLES!" << std::endl;
                         newInterpretationSuccess = false;
                         currentASTNode = nullptr;
                         break;
@@ -2109,14 +2099,12 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                 }
                 else if (currentASTNode->functionASTNodeType == "FUNCTION CALL")
                 {
-                    std::cout << "FUNCTION CALL AST NODE!" << std::endl;
                     bool functionCallSuccess = false;
                     for (int index1 = 0; index1 < this->functionsVec.size(); index1++)
                     {
                         if (this->functionsVec[index1]->functionName == currentASTNode->functionToCall)
                         {
                             functionCallSuccess = true;
-                            std::cout << "CALL FUNCTION: " << currentASTNode->functionToCall << std::endl;
                             if (this->functionsVec[index1]->functionVariablesVec.size() == currentASTNode->functionInputVariableVec.size())
                             {
                                 for (int index2 = 0; index2 < this->functionsVec[index1]->functionVariablesVec.size(); index2++)
@@ -2181,10 +2169,8 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                 }
                 else if (currentASTNode->functionASTNodeType == "FUNCTION RETURN")
                 {
-                    std::cout << "FUNCTION RETURN!" << std::endl;
                     if (currentASTNode->functionReturnType == R_VOID && currentASTNode->functionReturnsVoid == true && currentASTNode->functionReturnVariableName.length() == 0)
                     {
-                        std::cout << "FUNCTION RETURNS VOID!" << std::endl;
                         ASTNode* functionASTNode = nullptr;
                         bool returnFunctionFound = false;
                         for (int index = 0; index < this->functionsVec.size(); index++)
@@ -2211,7 +2197,6 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                             }
                             else
                             {
-                                std::cout << "THIS IS AN ERROR, RETURNS VOID TO A STANDARD VARIABLE, THIS WAS NOT A STANDARD FUNCTION CALL!" << std::endl;
                                 newInterpretationSuccess = false;
                                 currentASTNode = nullptr;
                                 break;
@@ -2370,7 +2355,6 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                 }
                 else if (currentASTNode->functionASTNodeType == "FUNCTION END")
                 {
-                    std::cout << "THIS IS FUNCTION END, THIS SHOULD NEVER BE CALLED!" << std::endl;
                     newInterpretationSuccess = false;
                     currentASTNode = nullptr;
                     break;
@@ -2395,7 +2379,6 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
             {
                 if (takeControlFlowBranch == false)
                 {
-                    std::cout << "[INTERPRETER] SEQUENTIAL AST NODE!" << std::endl;
                     if (currentASTNode->sequentialASTNode != nullptr)
                     {
                         if (currentASTNode->command == C_CONTROL_FLOW || currentASTNode->command == C_FOR_LOOP || currentASTNode->command == C_WHILE_LOOP)
@@ -2411,7 +2394,6 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                             };
                         };
                         currentASTNode = currentASTNode->sequentialASTNode;
-                        std::cout << "[INTERPRETER] currentScope:" << this->currentScope << std::endl;
                     }
                     else
                     {
@@ -2421,7 +2403,6 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                 }
                 else if (takeControlFlowBranch == true)
                 {
-                    std::cout << "[INTERPRETER] CONTROL FLOW AST NODE!" << std::endl;
                     if (currentASTNode->controlFlowASTNode != nullptr)
                     {
                         if (currentASTNode->command == C_FOR_LOOP || currentASTNode->command == C_WHILE_LOOP)
@@ -2437,11 +2418,9 @@ bool Interpreter::interpret(ASTNode* root, std::string standardInput)
                             };
                         };
                         currentASTNode = currentASTNode->controlFlowASTNode;
-                        std::cout << "[INTERPRETER] currentScope:" << this->currentScope << std::endl;
                     }
                     else
                     {
-                        std::cout << "[INTERPRETER] ERROR, NEEDED TO TAKE CONTROL FLOW BRANCH BUT currentASTNode->controlFlowASTNode IS NULLPTR!" << std::endl;
                         newInterpretationSuccess = false;
                         currentASTNode = nullptr;
                         break;
@@ -2639,9 +2618,7 @@ bool Interpreter::performArithmetic(ArithmeticStruct*& arithmeticStruct, std::ve
     }
     else if (variableType == "STRING")
     {
-        std::cout << "STRING ARITHMETIC!" << std::endl;
         std::string secondOperandString = arithmeticVec[arithmeticStruct->index + 1];
-        std::cout << "secondOperandString:" << secondOperandString << std::endl;
         if (this->variablesMap.find(secondOperandString) != this->variablesMap.end())
         {
             VariableStruct* secondOperandStruct = this->variableStructMap[this->variablesMap[secondOperandString]];
@@ -2670,7 +2647,6 @@ bool Interpreter::performArithmetic(ArithmeticStruct*& arithmeticStruct, std::ve
         else if (secondOperandString[0] == '"' && secondOperandString[secondOperandString.size() - 1] == '"')
         {
             arithmeticStruct->stringArithmeticResult += secondOperandString.substr(1, secondOperandString.size() - 2);
-            std::cout << "2. arithmeticStruct->stringArithmeticResult:" << arithmeticStruct->stringArithmeticResult << std::endl;
             arithmeticStruct->index += 2;
             return this->performArithmetic(arithmeticStruct, arithmeticVec, variableType);
         }
@@ -3048,7 +3024,6 @@ Extracts Data From Array And Assigns It To Variable
 */
 bool Interpreter::extractAndAssignDataFromArray(std::string arrayVariableString, VariableStruct* variableStructToUpdate)
 {
-    std::cout << "arrayVariableString:" << arrayVariableString << std::endl;
     std::regex re(R"([\[\]])");
     std::sregex_token_iterator it(arrayVariableString.begin(), arrayVariableString.end(), re, -1);
     std::sregex_token_iterator end;
@@ -3172,7 +3147,7 @@ void Interpreter::clearOutOfScopeVariables()
         else
         {
             ++iterator;
-        }
+        };
     };
     return;
 };
